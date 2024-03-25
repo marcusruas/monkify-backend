@@ -29,11 +29,13 @@ app.Run();
 
 void AddLogs(WebApplicationBuilder builder)
 {
-    var connectionStringLogsDB = builder.Configuration.GetConnectionString("LogsDB");
+    var connectionStringLogsDB = builder.Configuration.GetConnectionString("Logs");
 
-    var logOptions = new MSSqlServerSinkOptions();
-    logOptions.AutoCreateSqlTable = true;
-    logOptions.TableName = "UserManagementLogs";
+    MSSqlServerSinkOptions logOptions = new ();
+    {
+        logOptions.AutoCreateSqlTable = true;
+        logOptions.TableName = "MonkifyLogs";
+    }
 
     Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Warning()
