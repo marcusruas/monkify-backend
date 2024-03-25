@@ -1,3 +1,4 @@
+using Monkify.Common.Messaging;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
 
@@ -7,6 +8,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IMessaging, Messaging>();
 
 AddLogs(builder);
 
