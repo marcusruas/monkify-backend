@@ -12,12 +12,10 @@ namespace Monkify.Common.Models
         {
             Id = Guid.NewGuid();
             CreatedDate = DateTime.Now;
-            Deleted = false;
         }
 
         public Guid Id { get; private set; }
         public DateTime CreatedDate { get; private set; }
         public DateTime? UpdatedDate { get; set; }
-        public bool Deleted { get; set; }
     }
 }
