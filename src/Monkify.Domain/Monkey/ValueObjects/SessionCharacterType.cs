@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Domain.ValueObjects
+namespace Monkify.Domain.Monkey.ValueObjects
 {
     public enum SessionCharacterType
     {

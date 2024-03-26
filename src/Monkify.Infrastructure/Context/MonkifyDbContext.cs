@@ -7,17 +7,29 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Monkify.Common.Models;
-using Monkify.Domain.Entities;
 using System.Data;
+using Monkify.Domain.Users.Entities;
+using Monkify.Domain.Monkey.Entities;
 
 namespace Monkify.Infrastructure.Context
 {
     public class MonkifyDbContext : DbContext
     {
+        public MonkifyDbContext(DbContextOptions<MonkifyDbContext> options) : base(options) { }
+
+        public DbSet<User> Users { get; set; }
         public DbSet<SessionType> SessionTypes { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<User>(builder =>
+            {
+                builder.HasKey(x => x.Id);
+                builder.Property(x => x.Email).IsRequired().HasMaxLength(254);
+                builder.Property(x => x.Password).HasMaxLength(64);
+                builder.Property(x => x.WalletId).IsRequired().HasMaxLength(40);
+            });
+
             modelBuilder.Entity<SessionType>(builder =>
             {
                 builder.HasKey(x => x.Id);

@@ -1,12 +1,12 @@
 ﻿using Monkify.Common.Models;
-using Monkify.Domain.ValueObjects;
+using Monkify.Domain.Monkey.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Domain.Entities
+namespace Monkify.Domain.Monkey.Entities
 {
     public class SessionType : TableEntity
     {
