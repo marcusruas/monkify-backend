@@ -53,10 +53,15 @@ void AddLogs(WebApplicationBuilder builder)
         logOptions.TableName = "MonkifyApiLogs";
     }
 
-    Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Warning()
-                .WriteTo.MSSqlServer(logsConnectionString, logOptions)
-                .CreateLogger();
+    var logBuilder = new LoggerConfiguration();
 
+    if (builder.Environment.IsDevelopment())
+        logBuilder = logBuilder.MinimumLevel.Information();
+    else
+        logBuilder = logBuilder.MinimumLevel.Warning();
+
+    logBuilder = logBuilder.WriteTo.MSSqlServer(logsConnectionString, logOptions);
+
+    Log.Logger = logBuilder.CreateLogger();
     builder.Logging.AddSerilog(Log.Logger);
 }

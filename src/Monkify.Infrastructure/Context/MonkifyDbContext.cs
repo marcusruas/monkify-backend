@@ -18,7 +18,7 @@ namespace Monkify.Infrastructure.Context
         public MonkifyDbContext(DbContextOptions<MonkifyDbContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<SessionType> SessionTypes { get; set; }
+        public DbSet<Session> Sessions { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,7 +30,7 @@ namespace Monkify.Infrastructure.Context
                 builder.Property(x => x.WalletId).IsRequired().HasMaxLength(40);
             });
 
-            modelBuilder.Entity<SessionType>(builder =>
+            modelBuilder.Entity<Session>(builder =>
             {
                 builder.HasKey(x => x.Id);
             });

@@ -8,10 +8,17 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Monkey.Entities
 {
-    public class SessionType : TableEntity
+    public class Session : TableEntity
     {
+        public Session() { }
+        public Session(SessionCharacterType sessionCharacterType)
+        {
+            SessionCharacterType = sessionCharacterType;
+            Active = true;
+        }
+
         public SessionCharacterType SessionCharacterType { get; set; }
-        public int Order { get; set; }
+        public bool HasWinner { get; set; }
         public bool Active { get; set; }
     }
 }

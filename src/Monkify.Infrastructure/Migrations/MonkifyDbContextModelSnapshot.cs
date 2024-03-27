@@ -22,7 +22,7 @@ namespace Monkify.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Monkify.Domain.Monkey.Entities.SessionType", b =>
+            modelBuilder.Entity("Monkify.Domain.Monkey.Entities.Session", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -34,8 +34,8 @@ namespace Monkify.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
+                    b.Property<bool>("HasWinner")
+                        .HasColumnType("bit");
 
                     b.Property<int>("SessionCharacterType")
                         .HasColumnType("int");
@@ -45,7 +45,7 @@ namespace Monkify.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SessionTypes");
+                    b.ToTable("Sessions");
                 });
 
             modelBuilder.Entity("Monkify.Domain.Users.Entities.User", b =>
