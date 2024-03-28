@@ -24,7 +24,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 AddLogs(builder);
-builder.Services.AddScoped<IMessaging, Messaging>();
 builder.Services.AddDbContext<MonkifyDbContext>(options => options.UseSqlServer(monkifyConnectionString));
 builder.Services.AddHandlers();
 

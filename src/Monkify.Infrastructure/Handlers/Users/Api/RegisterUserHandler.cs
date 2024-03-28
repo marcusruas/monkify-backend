@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Monkify.Common.Messaging;
 using Monkify.Domain.Users.Entities;
@@ -13,9 +14,9 @@ using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Handlers.Users.Api
 {
-    public class RegisterUserHandler : BaseHandler<RegisterUserRequest, bool>
+    public class RegisterUserHandler : BaseRequestHandler<RegisterUserRequest, bool>
     {
-        public RegisterUserHandler(MonkifyDbContext context, IMessaging messaging) : base(context, messaging) { }
+        public RegisterUserHandler(MonkifyDbContext context, IMessaging messaging, IMediator mediator) : base(context, messaging, mediator) { }
 
         private User _newUser;
 

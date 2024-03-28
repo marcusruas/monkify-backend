@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Monkify.Common.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace Monkify.Infrastructure
     {
         public static void AddHandlers(this IServiceCollection services)
         {
+            services.AddScoped<IMessaging, Messaging>();
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
         }
     }

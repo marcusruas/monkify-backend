@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Monkify.Common.Messaging;
 using Monkify.Infrastructure.Handlers.Sessions.Workers;
 using MassTransit;
+using Monkify.Infrastructure;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -15,7 +16,6 @@ var logsConnectionString = builder.Configuration.GetConnectionString("Logs");
 
 AddLogs(builder);
 builder.Services.AddDbContext<MonkifyDbContext>(options => options.UseSqlServer(monkifyConnectionString));
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddMassTransit(x =>
 {
     x.UsingAzureServiceBus((context, cfg) =>
@@ -23,6 +23,7 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
+builder.Services.AddHandlers();
 
 builder.Services.AddHostedService<OpenLowercaseSession>();
 

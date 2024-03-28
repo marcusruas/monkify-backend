@@ -13,16 +13,18 @@ using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Handlers
 {
-    public abstract class BaseHandler<TRequest, TResponse> : IRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
+    public abstract class BaseRequestHandler<TRequest, TResponse> : IRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
     {
-        public BaseHandler(MonkifyDbContext context, IMessaging messaging)
+        public BaseRequestHandler(MonkifyDbContext context, IMessaging messaging, IMediator mediator)
         {
             Context = context;
             Messaging = messaging;
+            Mediator = mediator;
         }
 
         protected readonly MonkifyDbContext Context;
         protected readonly IMessaging Messaging;
+        protected readonly IMediator Mediator;
 
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken)
         {
