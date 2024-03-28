@@ -1,4 +1,5 @@
 ﻿using Monkify.Common.Models;
+using Monkify.Domain.Monkey.Entities;
 using Monkify.Domain.Users.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -14,5 +15,6 @@ namespace Monkify.Domain.Users.Entities
         public string? Password { get; set; }
         public RegistrationType RegistrationType { get; set; }
         public string WalletId { get; set; }
+        public ICollection<Bet> Bets { get; set; }
     }
 }

@@ -21,13 +21,14 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
 {
     public class StartMessageFlowForActiveSession : BaseNotificationHandler<SessionCreated>
     {
-        public StartMessageFlowForActiveSession(MonkifyDbContext context, IMessaging messaging, IMediator mediator, IConfiguration configuration) : base(context, messaging, mediator, configuration)
+        public StartMessageFlowForActiveSession(MonkifyDbContext context, IConfiguration configuration) : base(context, configuration)
         {
         }
 
-        public override Task HandleRequest(SessionCreated notification, CancellationToken cancellationToken)
+        public override async Task HandleRequest(SessionCreated notification, CancellationToken cancellationToken)
         {
             //Primeiro passo: Esperar x segundos
+            await WaitForBets();
 
             //Segundo passo: validar se a aposta tem x jogadores
 
@@ -57,8 +58,12 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
                     Message: string //not started due to aids
                 }
              */
+        }
 
-            return Task.CompletedTask;
+        private async Task WaitForBets()
+        {
+            var intervalInSeconds = Configuration.GetSection("IntervalWaitForBets").Get<int>();
+            await Task.Delay(intervalInSeconds * 1000);
         }
     }
 }

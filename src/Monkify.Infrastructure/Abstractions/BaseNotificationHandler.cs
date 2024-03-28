@@ -18,17 +18,13 @@ namespace Monkify.Infrastructure.Abstractions
 {
     public abstract class BaseNotificationHandler<TNotification> : INotificationHandler<TNotification> where TNotification : INotification
     {
-        public BaseNotificationHandler(MonkifyDbContext context, IMessaging messaging, IMediator mediator, IConfiguration configuration)
+        public BaseNotificationHandler(MonkifyDbContext context, IConfiguration configuration)
         {
             Context = context;
-            Messaging = messaging;
-            Mediator = mediator;
             Configuration = configuration;
         }
 
         protected readonly MonkifyDbContext Context;
-        protected readonly IMessaging Messaging;
-        protected readonly IMediator Mediator;
         protected readonly IConfiguration Configuration;
 
         public async Task Handle(TNotification notification, CancellationToken cancellationToken)

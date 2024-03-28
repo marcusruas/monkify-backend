@@ -41,7 +41,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
                 if (!operationSucceeded)
                     return;
 
-                var sessionCreatedEvent = new SessionCreated(newSession.Id, newSession.SessionCharacterType);
+                var sessionCreatedEvent = new SessionCreated(newSession.Id, newSession.SessionCharacterType, 1);
                 await mediator.Publish(sessionCreatedEvent, cancellationToken);
             }
         }

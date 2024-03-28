@@ -18,8 +18,10 @@ namespace Monkify.Infrastructure.Context
         public MonkifyDbContext(DbContextOptions<MonkifyDbContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<SessionParameters> SessionParameters { get; set; }
         public DbSet<Session> Sessions { get; set; }
-        
+        public DbSet<Bet> SessionBets { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>(builder =>
@@ -30,9 +32,24 @@ namespace Monkify.Infrastructure.Context
                 builder.Property(x => x.WalletId).IsRequired().HasMaxLength(40);
             });
 
+            modelBuilder.Entity<SessionParameters>(builder =>
+            {
+                builder.HasKey(x => x.Id);
+                builder.Property(x => x.MinimumNumberOfPlayers).IsRequired().HasDefaultValue(1);
+                builder.Property(x => x.Active).IsRequired().HasDefaultValue(false);
+            });
+
             modelBuilder.Entity<Session>(builder =>
             {
                 builder.HasKey(x => x.Id);
+                builder.HasMany(x => x.Bets).WithOne(x => x.Session).HasForeignKey(x => x.SessionId);
+            });
+
+            modelBuilder.Entity<Bet>(builder =>
+            {
+                builder.HasKey(x => x.Id);
+                builder.Property(x => x.BetAmount).HasPrecision(8, 8).IsRequired();
+                builder.HasOne(x => x.User).WithMany(x => x.Bets).HasForeignKey(x => x.UserId);
             });
         }
 

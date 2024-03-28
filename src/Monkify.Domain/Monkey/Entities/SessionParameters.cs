@@ -8,18 +8,10 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Monkey.Entities
 {
-    public class Session : TableEntity
+    public class SessionParameters : TableEntity
     {
-        public Session() { }
-        public Session(SessionCharacterType sessionCharacterType)
-        {
-            SessionCharacterType = sessionCharacterType;
-            Active = true;
-        }
-
         public SessionCharacterType SessionCharacterType { get; set; }
-        public bool HasWinner { get; set; }
+        public int MinimumNumberOfPlayers { get; set; }
         public bool Active { get; set; }
-        public ICollection<Bet> Bets { get; set; }
     }
 }
