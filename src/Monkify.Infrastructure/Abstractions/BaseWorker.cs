@@ -53,12 +53,6 @@ namespace Monkify.Infrastructure.Abstractions
 
         protected abstract Task ExecuteProcess(CancellationToken cancellationToken);
 
-        protected string? GetQueueConnectionString(string queueName)
-        {
-            var queuesSection = Configuration.GetSection("Queues");
-            return queuesSection[queueName];
-        }
-
         private int GetWorkerInterval()
         {
             var workerIntervals = Configuration.GetSection("WorkerSettings:Intervals");
