@@ -19,9 +19,9 @@ using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.Workers
 {
-    public class OpenLowercaseSession : BaseWorker
+    public class OpenSessions : BaseWorker
     {
-        public OpenLowercaseSession(IServiceProvider services, IConfiguration configuration) : base(services,configuration) { }
+        public OpenSessions(IServiceProvider services) : base(services) { }
 
         protected override async Task ExecuteProcess(CancellationToken cancellationToken)
         {
@@ -54,7 +54,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
             bool operationSucceeded = affectedRows > 0;
 
             if (!operationSucceeded)
-                Log.Error("Failed to open a new session for {0}", nameof(OpenLowercaseSession));
+                Log.Error("Failed to open a new session for {0}", nameof(OpenSessions));
 
             return operationSucceeded;
         }

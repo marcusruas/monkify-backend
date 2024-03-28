@@ -15,19 +15,15 @@ namespace Monkify.Infrastructure.Abstractions
 {
     public abstract class BaseWorker : BackgroundService
     {
-        public BaseWorker(IServiceProvider services, IConfiguration configuration)
+        public BaseWorker(IServiceProvider services)
         {
             Services = services;
-            Configuration = configuration;
             _workerName = GetType().Name;
-            _workerInterval = GetWorkerInterval();
         }
 
         protected readonly IServiceProvider Services;
 
-        private readonly IConfiguration Configuration;
         private string _workerName;
-        private int _workerInterval;
 
         protected sealed override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -47,16 +43,10 @@ namespace Monkify.Infrastructure.Abstractions
                     Log.Information("Worker {0} ended at {1}", _workerName, DateTime.UtcNow);
                 }
 
-                await Task.Delay(_workerInterval * 1000, stoppingToken);
+                await Task.Delay(1000, stoppingToken);
             }
         }
 
         protected abstract Task ExecuteProcess(CancellationToken cancellationToken);
-
-        private int GetWorkerInterval()
-        {
-            var workerIntervals = Configuration.GetSection("WorkerSettings:Intervals");
-            return int.Parse(workerIntervals[_workerName]);
-        }
     }
 }

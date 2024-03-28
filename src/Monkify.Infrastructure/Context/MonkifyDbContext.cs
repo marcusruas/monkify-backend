@@ -48,6 +48,7 @@ namespace Monkify.Infrastructure.Context
             modelBuilder.Entity<Bet>(builder =>
             {
                 builder.HasKey(x => x.Id);
+                builder.Property(x => x.BetChoice).IsRequired().HasMaxLength(20);
                 builder.Property(x => x.BetAmount).HasPrecision(8, 8).IsRequired();
                 builder.HasOne(x => x.User).WithMany(x => x.Bets).HasForeignKey(x => x.UserId);
             });

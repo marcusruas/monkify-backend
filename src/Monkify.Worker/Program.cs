@@ -25,7 +25,7 @@ builder.Services.AddMassTransit(x =>
 });
 builder.Services.AddHandlers();
 
-builder.Services.AddHostedService<OpenLowercaseSession>();
+builder.Services.AddHostedService<OpenSessions>();
 
 var host = builder.Build();
 host.Run();
