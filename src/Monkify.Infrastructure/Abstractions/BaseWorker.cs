@@ -15,10 +15,9 @@ namespace Monkify.Infrastructure.Abstractions
 {
     public abstract class BaseWorker : BackgroundService
     {
-        public BaseWorker(IServiceProvider services, IBus bus, IConfiguration configuration)
+        public BaseWorker(IServiceProvider services, IConfiguration configuration)
         {
             Services = services;
-            BusControl = bus;
             Configuration = configuration;
             _workerName = GetType().Name;
             _workerInterval = GetWorkerInterval();
@@ -26,7 +25,6 @@ namespace Monkify.Infrastructure.Abstractions
 
         protected readonly IServiceProvider Services;
 
-        private readonly IBus BusControl;
         private readonly IConfiguration Configuration;
         private string _workerName;
         private int _workerInterval;
@@ -59,29 +57,6 @@ namespace Monkify.Infrastructure.Abstractions
         {
             var queuesSection = Configuration.GetSection("Queues");
             return queuesSection[queueName];
-        }
-
-        protected async Task SendMessage<C, T>(T message, string queueConnectionString) where C : IConsumer<T> where T : class
-        {
-            if (string.IsNullOrWhiteSpace(queueConnectionString))
-            {
-                string error = "The requested connection string could not be found. This error occured on the Worker {0} at {1}";
-                Log.Error(error, _workerName, DateTime.UtcNow);
-                throw new ArgumentException(string.Format(error, _workerName, DateTime.UtcNow));
-            }
-
-            try
-            {
-                var endpointUri = new Uri($"{queueConnectionString}/{typeof(C).Name}");
-                var endpoint = await BusControl.GetSendEndpoint(endpointUri);
-
-                await endpoint.Send(message);
-            }
-            catch (Exception ex)
-            {
-                var serializedMessage = JsonConvert.SerializeObject(message);
-                Log.Error(ex, "A message was failed to be sent to the consumer {0} at {1}. Message details: {2}", typeof(T).Name, DateTime.UtcNow, serializedMessage);
-            }
         }
 
         private int GetWorkerInterval()

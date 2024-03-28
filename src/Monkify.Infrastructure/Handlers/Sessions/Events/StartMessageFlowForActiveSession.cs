@@ -11,6 +11,7 @@ using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
@@ -26,42 +27,36 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
 
         public override Task HandleRequest(SessionCreated notification, CancellationToken cancellationToken)
         {
-            var defaultConnectionString = GetQueueConnectionString("TerminalSessions");
+            //Primeiro passo: Esperar x segundos
 
-            string hostName = "localhost"; // Ou o endereço do seu servidor RabbitMQ
-            var random = new Random();
-            string queueName = notification.SessionId.ToString(); // Nome da sua fila
+            //Segundo passo: validar se a aposta tem x jogadores
 
-            var factory = new ConnectionFactory() { HostName = hostName, UserName = "guest", Password = "guest" };
-
-            using (var connection = factory.CreateConnection())
-            using (var channel = connection.CreateModel())
-            {
-                // Declara a fila, se ela não existir, será criada
-                channel.QueueDeclare(queue: queueName,
-                                     durable: false,
-                                     exclusive: false,
-                                     autoDelete: false,
-                                     arguments: null);
-
-                Console.WriteLine($"Fila {queueName} está pronta para uso.");
-
-                for (int i = 1; i <= 26; i++)
+            //Terceiro passo: Se não tiver, mandar um objeto
+            /*
                 {
-                    var letraAtual = random.Next(1, 27) + 96;
-                    var letraAtualChar = (char)letraAtual;
-
-                    // Publica uma mensagem na fila
-                    var body = Encoding.UTF8.GetBytes(letraAtualChar.ToString());
-
-                    channel.BasicPublish(exchange: "",
-                                         routingKey: queueName,
-                                         basicProperties: null,
-                                         body: body);
+                    QueueStatus: 1 = Started, 2 - stopped due to players, 3 = ended
+                    Message: string //not started due to aids
                 }
+             */
 
-                Console.WriteLine("Mensagem enviada com sucesso.");
-            }
+            //Quarto passo: mandar as letras
+            ConnectToQueueChannel("Monkify", channel =>
+            {
+                CreateQueue(channel, notification.SessionId.ToString());
+
+                for(int i = 1; i < 10000; i++)
+                {
+                    PublishMessage(channel, notification.SessionId.ToString(), i.ToString());
+                }
+            });
+
+            //Terceiro passo: no fim, mandar um evento pra encerrar a fila
+            /*
+                {
+                    QueueStatus: 1 = Started, 2 - stopped due to players, 3 = ended
+                    Message: string //not started due to aids
+                }
+             */
 
             return Task.CompletedTask;
         }

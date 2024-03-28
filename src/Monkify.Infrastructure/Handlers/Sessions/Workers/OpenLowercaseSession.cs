@@ -21,13 +21,14 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
 {
     public class OpenLowercaseSession : BaseWorker
     {
-        public OpenLowercaseSession(IServiceProvider services, IBus bus, IConfiguration configuration) : base(services, bus, configuration) { }
+        public OpenLowercaseSession(IServiceProvider services, IConfiguration configuration) : base(services,configuration) { }
 
         protected override async Task ExecuteProcess(CancellationToken cancellationToken)
         {
             using (var scope = Services.CreateScope())
             {
                 var context = scope.GetService<MonkifyDbContext>();
+                var mediator = scope.GetService<IMediator>();
 
                 var sessionIsOpen = await context.Sessions.AnyAsync(x => x.SessionCharacterType == SessionCharacterType.LowerCaseLetter && x.Active);
 
@@ -35,13 +36,11 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
                     return;
 
                 var newSession = new Session(SessionCharacterType.LowerCaseLetter);
-
                 var operationSucceeded = await SessionCreated(context, newSession);
 
                 if (!operationSucceeded)
                     return;
 
-                var mediator = scope.GetService<IMediator>();
                 var sessionCreatedEvent = new SessionCreated(newSession.Id, newSession.SessionCharacterType);
                 await mediator.Publish(sessionCreatedEvent, cancellationToken);
             }
