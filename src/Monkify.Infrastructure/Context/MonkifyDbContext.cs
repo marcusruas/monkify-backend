@@ -42,6 +42,8 @@ namespace Monkify.Infrastructure.Context
             modelBuilder.Entity<Session>(builder =>
             {
                 builder.HasKey(x => x.Id);
+                builder.Property(x => x.ParametersId).IsRequired();
+                builder.HasOne(x => x.Parameters).WithMany().HasForeignKey(x => x.ParametersId);
                 builder.HasMany(x => x.Bets).WithOne(x => x.Session).HasForeignKey(x => x.SessionId);
             });
 

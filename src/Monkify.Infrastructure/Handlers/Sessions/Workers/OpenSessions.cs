@@ -30,19 +30,23 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
                 var context = scope.GetService<MonkifyDbContext>();
                 var mediator = scope.GetService<IMediator>();
 
-                var sessionIsOpen = await context.Sessions.AnyAsync(x => x.CharacterType == SessionCharacterType.LowerCaseLetter && x.Active);
+                var activeParameters = await context.SessionParameters.Where(x => x.Active).ToListAsync();
 
-                if (sessionIsOpen)
-                    return;
+                foreach(var parameters in activeParameters)
+                {
+                    var sessionIsOpen = await context.Sessions.AnyAsync(x => x.ParametersId == parameters.Id && x.Active);
 
-                var newSession = new Session(SessionCharacterType.LowerCaseLetter);
-                var operationSucceeded = await SessionCreated(context, newSession);
+                    if (sessionIsOpen)
+                        return;
 
-                if (!operationSucceeded)
-                    return;
+                    var newSession = new Session(parameters.Id);
 
-                var sessionCreatedEvent = new SessionCreated(newSession.Id, newSession.CharacterType, 1);
-                await mediator.Publish(sessionCreatedEvent, cancellationToken);
+                    if (!await SessionCreated(context, newSession))
+                        return;
+
+                    var sessionCreatedEvent = new SessionCreated(newSession.Id, parameters.SessionCharacterType, parameters.MinimumNumberOfPlayers);
+                    await mediator.Publish(sessionCreatedEvent, cancellationToken);
+                }
             }
         }
 

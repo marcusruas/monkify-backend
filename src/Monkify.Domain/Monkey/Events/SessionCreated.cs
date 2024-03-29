@@ -13,7 +13,7 @@ namespace Monkify.Domain.Monkey.Events
     {
         public SessionCreated(Guid sessionId, SessionCharacterType sessionCharacterType, int minimumNumberOfPlayers)
         {
-            SessionId = SessionId;
+            SessionId = sessionId;
             CharacterType = sessionCharacterType;
             MinimumNumberOfPlayers = minimumNumberOfPlayers;
 
