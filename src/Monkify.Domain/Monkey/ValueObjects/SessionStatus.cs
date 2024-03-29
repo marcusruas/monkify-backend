@@ -16,10 +16,11 @@ namespace Monkify.Domain.Monkey.ValueObjects
         public SessionStatus(string message)
         {
             Status = QueueStatus.ErrorOnStart;
-            Message = message;
+            ErrorMessage = message;
         }
 
         public QueueStatus Status { get; set; }
-        public string? Message { get; set; }
+        public string? ErrorMessage { get; set; }
+        public SessionEndResult EndResult { get; set; }
     }
 }

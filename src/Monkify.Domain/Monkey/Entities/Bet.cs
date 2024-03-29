@@ -11,7 +11,7 @@ namespace Monkify.Domain.Monkey.Entities
     public class Bet : TableEntity
     {
         public decimal BetAmount { get; set; }
-        public string? BetChoice { get; set; }
+        public string BetChoice { get; set; }
         public User User { get; set; }
         public Guid UserId { get; set; }
         public Session Session { get; set; }

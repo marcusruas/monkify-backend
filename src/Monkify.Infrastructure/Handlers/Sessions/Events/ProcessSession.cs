@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Monkify.Common.Messaging;
 using Monkify.Domain.Monkey.Events;
+using Monkify.Domain.Monkey.Services;
 using Monkify.Domain.Monkey.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
 using Monkify.Infrastructure.Context;
@@ -51,16 +52,21 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
                 if (!sessionCanStart)
                     return;
 
-                for (int i = 1; i < 10000; i++)
+                var monkey = new MonkifyTyper(notification.CharacterType, bets);
+
+                while(!monkey.HasWinners)
                 {
-                    PublishMessage(channel, notification.SessionId.ToString(), i.ToString());
+                    var character = monkey.GenerateNextCharacter();
+
+                    PublishMessage(channel, notification.SessionId.ToString(), character.ToString());
                 }
 
                 var endSession = new SessionStatus(QueueStatus.Ended);
+                endSession.EndResult = new SessionEndResult(monkey.Winners.Count(), monkey.FirstChoiceTyped);
                 PublishMessage(channel, notification.SessionId.ToString(), JsonConvert.SerializeObject(endSession));
             });
         }
-
+         
         private async Task WaitForBets()
         {
             var intervalInSeconds = Configuration.GetSection("WaitPeriodForBets").Get<int>();

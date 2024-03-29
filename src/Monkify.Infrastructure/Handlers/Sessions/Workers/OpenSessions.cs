@@ -30,7 +30,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
                 var context = scope.GetService<MonkifyDbContext>();
                 var mediator = scope.GetService<IMediator>();
 
-                var sessionIsOpen = await context.Sessions.AnyAsync(x => x.SessionCharacterType == SessionCharacterType.LowerCaseLetter && x.Active);
+                var sessionIsOpen = await context.Sessions.AnyAsync(x => x.CharacterType == SessionCharacterType.LowerCaseLetter && x.Active);
 
                 if (sessionIsOpen)
                     return;
@@ -41,7 +41,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
                 if (!operationSucceeded)
                     return;
 
-                var sessionCreatedEvent = new SessionCreated(newSession.Id, newSession.SessionCharacterType, 1);
+                var sessionCreatedEvent = new SessionCreated(newSession.Id, newSession.CharacterType, 1);
                 await mediator.Publish(sessionCreatedEvent, cancellationToken);
             }
         }
