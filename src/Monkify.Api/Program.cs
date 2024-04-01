@@ -1,4 +1,5 @@
 using Monkify.Api.Filters;
+using Monkify.Infrastructure.Handlers.Sessions.Workers;
 using static Monkify.Infrastructure.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,9 +15,10 @@ builder.Services.AddSwaggerGen();
 builder.AddLogs("MonkifyApiLogs");
 builder.Services.AddDefaultServices(builder.Configuration);
 
+builder.Services.AddHostedService<OpenSessions>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

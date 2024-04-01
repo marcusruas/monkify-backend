@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Monkify.Infrastructure", "M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Monkify.Common", "Monkify.Common\Monkify.Common.csproj", "{5BFF5B2B-7FF4-4003-B553-CB05B68D7EC2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Monkify.Worker", "Monkify.Worker\Monkify.Worker.csproj", "{E0BF4D98-37CE-4FBD-9503-EA0C8145BD2D}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2A20FFFB-F6C2-4312-8A2C-5004A15614AA}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -40,10 +38,6 @@ Global
 		{5BFF5B2B-7FF4-4003-B553-CB05B68D7EC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BFF5B2B-7FF4-4003-B553-CB05B68D7EC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BFF5B2B-7FF4-4003-B553-CB05B68D7EC2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E0BF4D98-37CE-4FBD-9503-EA0C8145BD2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E0BF4D98-37CE-4FBD-9503-EA0C8145BD2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E0BF4D98-37CE-4FBD-9503-EA0C8145BD2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E0BF4D98-37CE-4FBD-9503-EA0C8145BD2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

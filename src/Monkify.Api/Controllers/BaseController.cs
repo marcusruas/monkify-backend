@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Monkify.Common.Messaging;
 using Monkify.Results;
 using System;
@@ -23,7 +24,7 @@ namespace Monkify.Api.Controllers
         {
             var result = await Mediator.Send(request);
 
-            var messaging = (IMessaging)HttpContext.RequestServices.GetService(typeof(IMessaging));
+            var messaging = HttpContext.RequestServices.GetService<IMessaging>();
             var statusCode = (int)GetStatusCodeResult(messaging);
 
             var defaultResult = new ApiResult<T>(result, messaging.Messages);

@@ -39,7 +39,7 @@ internal class ExceptionFilter : IExceptionFilter
         else
             errorMessage = "Your request could not be processed. Please check the data and try again.";
 
-        var messaging = (IMessaging)context.HttpContext.RequestServices.GetService(typeof(IMessaging));
+        var messaging = context.HttpContext.RequestServices.GetService<IMessaging>();
         var model =  new ApiResult<string>(errorMessage, messaging.Messages);
 
         context.Result = new ObjectResult(model);

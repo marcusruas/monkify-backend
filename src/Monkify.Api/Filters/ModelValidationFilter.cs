@@ -14,7 +14,7 @@ namespace Monkify.Api.Filters
         {
             if(!context.ModelState.IsValid)
             {
-                var messaging = (IMessaging)context.HttpContext.RequestServices.GetService(typeof(IMessaging));
+                var messaging = context.HttpContext.RequestServices.GetService<IMessaging>();
                 var modelErrors = context.ModelState.Values.SelectMany(x => x.Errors);
 
                 foreach (var errors in modelErrors)
