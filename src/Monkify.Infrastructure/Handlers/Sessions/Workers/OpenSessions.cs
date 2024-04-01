@@ -4,24 +4,27 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Monkify.Common.Extensions;
+using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Monkey.Entities;
 using Monkify.Domain.Monkey.Events;
 using Monkify.Domain.Monkey.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Handlers.Sessions.Events;
+using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Monkify.Infrastructure.Endpoints.QueuesEndpoints;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.Workers
 {
     public class OpenSessions : BaseWorker
     {
-        public OpenSessions(IServiceProvider services) : base(services) { }
+        public OpenSessions(IServiceProvider services, IConfiguration configuration) : base(services, configuration) { }
 
         protected override async Task ExecuteProcess(CancellationToken cancellationToken)
         {
@@ -44,7 +47,14 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
                     if (!await SessionCreated(context, newSession))
                         return;
 
-                    var sessionCreatedEvent = new SessionCreated(newSession.Id, parameters.SessionCharacterType, parameters.MinimumNumberOfPlayers);
+                    var sessionCreatedEvent = new SessionCreated(newSession.Id, parameters);
+
+                    ConnectToQueueChannel("Monkify", channel =>
+                    {
+                        UseQueue(channel, ACTIVE_SESSIONS_ENDPOINT);
+                        PublishMessage(channel, ACTIVE_SESSIONS_ENDPOINT, JsonConvert.SerializeObject(sessionCreatedEvent));
+                    });
+
                     await mediator.Publish(sessionCreatedEvent, cancellationToken);
                 }
             }

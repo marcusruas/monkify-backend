@@ -21,6 +21,6 @@ namespace Monkify.Domain.Monkey.ValueObjects
 
         public QueueStatus Status { get; set; }
         public string? ErrorMessage { get; set; }
-        public SessionEndResult EndResult { get; set; }
+        public SessionEndResult? EndResult { get; set; }
     }
 }

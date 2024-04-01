@@ -1,25 +1,12 @@
-﻿using Azure.Messaging.ServiceBus;
-using Azure.Messaging.ServiceBus.Administration;
-using MediatR;
-using Microsoft.Azure.Amqp;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Monkify.Common.Messaging;
 using Monkify.Domain.Monkey.Events;
 using Monkify.Domain.Monkey.Services;
 using Monkify.Domain.Monkey.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
 using Monkify.Infrastructure.Context;
 using Newtonsoft.Json;
-using RabbitMQ.Client;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
-using System.Threading.Tasks;
+using static Monkify.Infrastructure.Endpoints.QueuesEndpoints;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.Events
 {
@@ -33,12 +20,13 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
         {
             await WaitForBets();
 
+            var sessionId = notification.SessionId.ToString();
             var bets = await Context.SessionBets.Where(x => x.SessionId == notification.SessionId).ToListAsync();
             bool sessionCanStart = bets.DistinctBy(x => x.UserId).Count() >= notification.MinimumNumberOfPlayers;
 
             ConnectToQueueChannel("Monkify", channel =>
             {
-                CreateQueue(channel, notification.SessionId.ToString());
+                UseQueue(channel, string.Format(SESSION_STATUS_ENDPOINT, sessionId));
 
                 SessionStatus status;
 
@@ -47,23 +35,26 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
                 else
                     status = new SessionStatus(QueueStatus.Started);
 
-                PublishMessage(channel, notification.SessionId.ToString(), JsonConvert.SerializeObject(status));
+                PublishMessage(channel, string.Format(SESSION_STATUS_ENDPOINT, sessionId), JsonConvert.SerializeObject(status));
 
                 if (!sessionCanStart)
                     return;
+
+                UseQueue(channel, string.Format(SESSION_TERMINAL_ENDPOINT, sessionId));
 
                 var monkey = new MonkifyTyper(notification.CharacterType, bets);
 
                 while(!monkey.HasWinners)
                 {
                     var character = monkey.GenerateNextCharacter();
-
-                    PublishMessage(channel, notification.SessionId.ToString(), character.ToString());
+                    PublishMessage(channel, string.Format(SESSION_TERMINAL_ENDPOINT, sessionId), character.ToString());
                 }
+
+                UseQueue(channel, string.Format(SESSION_STATUS_ENDPOINT, sessionId));
 
                 var endSession = new SessionStatus(QueueStatus.Ended);
                 endSession.EndResult = new SessionEndResult(monkey.Winners.Count(), monkey.FirstChoiceTyped);
-                PublishMessage(channel, notification.SessionId.ToString(), JsonConvert.SerializeObject(endSession));
+                PublishMessage(channel, string.Format(SESSION_STATUS_ENDPOINT, sessionId), JsonConvert.SerializeObject(endSession));
             });
         }
          

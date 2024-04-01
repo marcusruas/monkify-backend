@@ -8,6 +8,7 @@ namespace Monkify.Domain.Monkey.ValueObjects
 {
     public enum QueueStatus
     {
+        Created,
         Started,
         Ended,
         ErrorOnStart

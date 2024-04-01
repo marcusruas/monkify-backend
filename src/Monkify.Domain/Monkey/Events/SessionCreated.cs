@@ -11,16 +11,17 @@ namespace Monkify.Domain.Monkey.Events
 {
     public class SessionCreated : INotification
     {
-        public SessionCreated(Guid sessionId, SessionCharacterType sessionCharacterType, int minimumNumberOfPlayers)
+        public SessionCreated(Guid sessionId, SessionParameters parameters)
         {
             SessionId = sessionId;
-            CharacterType = sessionCharacterType;
-            MinimumNumberOfPlayers = minimumNumberOfPlayers;
-
+            CharacterType = parameters.SessionCharacterType;
+            MinimumNumberOfPlayers = parameters.MinimumNumberOfPlayers;
+            ChoiceRequiredLength = parameters.ChoiceRequiredLength;
         }
 
         public Guid SessionId { get; set; }
         public SessionCharacterType CharacterType { get; set; }
         public int MinimumNumberOfPlayers { get; set; }
+        public int ChoiceRequiredLength { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Monkify.Infrastructure.Context;
 
+
 #nullable disable
 
 namespace Monkify.Infrastructure.Migrations

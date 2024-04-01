@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Monkify.Common.Exceptions;
 using Monkify.Common.Messaging;
 using Monkify.Common.Models;
+using Monkify.Domain.Configs.Entities;
 using Monkify.Infrastructure.Context;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
@@ -55,7 +56,7 @@ namespace Monkify.Infrastructure.Abstractions
             }
         }
 
-        protected void CreateQueue(IModel channel, string queueName, bool durable = false)
+        protected void UseQueue(IModel channel, string queueName, bool durable = false)
             => channel.QueueDeclare(queue: queueName, durable: durable, exclusive: false, autoDelete: false, arguments: null);
 
         protected void PublishMessage(IModel channel, string queueName, string body, string exchange = "")
