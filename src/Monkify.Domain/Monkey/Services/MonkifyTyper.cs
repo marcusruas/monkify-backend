@@ -17,6 +17,7 @@ namespace Monkify.Domain.Monkey.Services
             SetCharactersOnTyper(characterType);
 
             _random = new Random();
+            _lastTypedCharacters = new Queue<char>();
             Winners = new List<Bet>();
         }
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Monkify.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using Monkify.Infrastructure.Context;
 namespace Monkify.Infrastructure.Migrations
 {
     [DbContext(typeof(MonkifyDbContext))]
-    partial class MonkifyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240402194119_AddedSessionParametersColumn")]
+    partial class AddedSessionParametersColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,9 +31,9 @@ namespace Monkify.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<double>("BetAmount")
+                    b.Property<decimal>("BetAmount")
                         .HasPrecision(8, 8)
-                        .HasColumnType("float(8)");
+                        .HasColumnType("decimal(8,8)");
 
                     b.Property<string>("BetChoice")
                         .IsRequired()

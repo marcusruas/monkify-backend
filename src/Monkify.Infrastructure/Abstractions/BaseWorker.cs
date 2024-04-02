@@ -18,21 +18,21 @@ namespace Monkify.Infrastructure.Abstractions
 {
     public abstract class BaseWorker : BackgroundService
     {
-        public BaseWorker(IServiceProvider services, IConfiguration configuration)
+        public BaseWorker(IServiceProvider services)
         {
             Services = services;
-            Configuration = configuration;
 
             _workerName = GetType().Name;
         }
 
         protected readonly IServiceProvider Services;
-        protected readonly IConfiguration Configuration;
 
         private string _workerName;
 
         protected sealed override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            await Task.Delay(5000, stoppingToken);
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -48,33 +48,9 @@ namespace Monkify.Infrastructure.Abstractions
                 {
                     Log.Information("Worker {0} ended at {1}", _workerName, DateTime.UtcNow);
                 }
-
-                await Task.Delay(1000, stoppingToken);
             }
         }
 
         protected abstract Task ExecuteProcess(CancellationToken cancellationToken);
-
-        protected void ConnectToQueueChannel(string channelConnectionName, Action<IModel> channelOperations)
-        {
-            var channelConfiguration = Configuration.GetSection($"Channels:{channelConnectionName}").Get<ChannelConfiguration>();
-
-            var factory = new ConnectionFactory() { HostName = channelConfiguration.Hostname, UserName = channelConfiguration.Username, Password = channelConfiguration.Password };
-
-            using (var connection = factory.CreateConnection())
-            using (var channel = connection.CreateModel())
-            {
-                channelOperations(channel);
-            }
-        }
-
-        protected void UseQueue(IModel channel, string queueName, bool durable = false)
-            => channel.QueueDeclare(queue: queueName, durable: durable, exclusive: false, autoDelete: false, arguments: null);
-
-        protected void PublishMessage(IModel channel, string queueName, string body, string exchange = "")
-        {
-            var bodyInBytes = Encoding.UTF8.GetBytes(body);
-            channel.BasicPublish(exchange: exchange, routingKey: queueName, basicProperties: null, body: bodyInBytes);
-        }
     }
 }

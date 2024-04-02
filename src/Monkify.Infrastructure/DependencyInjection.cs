@@ -24,6 +24,7 @@ namespace Monkify.Infrastructure
             services.AddScoped<IMessaging, Messaging>();
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddDbContext<MonkifyDbContext>(options => options.UseSqlServer(monkifyConnectionString));
+            services.AddSignalR();
         }
 
         public static void AddLogs(this IHostApplicationBuilder builder, string tableName)

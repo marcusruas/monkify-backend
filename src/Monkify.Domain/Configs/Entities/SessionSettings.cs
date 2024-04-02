@@ -1,0 +1,19 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Monkify.Domain.Configs.Entities
+{
+    public class SessionSettings
+    {
+        public int WaitPeriodForBets { get; set; }
+        public int TerminalBatchLimit { get; set; }
+        public int DelayBetweenTerminalBatches { get; set; }
+        public string ActiveSessionsEndpoint { get; set; }
+        public string SessionStatusEndpoint { get; set; }
+        public string SessionBetsEndpoint { get; set; }
+        public string SessionTerminalEndpoint { get; set; }
+    }
+}

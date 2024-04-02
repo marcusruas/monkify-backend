@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using MediatR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,31 +8,27 @@ using Monkify.Common.Extensions;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Monkey.Entities;
 using Monkify.Domain.Monkey.Events;
-using Monkify.Domain.Monkey.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
 using Monkify.Infrastructure.Context;
-using Monkify.Infrastructure.Handlers.Sessions.Events;
+using Monkify.Infrastructure.Handlers.Sessions.Hubs;
 using Newtonsoft.Json;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Monkify.Infrastructure.Endpoints.QueuesEndpoints;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.Workers
 {
-    public class OpenSessions : BaseWorker
+    public class CreateSessions : BaseWorker
     {
-        public OpenSessions(IServiceProvider services, IConfiguration configuration) : base(services, configuration) { }
+        public CreateSessions(IServiceProvider services) : base(services) { }
 
         protected override async Task ExecuteProcess(CancellationToken cancellationToken)
         {
             using (var scope = Services.CreateScope())
             {
+                var sessionConfigs = scope.GetService<SessionSettings>();
                 var context = scope.GetService<MonkifyDbContext>();
                 var mediator = scope.GetService<IMediator>();
+                var hub = scope.GetService<IHubContext<OpenSessionsHub>>();
+
 
                 var activeParameters = await context.SessionParameters.Where(x => x.Active).ToListAsync();
 
@@ -48,12 +45,9 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
                         return;
 
                     var sessionCreatedEvent = new SessionCreated(newSession.Id, parameters);
-
-                    ConnectToQueueChannel("Monkify", channel =>
-                    {
-                        UseQueue(channel, ACTIVE_SESSIONS_ENDPOINT);
-                        PublishMessage(channel, ACTIVE_SESSIONS_ENDPOINT, JsonConvert.SerializeObject(sessionCreatedEvent));
-                    });
+                    
+                    var sessionJson = JsonConvert.SerializeObject(sessionCreatedEvent);
+                    await hub.Clients.All.SendAsync(sessionConfigs.ActiveSessionsEndpoint, sessionJson);
 
                     await mediator.Publish(sessionCreatedEvent, cancellationToken);
                 }
@@ -68,7 +62,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
             bool operationSucceeded = affectedRows > 0;
 
             if (!operationSucceeded)
-                Log.Error("Failed to open a new session for {0}", nameof(OpenSessions));
+                Log.Error("Failed to open a new session for {0}", nameof(CreateSessions));
 
             return operationSucceeded;
         }
