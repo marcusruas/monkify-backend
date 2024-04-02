@@ -13,7 +13,9 @@ namespace Monkify.Domain.Monkey.Services
             if (bets.IsNullOrEmpty())
                 throw new ArgumentException("At least one bet must be made to start a session. Session has ended");
 
-            SetBets(bets);
+            Bets = bets;
+
+            SetQueueLength(bets);
             SetCharactersOnTyper(characterType);
 
             _random = new Random();
@@ -31,10 +33,8 @@ namespace Monkify.Domain.Monkey.Services
         private int _queueLength { get; set; }
         private Queue<char> _lastTypedCharacters { get; set; }
 
-        private void SetBets(IEnumerable<Bet> bets)
+        private void SetQueueLength(IEnumerable<Bet> bets)
         {
-            Bets = bets;
-
             foreach(var bet in Bets)
             {
                 if (bet.BetChoice.Length > _queueLength)
