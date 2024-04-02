@@ -53,6 +53,7 @@ namespace Monkify.Infrastructure.Context
                 builder.HasKey(x => x.Id);
                 builder.Property(x => x.BetChoice).IsRequired().HasMaxLength(20);
                 builder.Property(x => x.BetAmount).HasPrecision(8, 8).IsRequired();
+                builder.Property(x => x.Won).IsRequired().HasDefaultValue(false);
                 builder.HasOne(x => x.User).WithMany(x => x.Bets).HasForeignKey(x => x.UserId);
             });
         }
@@ -64,7 +65,7 @@ namespace Monkify.Infrastructure.Context
                 switch (entry.State)
                 {
                     case EntityState.Modified:
-                        entry.Entity.UpdatedDate = DateTime.Now;
+                        entry.Entity.UpdatedDate = DateTime.UtcNow;
                         break;
                 }
             }

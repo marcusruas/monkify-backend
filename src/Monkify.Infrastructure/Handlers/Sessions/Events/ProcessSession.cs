@@ -28,8 +28,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
         private readonly IHubContext<ActiveSessionsHub> _activeSessions;
         private readonly SessionSettings _sessionSettings;
 
-        private string _sessionId;
-        private List<Bet> _betsForSession;
+        private Session _session;
         private bool _sessionHasEnoughPlayers;
 
         private MonkifyTyper _monkey;
@@ -38,18 +37,18 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
         {
             await Task.Delay(_sessionSettings.WaitPeriodForBets * 1000);
 
-            _sessionId = notification.SessionId.ToString();
-            _betsForSession = await _context.SessionBets.Where(x => x.SessionId == notification.SessionId).ToListAsync();
-            _sessionHasEnoughPlayers = _betsForSession.DistinctBy(x => x.UserId).Count() >= notification.MinimumNumberOfPlayers;
+            _session = await _context.Sessions.Include(x => x.Bets).AsNoTracking().FirstOrDefaultAsync(x => x.Id == notification.SessionId);
+            _sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.UserId).Count() >= notification.MinimumNumberOfPlayers;
 
             await SendSessionInitialStatus();
 
-            if (!_sessionHasEnoughPlayers)
-                return;
+            if (_sessionHasEnoughPlayers)
+            {
+                await SendTerminalCharacters(notification);
+                await SendSessionEndStatus();
+            }
 
-            await SendTerminalCharacters(notification);
-
-            await SendSessionEndStatus();
+            await CloseSession();
         }
 
         private async Task SendSessionInitialStatus()
@@ -66,8 +65,8 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
 
         private async Task SendTerminalCharacters(SessionCreated notification)
         {
-            _monkey = new MonkifyTyper(notification.CharacterType, _betsForSession);
-            string terminalEndpoint = string.Format(_sessionSettings.SessionTerminalEndpoint, _sessionId);
+            _monkey = new MonkifyTyper(notification.CharacterType, _session.Bets);
+            string terminalEndpoint = string.Format(_sessionSettings.SessionTerminalEndpoint, notification.SessionId.ToString());
             List<char> batch = new();
 
             while (!_monkey.HasWinners)
@@ -93,17 +92,29 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
         private async Task SendSessionEndStatus()
         {
             var status = new SessionStatus(QueueStatus.Ended);
-            status.EndResult = new SessionEndResult(_monkey.Winners.Count(), _monkey.FirstChoiceTyped);
+            status.EndResult = new SessionEndResult(_monkey.NumberOfWinners, _monkey.FirstChoiceTyped);
 
             await SendSessionStatus(status);
         }
 
         private async Task SendSessionStatus(SessionStatus status)
         {
-            string sessionStatusEndpoint = string.Format(_sessionSettings.SessionStatusEndpoint, _sessionId);
+            string sessionStatusEndpoint = string.Format(_sessionSettings.SessionStatusEndpoint, _session.Id.ToString());
 
             var sessionJson = JsonConvert.SerializeObject(status);
             await _activeSessions.Clients.All.SendAsync(sessionStatusEndpoint, sessionJson);
+        }
+
+        private async Task CloseSession()
+        {
+            _session.Active = false;
+            _session.EndDate = DateTime.UtcNow;
+
+            if (_monkey != null && _monkey.HasWinners)
+                _session.Bets = _monkey.Bets.ToList();
+
+            _context.Sessions.Update(_session);
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -18,14 +18,13 @@ namespace Monkify.Domain.Monkey.Services
 
             _random = new Random();
             _lastTypedCharacters = new Queue<char>();
-            Winners = new List<Bet>();
         }
 
-        public bool HasWinners { get => !Winners.IsNullOrEmpty(); }
+        public bool HasWinners { get; private set; }
+        public int NumberOfWinners { get; private set; }
         public string FirstChoiceTyped { get; private set; }
-        public List<Bet> Winners { get; private set; }
 
-        private IEnumerable<Bet> _bets;
+        public IEnumerable<Bet> Bets { get; private set; }
         private char[] _charactersOnTyper { get; set; }
 
         private Random _random;
@@ -34,9 +33,9 @@ namespace Monkify.Domain.Monkey.Services
 
         private void SetBets(IEnumerable<Bet> bets)
         {
-            _bets = bets;
+            Bets = bets;
 
-            foreach(var bet in _bets)
+            foreach(var bet in Bets)
             {
                 if (bet.BetChoice.Length > _queueLength)
                     _queueLength = bet.BetChoice.Length;
@@ -56,7 +55,7 @@ namespace Monkify.Domain.Monkey.Services
         {
             var result = new HashSet<char>();
 
-            foreach (var bet in _bets)
+            foreach (var bet in Bets)
             {
                 foreach (var character in bet.BetChoice)
                     result.Add(character);
@@ -85,12 +84,14 @@ namespace Monkify.Domain.Monkey.Services
 
         private void CheckForWinners()
         {
-            foreach (var bet in _bets)
+            foreach (var bet in Bets)
             {
                 if (new string(_lastTypedCharacters.ToArray()).Contains(bet.BetChoice))
                 {
+                    HasWinners = true;
+                    NumberOfWinners++;
                     FirstChoiceTyped = bet.BetChoice;
-                    Winners.Add(bet);
+                    bet.Won = true;
                 }
             }
         }

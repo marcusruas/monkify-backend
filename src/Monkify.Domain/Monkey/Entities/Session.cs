@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Monkify.Common.Models;
+using Monkify.Domain.Monkey.Services;
 using Monkify.Domain.Monkey.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -17,8 +18,8 @@ namespace Monkify.Domain.Monkey.Entities
             Active = true;
         }
 
-        public bool HasWinner { get; set; }
         public bool Active { get; set; }
+        public DateTime? EndDate { get; set; }
         public SessionParameters Parameters { get; set; }
         public Guid ParametersId { get; set; }
         public ICollection<Bet> Bets { get; set; }

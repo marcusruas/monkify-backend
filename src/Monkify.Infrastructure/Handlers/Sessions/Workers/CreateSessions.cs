@@ -29,7 +29,6 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
                 var mediator = scope.GetService<IMediator>();
                 var hub = scope.GetService<IHubContext<OpenSessionsHub>>();
 
-
                 var activeParameters = await context.SessionParameters.Where(x => x.Active).ToListAsync();
 
                 foreach(var parameters in activeParameters)
@@ -58,6 +57,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
         {
             await context.AddAsync(session);
             var affectedRows = await context.SaveChangesAsync();
+            context.Entry(session).State = EntityState.Detached;
 
             bool operationSucceeded = affectedRows > 0;
 

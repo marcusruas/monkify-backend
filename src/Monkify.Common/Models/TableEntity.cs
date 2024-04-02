@@ -11,7 +11,7 @@ namespace Monkify.Common.Models
         public TableEntity()
         {
             Id = Guid.NewGuid();
-            CreatedDate = DateTime.Now;
+            CreatedDate = DateTime.UtcNow;
         }
 
         public Guid Id { get; private set; }

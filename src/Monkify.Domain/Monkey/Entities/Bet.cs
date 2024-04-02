@@ -16,5 +16,6 @@ namespace Monkify.Domain.Monkey.Entities
         public Guid UserId { get; set; }
         public Session Session { get; set; }
         public Guid SessionId { get; set; }
+        public bool Won { get; set; }
     }
 }
