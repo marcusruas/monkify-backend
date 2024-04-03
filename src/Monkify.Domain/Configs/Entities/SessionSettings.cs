@@ -11,6 +11,7 @@ namespace Monkify.Domain.Configs.Entities
         public int WaitPeriodForBets { get; set; }
         public int TerminalBatchLimit { get; set; }
         public int DelayBetweenTerminalBatches { get; set; }
+        public int DelayBetweenSessions { get; set; }
         public string ActiveSessionsEndpoint { get; set; }
         public string SessionStatusEndpoint { get; set; }
         public string SessionBetsEndpoint { get; set; }

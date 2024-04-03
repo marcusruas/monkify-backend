@@ -49,6 +49,8 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             }
 
             await CloseSession();
+
+            await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000);
         }
 
         private async Task SendSessionInitialStatus()
