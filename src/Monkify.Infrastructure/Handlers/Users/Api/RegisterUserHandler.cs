@@ -16,7 +16,7 @@ namespace Monkify.Infrastructure.Handlers.Users.Api
 {
     public class RegisterUserHandler : BaseRequestHandler<RegisterUserRequest, bool>
     {
-        public RegisterUserHandler(MonkifyDbContext context, IMessaging messaging, IMediator mediator) : base(context, messaging, mediator) { }
+        public RegisterUserHandler(MonkifyDbContext context, IMessaging messaging) : base(context, messaging) { }
 
         private User _newUser;
 

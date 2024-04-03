@@ -15,16 +15,14 @@ namespace Monkify.Infrastructure.Handlers
 {
     public abstract class BaseRequestHandler<TRequest, TResponse> : IRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
     {
-        public BaseRequestHandler(MonkifyDbContext context, IMessaging messaging, IMediator mediator)
+        public BaseRequestHandler(MonkifyDbContext context, IMessaging messaging)
         {
             Context = context;
             Messaging = messaging;
-            Mediator = mediator;
         }
 
         protected readonly MonkifyDbContext Context;
         protected readonly IMessaging Messaging;
-        protected readonly IMediator Mediator;
 
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken)
         {

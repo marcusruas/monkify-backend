@@ -17,11 +17,11 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
 {
     public class ProcessSession : BaseNotificationHandler<SessionCreated>
     {
-        public ProcessSession(MonkifyDbContext context, SessionSettings sessionSettings, IHubContext<ActiveSessionsHub> hub)
+        public ProcessSession(MonkifyDbContext context, GeneralSettings settings, IHubContext<ActiveSessionsHub> hub)
         {
             _context = context;
             _activeSessions = hub;
-            _sessionSettings = sessionSettings;
+            _sessionSettings = settings.Sessions;
         }
 
         private readonly MonkifyDbContext _context;

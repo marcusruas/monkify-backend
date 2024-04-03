@@ -26,8 +26,8 @@ namespace Monkify.Api.Controllers
             => await ProcessRequest(request);
 
         [HttpPost("authenticate")]
-        public async Task<IActionResult> Authenticate()
-            => throw new NotImplementedException();
+        public async Task<IActionResult> Authenticate([FromBody] AuthenticateUserRequest request)
+            => await ProcessRequest(request);
 
         [HttpPost("logout")]
         [Authorize]

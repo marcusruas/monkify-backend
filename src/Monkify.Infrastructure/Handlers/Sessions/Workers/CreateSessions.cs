@@ -24,7 +24,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
         {
             using (var scope = Services.CreateScope())
             {
-                var sessionConfigs = scope.GetService<SessionSettings>();
+                var sessionConfigs = scope.GetService<GeneralSettings>();
                 var context = scope.GetService<MonkifyDbContext>();
                 var mediator = scope.GetService<IMediator>();
                 var hub = scope.GetService<IHubContext<OpenSessionsHub>>();
@@ -45,7 +45,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
 
                     var sessionCreatedEvent = new SessionCreated(newSession.Id, parameters);
                     var sessionJson = JsonConvert.SerializeObject(sessionCreatedEvent);
-                    await hub.Clients.All.SendAsync(sessionConfigs.ActiveSessionsEndpoint, sessionJson);
+                    await hub.Clients.All.SendAsync(sessionConfigs.Sessions.ActiveSessionsEndpoint, sessionJson);
 
                     await mediator.Publish(sessionCreatedEvent, cancellationToken);
                 }
