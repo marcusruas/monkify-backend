@@ -44,7 +44,6 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Workers
                         return;
 
                     var sessionCreatedEvent = new SessionCreated(newSession.Id, parameters);
-                    
                     var sessionJson = JsonConvert.SerializeObject(sessionCreatedEvent);
                     await hub.Clients.All.SendAsync(sessionConfigs.ActiveSessionsEndpoint, sessionJson);
 

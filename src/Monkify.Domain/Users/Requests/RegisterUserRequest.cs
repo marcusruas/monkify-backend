@@ -16,9 +16,6 @@ namespace Monkify.Domain.Users.Requests
         [Required(ErrorMessage = "Email is required.")]
         [EmailAddress(ErrorMessage = "Please enter a valid Email.")]
         public string? Email { get; set; }
-        public string? Password { get; set; }
-        [Required(ErrorMessage = "Registration type is required.")]
-        public RegistrationType? RegistrationType { get; set; }
         [Required(ErrorMessage = "Wallet ID is required.")]
         public string? WalletId { get; set; }
 
@@ -26,8 +23,6 @@ namespace Monkify.Domain.Users.Requests
             => new User()
             {
                 Email = Email,
-                Password = Password.ToSHA256(),
-                RegistrationType = RegistrationType.Value,
                 WalletId = WalletId
             };
     }

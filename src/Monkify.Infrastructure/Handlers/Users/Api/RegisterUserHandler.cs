@@ -32,11 +32,10 @@ namespace Monkify.Infrastructure.Handlers.Users.Api
 
         private async Task ValidateUser()
         {
-            var emailExists = await Context.Users.AnyAsync(x => x.Email == _newUser.Email);
+            var emailExists = await Context.Users.AnyAsync(x => x.Email == _newUser.Email && x.Active);
 
             if (emailExists)
                 Messaging.ReturnValidationFailureMessage("This email is already registered. Please try another one.");
-
         }
 
         private async Task RegisterUser(CancellationToken cancellationToken)

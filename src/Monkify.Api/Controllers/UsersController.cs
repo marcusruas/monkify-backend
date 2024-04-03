@@ -34,9 +34,14 @@ namespace Monkify.Api.Controllers
         public async Task<IActionResult> Logout()
             => throw new NotImplementedException();
 
+        [HttpPut("personal-info")]
+        [Authorize]
+        public async Task<IActionResult> UpdatePersonalInfo()
+            => throw new NotImplementedException();
+
         [HttpPut("wallet")]
         [Authorize]
-        public async Task<IActionResult> UpdateUserWallet()
+        public async Task<IActionResult> UpdateWallet()
             => throw new NotImplementedException();
 
         [HttpDelete]
