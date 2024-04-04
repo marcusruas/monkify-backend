@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Monkify.Common.Models;
 using System.Data;
 using Monkify.Domain.Users.Entities;
-using Monkify.Domain.Monkey.Entities;
+using Monkify.Domain.Sessions.Entities;
 
 namespace Monkify.Infrastructure.Context
 {

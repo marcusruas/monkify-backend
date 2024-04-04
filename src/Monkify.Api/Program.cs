@@ -3,8 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Monkify.Api.Filters;
 using Monkify.Domain.Configs.Entities;
-using Monkify.Infrastructure.Handlers.Sessions.Hubs;
-using Monkify.Infrastructure.Handlers.Sessions.Workers;
+using Monkify.Infrastructure.Background.Hubs;
+using Monkify.Infrastructure.Background.Workers;
 using System.Text;
 using static Monkify.Infrastructure.DependencyInjection;
 

@@ -1,6 +1,6 @@
 ﻿using Bogus;
 using Monkify.Common.Models;
-using Monkify.Domain.Monkey.Entities;
+using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Users.ValueObjects;
 using System;
 using System.Collections.Generic;

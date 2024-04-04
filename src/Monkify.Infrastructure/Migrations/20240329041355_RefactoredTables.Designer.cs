@@ -26,7 +26,7 @@ namespace Monkify.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Monkify.Domain.Monkey.Entities.Bet", b =>
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.Bet", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -62,7 +62,7 @@ namespace Monkify.Infrastructure.Migrations
                     b.ToTable("SessionBets");
                 });
 
-            modelBuilder.Entity("Monkify.Domain.Monkey.Entities.Session", b =>
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.Session", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -88,7 +88,7 @@ namespace Monkify.Infrastructure.Migrations
                     b.ToTable("Sessions");
                 });
 
-            modelBuilder.Entity("Monkify.Domain.Monkey.Entities.SessionParameters", b =>
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.SessionParameters", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -152,9 +152,9 @@ namespace Monkify.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Monkify.Domain.Monkey.Entities.Bet", b =>
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.Bet", b =>
                 {
-                    b.HasOne("Monkify.Domain.Monkey.Entities.Session", "Session")
+                    b.HasOne("Monkify.Domain.Sessions.Entities.Session", "Session")
                         .WithMany("Bets")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -171,7 +171,7 @@ namespace Monkify.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Monkify.Domain.Monkey.Entities.Session", b =>
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.Session", b =>
                 {
                     b.Navigation("Bets");
                 });

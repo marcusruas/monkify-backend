@@ -1,7 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Monkify.Domain.Users.Requests;
+using Monkify.Infrastructure.Handlers.Users.AuthenticateUser;
+using Monkify.Infrastructure.Handlers.Users.RegisterUser;
 
 namespace Monkify.Api.Controllers
 {

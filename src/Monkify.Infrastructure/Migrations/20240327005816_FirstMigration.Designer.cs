@@ -26,7 +26,7 @@ namespace Monkify.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Monkify.Domain.Monkey.Entities.Session", b =>
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.Session", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

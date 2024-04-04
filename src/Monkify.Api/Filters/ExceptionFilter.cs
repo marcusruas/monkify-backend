@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Monkify.Common.Exceptions;
 using Monkify.Common.Messaging;
 using Monkify.Results;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -16,6 +17,9 @@ internal class ExceptionFilter : IExceptionFilter
     {
         SetStatusCodeResult(context);
         GenerateResult(context);
+
+        if (context.Exception is not MessagingException)
+            Log.Error(context.Exception, "An unexpected error has occurred in the application.");
     }
 
     private void SetStatusCodeResult(ExceptionContext context)

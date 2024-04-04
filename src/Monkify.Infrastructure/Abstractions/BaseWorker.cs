@@ -37,16 +37,16 @@ namespace Monkify.Infrastructure.Abstractions
             {
                 try
                 {
-                    Log.Information("Worker {0} started at {1}", _workerName, DateTime.UtcNow);
+                    Log.Information("Worker {0}: started", _workerName);
                     await ExecuteProcess(stoppingToken);
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "An exception occured on the worker {0} at {1}", _workerName, DateTime.UtcNow);
+                    Log.Error(ex, "Worker{0}: An exception occurred", _workerName);
                 }
                 finally
                 {
-                    Log.Information("Worker {0} ended at {1}", _workerName, DateTime.UtcNow);
+                    Log.Information("Worker {0}: ended", _workerName);
                 }
             }
         }
