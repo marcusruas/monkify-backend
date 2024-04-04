@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  api:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+    environment:
+      - Monkify=Server=db,1433;Database=Monkify;User Id=sa;Password=Marcus@123;TrustServerCertificate=True;Encrypt=False;
+      - Logs=Server=db,1433;Database=Logs;User Id=sa;Password=Marcus@123;TrustServerCertificate=True;Encrypt=False;
+
+  db:
+    image: "mcr.microsoft.com/mssql/server"
+    environment:
+      SA_PASSWORD: "Marcus@123"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
