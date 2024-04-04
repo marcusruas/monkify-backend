@@ -1,5 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using Monkify.Domain.Sessions.Entities;
+using Monkify.Domain.Sessions.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
         public SessionDto(Session session)
         {
             Id = session.Id;
-            Active = session.Active;
+            Status = session.Status;
             StartDate = session.CreatedDate;
             EndDate = session.EndDate;
             Bets = new();
@@ -26,7 +27,7 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
         }
 
         public Guid Id { get; set; }
-        public bool Active { get; set; }
+        public SessionStatus Status { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public SessionParametersDto Parameters { get; set; }

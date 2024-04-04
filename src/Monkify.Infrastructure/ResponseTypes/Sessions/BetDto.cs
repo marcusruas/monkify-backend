@@ -17,6 +17,7 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
             BetChoice = bet.BetChoice;
             UserId = bet.UserId;
             Won = bet.Won;
+            Refunded = bet.Refunded;
         }
 
         public Guid Id { get; set; }
@@ -24,5 +25,6 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
         public string BetChoice { get; set; }
         public Guid UserId { get; set; }
         public bool Won { get; set; }
+        public bool Refunded { get; set; }
     }
 }

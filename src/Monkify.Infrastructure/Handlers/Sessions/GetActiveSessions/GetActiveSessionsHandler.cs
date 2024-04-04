@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Monkify.Common.Messaging;
+using Monkify.Domain.Sessions.Entities;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.ResponseTypes.Sessions;
 using System;
@@ -16,7 +17,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetActiveSessions
 
         public override async Task<IEnumerable<SessionDto>> HandleRequest(GetActiveSessionsRequest request, CancellationToken cancellationToken)
         {
-            var activeSessions = await Context.Sessions.Include(x => x.Parameters).Include(x => x.Bets).Where(x => x.Active).ToListAsync();
+            var activeSessions = await Context.Sessions.Include(x => x.Parameters).Include(x => x.Bets).Where(x => Session.SessionInProgressStatus.Contains(x.Status)).ToListAsync();
             return activeSessions.Select(x => new SessionDto(x));
         }
     }

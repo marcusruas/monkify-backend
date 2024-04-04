@@ -10,6 +10,7 @@ using Monkify.Common.Models;
 using System.Data;
 using Monkify.Domain.Users.Entities;
 using Monkify.Domain.Sessions.Entities;
+using Monkify.Domain.Sessions.ValueObjects;
 
 namespace Monkify.Infrastructure.Context
 {
@@ -20,6 +21,7 @@ namespace Monkify.Infrastructure.Context
         public DbSet<User> Users { get; set; }
         public DbSet<SessionParameters> SessionParameters { get; set; }
         public DbSet<Session> Sessions { get; set; }
+        public DbSet<SessionLog> SessionLogs { get; set; }
         public DbSet<Bet> SessionBets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -44,9 +46,17 @@ namespace Monkify.Infrastructure.Context
             modelBuilder.Entity<Session>(builder =>
             {
                 builder.HasKey(x => x.Id);
+                builder.Property(x => x.Status).IsRequired().HasDefaultValue(SessionStatus.WaitingBets);
                 builder.Property(x => x.ParametersId).IsRequired();
                 builder.HasOne(x => x.Parameters).WithMany().HasForeignKey(x => x.ParametersId);
                 builder.HasMany(x => x.Bets).WithOne(x => x.Session).HasForeignKey(x => x.SessionId);
+                builder.HasMany(x => x.Logs).WithOne(x => x.Session).HasForeignKey(x => x.SessionId);
+            });
+
+            modelBuilder.Entity<SessionLog>(builder =>
+            {
+                builder.HasKey(x => x.Id);
+                builder.Property(x => x.NewStatus).IsRequired().HasDefaultValue(SessionStatus.WaitingBets);
             });
 
             modelBuilder.Entity<Bet>(builder =>

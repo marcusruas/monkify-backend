@@ -2,20 +2,24 @@
 using Monkify.Common.Extensions;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Monkify.Domain.Sessions.Services
 {
     public class MonkifyTyper
     {
-        public MonkifyTyper(SessionCharacterType characterType, IEnumerable<Bet> bets)
+        public MonkifyTyper(SessionCharacterType characterType, ICollection<Bet> bets)
         {
             if (bets.IsNullOrEmpty())
                 throw new ArgumentException("At least one bet must be made to start a session. Session has ended");
 
-            Bets = bets;
+            Bets = new Collection<Bet>();
 
-            SetQueueLength(bets);
+            foreach (var bet in bets)
+                Bets.Add(bet);
+
+            SetQueueLength();
             SetCharactersOnTyper(characterType);
 
             _random = new Random();
@@ -26,14 +30,14 @@ namespace Monkify.Domain.Sessions.Services
         public int NumberOfWinners { get; private set; }
         public string FirstChoiceTyped { get; private set; }
 
-        public IEnumerable<Bet> Bets { get; private set; }
+        public ICollection<Bet> Bets { get; private set; }
         private char[] _charactersOnTyper { get; set; }
 
         private Random _random;
         private int _queueLength { get; set; }
         private Queue<char> _lastTypedCharacters { get; set; }
 
-        private void SetQueueLength(IEnumerable<Bet> bets)
+        private void SetQueueLength()
         {
             foreach(var bet in Bets)
             {

@@ -8,6 +8,7 @@ using Monkify.Common.Extensions;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Events;
+using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
@@ -27,43 +28,40 @@ namespace Monkify.Infrastructure.Background.Workers
                 var sessionConfigs = scope.GetService<GeneralSettings>();
                 var context = scope.GetService<MonkifyDbContext>();
                 var mediator = scope.GetService<IMediator>();
-                var hub = scope.GetService<IHubContext<OpenSessionsHub>>();
+                var openSessionsHub = scope.GetService<IHubContext<OpenSessionsHub>>();
 
                 var activeParameters = await context.SessionParameters.Where(x => x.Active).ToListAsync();
 
                 foreach (var parameters in activeParameters)
                 {
-                    var sessionIsOpen = await context.Sessions.AnyAsync(x => x.ParametersId == parameters.Id && x.Active);
+                    var sessionIsOpen = await context.Sessions.AnyAsync(x => x.ParametersId == parameters.Id && Session.SessionInProgressStatus.Contains(x.Status));
 
                     if (sessionIsOpen)
                         return;
+                    
+                    var session = await CreateSession(context, parameters.Id);
 
-                    var newSession = new Session(parameters.Id);
-
-                    if (!await SessionCreated(context, newSession))
-                        return;
-
-                    var sessionCreatedEvent = new SessionCreated(newSession.Id, parameters);
+                    var sessionCreatedEvent = new SessionCreated(session.Id, parameters);
                     var sessionJson = JsonConvert.SerializeObject(sessionCreatedEvent);
-                    await hub.Clients.All.SendAsync(sessionConfigs.Sessions.ActiveSessionsEndpoint, sessionJson);
+                    await openSessionsHub.Clients.All.SendAsync(sessionConfigs.Sessions.ActiveSessionsEndpoint, sessionJson);
 
                     await mediator.Publish(sessionCreatedEvent, cancellationToken);
                 }
             }
         }
 
-        private async Task<bool> SessionCreated(MonkifyDbContext context, Session session)
+        private async Task<Session> CreateSession(MonkifyDbContext context, Guid parametersId)
         {
-            await context.AddAsync(session);
-            var affectedRows = await context.SaveChangesAsync();
+            var session = new Session(parametersId);
+            var sessionLog = new SessionLog(session.Id, null, SessionStatus.WaitingBets);
+
+            await context.Sessions.AddAsync(session);
+            await context.SessionLogs.AddAsync(sessionLog);
+            await context.SaveChangesAsync();
+
             context.Entry(session).State = EntityState.Detached;
 
-            bool operationSucceeded = affectedRows > 0;
-
-            if (!operationSucceeded)
-                Log.Error("Failed to open a new session for {0}", nameof(CreateSessions));
-
-            return operationSucceeded;
+            return session;
         }
     }
 }

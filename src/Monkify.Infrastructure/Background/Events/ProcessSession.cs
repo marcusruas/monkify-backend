@@ -12,6 +12,9 @@ using Monkify.Infrastructure.Abstractions;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
 using Newtonsoft.Json;
+using Serilog;
+using System.Collections.ObjectModel;
+using static Monkify.Domain.Sessions.ValueObjects.SessionStatus;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.Events
 {
@@ -38,44 +41,58 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             await Task.Delay(_sessionSettings.WaitPeriodForBets * 1000);
 
             _session = await _context.Sessions.Include(x => x.Bets).AsNoTracking().FirstOrDefaultAsync(x => x.Id == notification.SessionId);
-            _sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.UserId).Count() >= notification.MinimumNumberOfPlayers;
-
-            await SendSessionInitialStatus();
-
-            if (_sessionHasEnoughPlayers)
-            {
-                await SendTerminalCharacters(notification);
-                await SendSessionEndStatus();
-            }
-
-            await CloseSession();
-
-            await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000);
-        }
-
-        private async Task SendSessionInitialStatus()
-        {
-            SessionStatus status;
+            _sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.UserId)?.Count() >= notification.MinimumNumberOfPlayers;
 
             if (!_sessionHasEnoughPlayers)
-                status = new SessionStatus("There was not enough players to start the session. The session has ended.");
-            else
-                status = new SessionStatus(QueueStatus.Started);
+            {
+                _session.Bets.Clear();
 
-            await SendSessionStatus(status);
+                await UpdateSessionStatus(NotEnoughPlayersToStart);
+                await UpdateSessionStatus(NeedsRefund);
+
+                await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
+                return;
+            }
+
+            _monkey = new MonkifyTyper(notification.CharacterType, _session.Bets);
+            _session.Bets.Clear();
+
+            await UpdateSessionStatus(Started);
+            await SendTerminalCharacters(notification);
+            await UpdateSessionStatus(Ended);
+            await DeclareWinners();
+
+            await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
+        }
+
+        private async Task UpdateSessionStatus(SessionStatus status)
+        {
+            await _context.SessionLogs.AddAsync(new SessionLog(_session.Id, _session.Status, status));
+            
+            _session.UpdateStatus(status);
+            _context.Sessions.Update(_session);
+            await _context.SaveChangesAsync();
+
+            SessionResult? result = null;
+
+            if (status == Ended)
+                result = new SessionResult(_monkey.NumberOfWinners, _monkey.FirstChoiceTyped);
+
+            var sessionJson = JsonConvert.SerializeObject(new SessionStatusUpdated(status, result));
+            string sessionStatusEndpoint = string.Format(_sessionSettings.SessionStatusEndpoint, _session.Id.ToString());
+            await _activeSessions.Clients.All.SendAsync(sessionStatusEndpoint, sessionJson);
         }
 
         private async Task SendTerminalCharacters(SessionCreated notification)
         {
-            _monkey = new MonkifyTyper(notification.CharacterType, _session.Bets);
+            
             string terminalEndpoint = string.Format(_sessionSettings.SessionTerminalEndpoint, notification.SessionId.ToString());
-            List<char> batch = new();
+            List<char> batch = new(_sessionSettings.TerminalBatchLimit);
 
             while (!_monkey.HasWinners)
             {
                 var character = _monkey.GenerateNextCharacter();
                 batch.Add(character);
-
                 if (batch.Count >= _sessionSettings.TerminalBatchLimit)
                 {
                     await Task.Delay(_sessionSettings.DelayBetweenTerminalBatches);
@@ -91,31 +108,12 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             }
         }
 
-        private async Task SendSessionEndStatus()
+        private async Task DeclareWinners()
         {
-            var status = new SessionStatus(QueueStatus.Ended);
-            status.EndResult = new SessionEndResult(_monkey.NumberOfWinners, _monkey.FirstChoiceTyped);
-
-            await SendSessionStatus(status);
-        }
-
-        private async Task SendSessionStatus(SessionStatus status)
-        {
-            string sessionStatusEndpoint = string.Format(_sessionSettings.SessionStatusEndpoint, _session.Id.ToString());
-
-            var sessionJson = JsonConvert.SerializeObject(status);
-            await _activeSessions.Clients.All.SendAsync(sessionStatusEndpoint, sessionJson);
-        }
-
-        private async Task CloseSession()
-        {
-            _session.Active = false;
-            _session.EndDate = DateTime.UtcNow;
-
-            if (_monkey != null && _monkey.HasWinners)
-                _session.Bets = _monkey.Bets.ToList();
-
-            _context.Sessions.Update(_session);
+            if (!_monkey.HasWinners)
+                return;
+            
+            _context.SessionBets.UpdateRange(_monkey.Bets);
             await _context.SaveChangesAsync();
         }
     }
