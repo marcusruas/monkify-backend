@@ -105,6 +105,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             {
                 await Task.Delay(_sessionSettings.DelayBetweenTerminalBatches);
                 await _activeSessions.Clients.All.SendAsync(terminalEndpoint, batch);
+                batch.Clear();
             }
         }
 
