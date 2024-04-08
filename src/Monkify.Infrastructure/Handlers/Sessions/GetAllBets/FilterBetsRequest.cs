@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.GetAllBets
 {
-    public class GetAllBetsRequest : IRequest<PaginatedList<BetDto>>
+    public class FilterBetsRequest : IRequest<PaginatedList<BetHistoryDto>>
     {
         [Required(ErrorMessage = "Page number is required")]
         [Range(1, int.MaxValue, ErrorMessage = "Page number must be bigger than 1")]
@@ -18,5 +18,9 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetAllBets
         [Required(ErrorMessage = "Page size is required")]
         [Range(1, 100, ErrorMessage = "Page size must be between 1 and 100")]
         public int? PageSize { get; set; }
+        public OrderBy? OrderByChoice { get; set; }
+        public OrderBy? OrderByAmount { get; set; }
+        public OrderBy? OrderByDate { get; set; }
+        public OrderBy? OrderByWon { get; set; }
     }
 }

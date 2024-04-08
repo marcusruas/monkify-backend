@@ -51,7 +51,7 @@ var settings = new GeneralSettings();
 builder.Configuration.Bind(nameof(GeneralSettings), settings);
 builder.Services.AddSingleton(settings);
 
-builder.Services.AddHostedService<CreateSessions>();
+//builder.Services.AddHostedService<CreateSessions>();
 
 builder.Services.AddCors(options =>
 {

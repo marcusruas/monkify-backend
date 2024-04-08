@@ -1,5 +1,4 @@
 ﻿using Monkify.Domain.Sessions.Entities;
-using Monkify.Domain.Users.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,25 +7,23 @@ using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.ResponseTypes.Sessions
 {
-    public class BetDto
+    public class BetHistoryDto
     {
-        public BetDto(Bet bet)
+        public BetHistoryDto(Bet bet)
         {
             Id = bet.Id;
-            Amount = bet.BetAmount;
+            Username = bet.User.Username;
             Choice = bet.BetChoice;
-            User = bet.User.Username;
-            UserId = bet.UserId;
+            Amount = bet.BetAmount;
+            Date = bet.CreatedDate;
             Won = bet.Won;
-            Refunded = bet.Refunded;
         }
 
         public Guid Id { get; set; }
-        public double Amount { get; set; }
+        public string Username { get; set; }
         public string Choice { get; set; }
-        public string User { get; set; }
-        public Guid UserId { get; set; }
+        public double Amount { get; set; }
+        public DateTime Date { get; set; }
         public bool Won { get; set; }
-        public bool Refunded { get; set; }
     }
 }

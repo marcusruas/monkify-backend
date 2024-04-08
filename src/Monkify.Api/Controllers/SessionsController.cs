@@ -23,7 +23,7 @@ namespace Monkify.Api.Controllers
             => await ProcessRequest(new GetSessionByIdRequest(id));
 
         [HttpGet("bets")]
-        public async Task<IActionResult> GetAllBets([FromQuery] GetAllBetsRequest request)
+        public async Task<IActionResult> GetAllBets([FromQuery] FilterBetsRequest request)
             => await ProcessRequest(request);
 
         [HttpPost("{id}/bets")]
