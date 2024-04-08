@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.PortableExecutable;
 using System.Text;
 
 namespace Monkify.Common.Extensions
@@ -35,6 +36,12 @@ namespace Monkify.Common.Extensions
                 return attributes[0].Description;
             else
                 return value.ToString();
+        }
+
+        public static bool ContainsAttribute<T>(this Enum value) where T : Attribute
+        {
+            var field = value.GetType().GetField(value.ToString());
+            return field.IsDefined(typeof(T), false);
         }
 
         /// <summary>

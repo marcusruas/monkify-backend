@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Monkify.Common.Extensions;
 using Monkify.Common.Messaging;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Events;
+using Monkify.Domain.Sessions.Services;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
@@ -37,19 +39,24 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         {
             _bet = request.ToBet();
 
-            await ValidateSession(request);
+            await ValidateBet(request);
             await RegisterBet();
             await SendBet();
 
             return true;
         }
 
-        private async Task ValidateSession(RegisterBetRequest request)
+        private async Task ValidateBet(RegisterBetRequest request)
         {
-            _session = await Context.Sessions.FirstOrDefaultAsync(x => x.Id == request.SessionId && x.Status == SessionStatus.WaitingBets);
+            _session = await Context.Sessions.Include(x => x.Parameters).FirstOrDefaultAsync(x => x.Id == request.SessionId && x.Status == SessionStatus.WaitingBets);
 
             if (_session is null)
                 Messaging.ReturnValidationFailureMessage("The requested session was not found or is not receiving bets at the current moment.");
+
+            var betValidationResult = BetValidator.ChoiceIsValidForSession(_bet, _session);
+
+            if (betValidationResult != BetValidationResult.Valid)
+                Messaging.ReturnValidationFailureMessage(betValidationResult.StringValueOf());
         }
 
         private async Task RegisterBet()

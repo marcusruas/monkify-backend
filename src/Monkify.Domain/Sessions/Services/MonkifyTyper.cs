@@ -19,7 +19,8 @@ namespace Monkify.Domain.Sessions.Services
             foreach (var bet in bets)
                 Bets.Add(bet);
 
-            SetQueueLength();
+            _queueLength = Bets.Max(x => x.BetChoice.Length);
+
             SetCharactersOnTyper(characterType);
 
             _random = new Random();
@@ -36,15 +37,6 @@ namespace Monkify.Domain.Sessions.Services
         private Random _random;
         private int _queueLength { get; set; }
         private Queue<char> _lastTypedCharacters { get; set; }
-
-        private void SetQueueLength()
-        {
-            foreach(var bet in Bets)
-            {
-                if (bet.BetChoice.Length > _queueLength)
-                    _queueLength = bet.BetChoice.Length;
-            }
-        }
 
         private void SetCharactersOnTyper(SessionCharacterType characterType)
         {

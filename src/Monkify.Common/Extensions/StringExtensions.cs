@@ -82,4 +82,22 @@ public static class StringExtensions
         }
         return hash;
     }
+
+    /// <summary>
+    /// Checks if a string contains duplicate characters
+    /// </summary>
+    public static bool ContainsDuplicateCharacters(this string text)
+    {
+        var set = new HashSet<char>();
+
+        foreach(var character in text)
+        {
+            if (set.Contains(character))
+                return true;
+            else
+                set.Add(character);
+        }
+
+        return false;
+    }
 }
