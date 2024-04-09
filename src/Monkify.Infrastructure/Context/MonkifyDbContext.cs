@@ -38,6 +38,7 @@ namespace Monkify.Infrastructure.Context
             modelBuilder.Entity<SessionParameters>(builder =>
             {
                 builder.HasKey(x => x.Id);
+                builder.Property(x => x.RequiredAmount).HasPrecision(8, 8).IsRequired();
                 builder.Property(x => x.MinimumNumberOfPlayers).IsRequired().HasDefaultValue(1);
                 builder.Property(x => x.ChoiceRequiredLength).IsRequired().HasDefaultValue(1);
                 builder.Property(x => x.AcceptDuplicatedCharacters).IsRequired().HasDefaultValue(true);

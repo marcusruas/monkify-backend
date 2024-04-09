@@ -15,6 +15,8 @@ namespace Monkify.Domain.Sessions.ValueObjects
         UnacceptedDuplicateCharacters,
         [Description("Requested choice has invalid characters")]
         InvalidCharacters,
+        [Description("Requested bet amount is invalid for this session")]
+        InvalidAmount,
         Valid
     }
 }

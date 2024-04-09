@@ -23,6 +23,9 @@ namespace Monkify.Domain.Sessions.Services
             if (!parameters.AcceptDuplicatedCharacters && bet.BetChoice.ContainsDuplicateCharacters())
                 return BetValidationResult.UnacceptedDuplicateCharacters;
 
+            if (bet.BetAmount != session.Parameters.RequiredAmount)
+                return BetValidationResult.InvalidAmount;
+
             if (parameters.SessionCharacterType.ContainsAttribute<DescriptionAttribute>())
             {
                 var acceptedCharacters = parameters.SessionCharacterType.StringValueOf().ToArray();

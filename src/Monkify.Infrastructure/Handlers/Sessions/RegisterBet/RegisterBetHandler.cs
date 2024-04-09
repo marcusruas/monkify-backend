@@ -37,8 +37,6 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
         public override async Task<bool> HandleRequest(RegisterBetRequest request, CancellationToken cancellationToken)
         {
-            _bet = request.ToBet();
-
             await ValidateBet(request);
             await RegisterBet();
             await SendBet();
@@ -52,6 +50,8 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
             if (_session is null)
                 Messaging.ReturnValidationFailureMessage("The requested session was not found or is not receiving bets at the current moment.");
+
+            _bet = request.ToBet();
 
             var betValidationResult = BetValidator.ChoiceIsValidForSession(_bet, _session);
 
