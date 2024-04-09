@@ -21,38 +21,6 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetAllBets
         {
             var query = Context.SessionBets.Include(x => x.User);
 
-            if (request.OrderByWon.HasValue)
-            {
-                if (request.OrderByWon == OrderBy.Asc)
-                    query.OrderBy(x => x.Won);
-                else
-                    query.OrderByDescending(x => x.Won);
-            }
-
-            if (request.OrderByDate.HasValue)
-            {
-                if (request.OrderByDate == OrderBy.Asc)
-                    query.OrderBy(x => x.CreatedDate);
-                else
-                    query.OrderByDescending(x => x.CreatedDate);
-            }
-
-            if (request.OrderByAmount.HasValue)
-            {
-                if (request.OrderByAmount == OrderBy.Asc)
-                    query.OrderBy(x => x.BetAmount);
-                else
-                    query.OrderByDescending(x => x.BetAmount);
-            }
-
-            if (request.OrderByChoice.HasValue)
-            {
-                if (request.OrderByChoice == OrderBy.Asc)
-                    query.OrderBy(x => x.BetChoice);
-                else
-                    query.OrderByDescending(x => x.BetChoice);
-            }
-
             var result = await PaginatedList<Bet>.CreateAsync(query, request.PageNumber.Value, request.PageSize.Value);
             return PaginatedList<BetHistoryDto>.CreateFromPaginatedList(result.Items.Select(x => new BetHistoryDto(x)), result);
         }

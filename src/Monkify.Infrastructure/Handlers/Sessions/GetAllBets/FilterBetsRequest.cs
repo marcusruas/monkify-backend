@@ -18,9 +18,5 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetAllBets
         [Required(ErrorMessage = "Page size is required")]
         [Range(1, 100, ErrorMessage = "Page size must be between 1 and 100")]
         public int? PageSize { get; set; }
-        public OrderBy? OrderByChoice { get; set; }
-        public OrderBy? OrderByAmount { get; set; }
-        public OrderBy? OrderByDate { get; set; }
-        public OrderBy? OrderByWon { get; set; }
     }
 }

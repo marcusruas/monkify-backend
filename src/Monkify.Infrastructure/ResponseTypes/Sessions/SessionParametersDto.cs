@@ -13,16 +13,20 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
         public SessionParametersDto(SessionParameters parameters)
         {
             Id = parameters.Id;
+            RequiredAmount = parameters.RequiredAmount;
             SessionCharacterType = parameters.SessionCharacterType;
             MinimumNumberOfPlayers = parameters.MinimumNumberOfPlayers;
             ChoiceRequiredLength = parameters.ChoiceRequiredLength;
+            AcceptDuplicatedCharacters = parameters.AcceptDuplicatedCharacters;
             Active = parameters.Active;
         }
 
         public Guid Id { get; set; }
         public SessionCharacterType SessionCharacterType { get; set; }
+        public double RequiredAmount { get; set; }
         public int MinimumNumberOfPlayers { get; set; }
         public int ChoiceRequiredLength { get; set; }
+        public bool AcceptDuplicatedCharacters { get; set; }
         public bool Active { get; set; }
     }
 }
