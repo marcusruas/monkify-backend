@@ -32,21 +32,28 @@ namespace Monkify.Infrastructure.Background.Workers
 
                 var activeParameters = await context.SessionParameters.Where(x => x.Active).ToListAsync();
 
+                var parametersTasks = new List<Task>();
+
                 foreach (var parameters in activeParameters)
                 {
-                    var sessionIsOpen = await context.Sessions.AnyAsync(x => x.ParametersId == parameters.Id && Session.SessionInProgressStatus.Contains(x.Status));
+                    parametersTasks.Add(Task.Run(async () =>
+                    {
+                        var sessionIsOpen = await context.Sessions.AnyAsync(x => x.ParametersId == parameters.Id && Session.SessionInProgressStatus.Contains(x.Status));
 
-                    if (sessionIsOpen)
-                        return;
-                    
-                    var session = await CreateSession(context, parameters.Id);
+                        if (sessionIsOpen)
+                            return;
 
-                    var sessionCreatedEvent = new SessionCreated(session.Id, parameters);
-                    var sessionJson = JsonConvert.SerializeObject(sessionCreatedEvent);
-                    await openSessionsHub.Clients.All.SendAsync(sessionConfigs.Sessions.ActiveSessionsEndpoint, sessionJson);
+                        var session = await CreateSession(context, parameters.Id);
 
-                    await mediator.Publish(sessionCreatedEvent, cancellationToken);
+                        var sessionCreatedEvent = new SessionCreated(session.Id, parameters);
+                        var sessionJson = JsonConvert.SerializeObject(sessionCreatedEvent);
+                        await openSessionsHub.Clients.All.SendAsync(sessionConfigs.Sessions.ActiveSessionsEndpoint, sessionJson);
+
+                        await mediator.Publish(sessionCreatedEvent, cancellationToken);
+                    }, cancellationToken));
                 }
+
+                await Task.WhenAll(parametersTasks);
             }
         }
 

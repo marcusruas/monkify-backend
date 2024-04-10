@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using MassTransit.Mediator;
+using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.EntityFrameworkCore;
@@ -20,14 +21,16 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
 {
     public class ProcessSession : BaseNotificationHandler<SessionCreated>
     {
-        public ProcessSession(MonkifyDbContext context, GeneralSettings settings, IHubContext<ActiveSessionsHub> hub)
+        public ProcessSession(MonkifyDbContext context, IMediator mediator, GeneralSettings settings, IHubContext<ActiveSessionsHub> hub)
         {
             _context = context;
+            _mediator = mediator;
             _activeSessions = hub;
             _sessionSettings = settings.Sessions;
         }
 
         private readonly MonkifyDbContext _context;
+        private readonly IMediator _mediator;
         private readonly IHubContext<ActiveSessionsHub> _activeSessions;
         private readonly SessionSettings _sessionSettings;
 
@@ -116,6 +119,9 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             
             _context.SessionBets.UpdateRange(_monkey.Bets);
             await _context.SaveChangesAsync();
+            _context.ChangeTracker.Clear();
+
+            await _mediator.Publish(new RewardWinnersEvent(_monkey.Bets.Where(x => x.Won)));
         }
     }
 }
