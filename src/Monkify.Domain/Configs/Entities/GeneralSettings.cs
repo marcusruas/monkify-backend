@@ -10,5 +10,6 @@ namespace Monkify.Domain.Configs.Entities
     {
         public SessionSettings Sessions { get; set; }
         public AuthenticationSettings Authentication { get; set; }
+        public TokenSettings Token { get; set; }
     }
 }
