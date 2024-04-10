@@ -1,18 +1,5 @@
-﻿using MassTransit;
-using MassTransit.Mediator;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Monkify.Common.Models;
-using Monkify.Domain.Configs.Entities;
-using Newtonsoft.Json;
-using RabbitMQ.Client;
+﻿using Microsoft.Extensions.Hosting;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Abstractions
 {

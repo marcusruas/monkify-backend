@@ -21,7 +21,7 @@ namespace Monkify.Domain.Users.Entities
 
         public string Username { get; set; }
         public string Email { get; set; }
-        public string WalletId { get; set; }
+        public string Wallet { get; set; }
         public bool Active { get; set; }
         public ICollection<Bet> Bets { get; set; }
     }

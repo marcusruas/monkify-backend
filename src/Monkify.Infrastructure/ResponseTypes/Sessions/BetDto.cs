@@ -13,8 +13,8 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
         public BetDto(Bet bet)
         {
             Id = bet.Id;
-            Amount = bet.BetAmount;
-            Choice = bet.BetChoice;
+            Amount = bet.Amount;
+            Choice = bet.Choice;
             User = bet.User.Username;
             UserId = bet.UserId;
             Won = bet.Won;

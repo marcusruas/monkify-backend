@@ -28,8 +28,8 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
             {
                 SessionId = SessionId,
                 UserId = UserId,
-                BetChoice = Body.BetChoice,
-                BetAmount = Body.BetAmount.Value
+                Choice = Body.BetChoice,
+                Amount = Body.BetAmount.Value
             };
     }
 }

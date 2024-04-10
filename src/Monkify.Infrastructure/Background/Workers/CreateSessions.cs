@@ -1,5 +1,4 @@
-﻿using MassTransit;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -36,13 +35,13 @@ namespace Monkify.Infrastructure.Background.Workers
 
                 foreach (var parameters in activeParameters)
                 {
+                    var sessionIsOpen = await context.Sessions.AnyAsync(x => x.ParametersId == parameters.Id && Session.SessionInProgressStatus.Contains(x.Status));
+
+                    if (sessionIsOpen)
+                        return;
+
                     parametersTasks.Add(Task.Run(async () =>
                     {
-                        var sessionIsOpen = await context.Sessions.AnyAsync(x => x.ParametersId == parameters.Id && Session.SessionInProgressStatus.Contains(x.Status));
-
-                        if (sessionIsOpen)
-                            return;
-
                         var session = await CreateSession(context, parameters.Id);
 
                         var sessionCreatedEvent = new SessionCreated(session.Id, parameters);
@@ -65,8 +64,7 @@ namespace Monkify.Infrastructure.Background.Workers
             await context.Sessions.AddAsync(session);
             await context.SessionLogs.AddAsync(sessionLog);
             await context.SaveChangesAsync();
-
-            context.Entry(session).State = EntityState.Detached;
+            context.ChangeTracker.Clear();
 
             return session;
         }

@@ -1,5 +1,4 @@
-﻿using MassTransit.Mediator;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.EntityFrameworkCore;

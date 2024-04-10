@@ -10,12 +10,13 @@ namespace Monkify.Domain.Sessions.Entities
 {
     public class Bet : TableEntity
     {
-        public double BetAmount { get; set; }
-        public string BetChoice { get; set; }
+        public double Amount { get; set; }
+        public string Choice { get; set; }
         public User User { get; set; }
         public Guid UserId { get; set; }
         public Session Session { get; set; }
         public Guid SessionId { get; set; }
+        public ICollection<BetTransactionLog> Logs { get; set; }
         public bool Won { get; set; }
         public bool Refunded { get; set; }
     }

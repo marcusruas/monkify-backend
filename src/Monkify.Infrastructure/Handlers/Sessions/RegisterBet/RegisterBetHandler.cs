@@ -75,7 +75,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         {
             string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionBetsEndpoint, _bet.SessionId.ToString());
 
-            var sessionJson = JsonConvert.SerializeObject(new BetCreated("UserDefault", _bet.BetAmount, _bet.BetChoice));
+            var sessionJson = JsonConvert.SerializeObject(new BetCreated("UserDefault", _bet.Amount, _bet.Choice));
             await _activeSessionsHub.Clients.All.SendAsync(sessionStatusEndpoint, sessionJson);
         }
     }

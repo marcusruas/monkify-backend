@@ -17,11 +17,11 @@ namespace Monkify.Infrastructure.Background.Events
         public RewardWinnersHandler(MonkifyDbContext context, GeneralSettings settings)
         {
             _context = context;
-            _sessionSettings = settings.Sessions;
+            _settings = settings.Token;
         }
 
         private readonly MonkifyDbContext _context;
-        private readonly SessionSettings _sessionSettings;
+        private readonly TokenSettings _settings;
 
         public override Task HandleRequest(RewardWinnersEvent notification, CancellationToken cancellationToken)
         {

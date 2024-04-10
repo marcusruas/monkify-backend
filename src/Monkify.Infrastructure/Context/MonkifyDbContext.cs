@@ -23,6 +23,7 @@ namespace Monkify.Infrastructure.Context
         public DbSet<Session> Sessions { get; set; }
         public DbSet<SessionLog> SessionLogs { get; set; }
         public DbSet<Bet> SessionBets { get; set; }
+        public DbSet<BetTransactionLog> BetLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,7 +33,7 @@ namespace Monkify.Infrastructure.Context
                 builder.Property(x => x.Username).IsRequired().HasMaxLength(50);
                 builder.Property(x => x.Email).IsRequired().HasMaxLength(254);
                 builder.Property(x => x.Active).IsRequired().HasDefaultValue(false);
-                builder.Property(x => x.WalletId).IsRequired().HasMaxLength(40);
+                builder.Property(x => x.Wallet).IsRequired().HasMaxLength(40);
             });
 
             modelBuilder.Entity<SessionParameters>(builder =>
@@ -64,10 +65,19 @@ namespace Monkify.Infrastructure.Context
             modelBuilder.Entity<Bet>(builder =>
             {
                 builder.HasKey(x => x.Id);
-                builder.Property(x => x.BetChoice).IsRequired().HasMaxLength(20);
-                builder.Property(x => x.BetAmount).HasPrecision(8, 8).IsRequired();
+                builder.Property(x => x.Choice).IsRequired().HasMaxLength(20);
+                builder.Property(x => x.Amount).HasPrecision(8, 8).IsRequired();
                 builder.Property(x => x.Won).IsRequired().HasDefaultValue(false);
+                builder.HasMany(x => x.Logs).WithOne(x => x.Bet).HasForeignKey(x => x.BetId);
                 builder.HasOne(x => x.User).WithMany(x => x.Bets).HasForeignKey(x => x.UserId);
+            });
+
+            modelBuilder.Entity<BetTransactionLog>(builder =>
+            {
+                builder.HasKey(x => x.Id);
+                builder.Property(x => x.Amount).HasPrecision(8, 8).IsRequired();
+                builder.Property(x => x.Wallet).IsRequired().HasMaxLength(40);
+                builder.Property(x => x.Signature).IsRequired().HasMaxLength(100);
             });
         }
 

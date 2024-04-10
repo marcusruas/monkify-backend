@@ -24,7 +24,7 @@ namespace Monkify.Infrastructure.Handlers.Users.RegisterUser
             => new User()
             {
                 Email = Email,
-                WalletId = WalletId
+                Wallet = WalletId
             };
     }
 }

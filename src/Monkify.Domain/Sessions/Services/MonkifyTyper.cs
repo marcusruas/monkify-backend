@@ -19,7 +19,7 @@ namespace Monkify.Domain.Sessions.Services
             foreach (var bet in bets)
                 Bets.Add(bet);
 
-            _queueLength = Bets.Max(x => x.BetChoice.Length);
+            _queueLength = Bets.Max(x => x.Choice.Length);
 
             SetCharactersOnTyper(characterType);
 
@@ -53,7 +53,7 @@ namespace Monkify.Domain.Sessions.Services
 
             foreach (var bet in Bets)
             {
-                foreach (var character in bet.BetChoice)
+                foreach (var character in bet.Choice)
                     result.Add(character);
             }
 
@@ -82,11 +82,11 @@ namespace Monkify.Domain.Sessions.Services
         {
             foreach (var bet in Bets)
             {
-                if (new string(_lastTypedCharacters.ToArray()).Contains(bet.BetChoice))
+                if (new string(_lastTypedCharacters.ToArray()).Contains(bet.Choice))
                 {
                     HasWinners = true;
                     NumberOfWinners++;
-                    FirstChoiceTyped = bet.BetChoice;
+                    FirstChoiceTyped = bet.Choice;
                     bet.Won = true;
                 }
             }

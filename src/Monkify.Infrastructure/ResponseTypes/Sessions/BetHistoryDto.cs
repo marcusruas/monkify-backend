@@ -13,8 +13,8 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
         {
             Id = bet.Id;
             Username = bet.User.Username;
-            Choice = bet.BetChoice;
-            Amount = bet.BetAmount;
+            Choice = bet.Choice;
+            Amount = bet.Amount;
             Date = bet.CreatedDate;
             Won = bet.Won;
         }

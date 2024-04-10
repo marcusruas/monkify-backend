@@ -8,6 +8,7 @@ namespace Monkify.Domain.Configs.Entities
 {
     public class TokenSettings
     {
+        public string ClusterUrl { get; set; }
         public string MintAddress { get; set; }
         public string SenderAccount { get; set; }
         public string TokenOwnerPublicKey { get; set; }
