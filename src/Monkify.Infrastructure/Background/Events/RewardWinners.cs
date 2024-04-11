@@ -25,9 +25,9 @@ using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Background.Events
 {
-    public class RewardWinnersHandler : BaseNotificationHandler<RewardWinnersEvent>
+    public class RewardWinners : BaseNotificationHandler<RewardWinnersEvent>
     {
-        public RewardWinnersHandler(MonkifyDbContext context, IRpcClient client, IHubContext<ActiveSessionsHub> hub, GeneralSettings settings)
+        public RewardWinners(MonkifyDbContext context, IRpcClient client, IHubContext<ActiveSessionsHub> hub, GeneralSettings settings)
         {
             _context = context;
             _solanaClient = client;
@@ -52,7 +52,7 @@ namespace Monkify.Infrastructure.Background.Events
             await UpdateSessionStatus(notification.Session, SessionStatus.RewardForWinnersInProgress);
 
             await GetLatestBlockHash(notification);
-            await RewardWinners();
+            await ProcessWinners();
 
             await UpdateSessionStatus(notification.Session, SessionStatus.RewardForWinnersCompleted);
         }
@@ -79,7 +79,7 @@ namespace Monkify.Infrastructure.Background.Events
             _blockhashAddress = latestBlockHash.Result.Value.Blockhash;
         }
 
-        private async Task RewardWinners()
+        private async Task ProcessWinners()
         {
             foreach (var winner in _betValidator.Winners)
             {
