@@ -99,13 +99,13 @@ namespace Monkify.Infrastructure.Background.Events
                     RequestResult<string> result = await _solanaClient.SendTransactionAsync(transaction);
 
                     if (!result.WasSuccessful)
-                        Log.Error("Failed to transfer funds to the bet's wallet. Value: {1}. Details: {2} ", winner.Id, JsonConvert.SerializeObject(rewardResult), result.RawRpcResponse);
+                        Log.Error("Failed to transfer funds to the bet's wallet. Value: {1}. Details: {2} ", winner.Id, rewardResult.AsJson(), result.RawRpcResponse);
 
                     await _context.BetLogs.AddAsync(new BetTransactionLog(winner, rewardResult.Reward, _winnerWallets[winner.UserId], result.Result));
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "Failed to reward the bet {0}. Value: {1}", winner.Id, JsonConvert.SerializeObject(rewardResult).ToString());
+                    Log.Error(ex, "Failed to reward the bet {0}. Value: {1}", winner.Id, rewardResult.AsJson().ToString());
                 }
             }
 
@@ -120,7 +120,7 @@ namespace Monkify.Infrastructure.Background.Events
             _context.Sessions.Update(session);
             await _context.SaveChangesAsync();
 
-            var sessionJson = JsonConvert.SerializeObject(new SessionStatusUpdated(status));
+            var sessionJson = new SessionStatusUpdated(status).AsJson();
             string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionStatusEndpoint, session.Id.ToString());
             await _hub.Clients.All.SendAsync(sessionStatusEndpoint, sessionJson);
         }

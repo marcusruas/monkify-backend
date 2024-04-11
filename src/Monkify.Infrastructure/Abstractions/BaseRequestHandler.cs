@@ -35,8 +35,7 @@ namespace Monkify.Infrastructure.Handlers
                 if (ex is MessagingException)
                     throw;
 
-                var requestJson = JsonConvert.SerializeObject(request);
-                Log.Error(ex, "The request to the handler {handler} failed. Request: {request}", GetType().Name, requestJson);
+                Log.Error(ex, "The request to the handler {handler} failed. Request: {request}", GetType().Name, request.AsJson());
                 throw;
             }
         }

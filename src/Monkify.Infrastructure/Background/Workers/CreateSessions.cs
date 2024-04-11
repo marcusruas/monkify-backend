@@ -45,7 +45,7 @@ namespace Monkify.Infrastructure.Background.Workers
                         var session = await CreateSession(context, parameters.Id);
                         
                         var sessionCreatedEvent = new SessionCreated(session.Id, parameters);
-                        var sessionJson = JsonConvert.SerializeObject(sessionCreatedEvent);
+                        var sessionJson = sessionCreatedEvent.AsJson();
                         await openSessionsHub.Clients.All.SendAsync(sessionConfigs.Sessions.ActiveSessionsEndpoint, sessionJson);
 
                         await mediator.Publish(sessionCreatedEvent, cancellationToken);

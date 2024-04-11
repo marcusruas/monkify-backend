@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Monkify.Common.Extensions;
 using Monkify.Common.Messaging;
 using Monkify.Domain.Configs.Entities;
+using Monkify.Domain.Configs.ValueObjects;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Events;
 using Monkify.Domain.Sessions.Services;
@@ -75,7 +76,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         {
             string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionBetsEndpoint, _bet.SessionId.ToString());
 
-            var sessionJson = JsonConvert.SerializeObject(new BetCreated("UserDefault", _bet.Amount, _bet.Choice));
+            var sessionJson = new BetCreated("UserDefault", _bet.Amount, _bet.Choice).AsJson();
             await _activeSessionsHub.Clients.All.SendAsync(sessionStatusEndpoint, sessionJson);
         }
     }

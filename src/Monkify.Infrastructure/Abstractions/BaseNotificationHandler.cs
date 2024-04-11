@@ -27,8 +27,7 @@ namespace Monkify.Infrastructure.Abstractions
             }
             catch (Exception ex)
             {
-                var requestJson = JsonConvert.SerializeObject(notification);
-                Log.Error(ex, "The request to the event handler {handler} failed. Request: {request}", GetType().Name, requestJson);
+                Log.Error(ex, "The request to the event handler {handler} failed. Request: {request}", GetType().Name, notification.AsJson());
             }
         }
 

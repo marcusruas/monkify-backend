@@ -80,9 +80,9 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             if (status == Ended)
                 result = new SessionResult(_monkey.NumberOfWinners, _monkey.FirstChoiceTyped);
 
-            var sessionJson = JsonConvert.SerializeObject(new SessionStatusUpdated(status, result), new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            var statusJson = new SessionStatusUpdated(status, result).AsJson();
             string sessionStatusEndpoint = string.Format(_sessionSettings.SessionStatusEndpoint, _session.Id.ToString());
-            await _activeSessions.Clients.All.SendAsync(sessionStatusEndpoint, sessionJson);
+            await _activeSessions.Clients.All.SendAsync(sessionStatusEndpoint, statusJson);
         }
 
         private async Task SendTerminalCharacters(SessionCreated notification)
