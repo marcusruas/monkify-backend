@@ -19,10 +19,9 @@ namespace Monkify.Domain.Sessions.ValueObjects
         Ended,
         [Description("There was an error processing the session, so all players need to be refunded.")]
         NeedsRefund,
-        [Description("The winners on this session are getting paid.")]
-        PaymentInProgress,
-        [Description("The winners on this session got paid.")]
-        PaymentCompleted
-            
+        [Description("The winners on this session are getting rewarded.")]
+        RewardForWinnersInProgress,
+        [Description("The winners on this session got rewarded.")]
+        RewardForWinnersCompleted
     }
 }

@@ -1,10 +1,12 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Events;
 using Monkify.Domain.Sessions.Services;
+using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
@@ -25,43 +27,52 @@ namespace Monkify.Infrastructure.Background.Events
 {
     public class RewardWinnersHandler : BaseNotificationHandler<RewardWinnersEvent>
     {
-        public RewardWinnersHandler(MonkifyDbContext context, IRpcClient client, GeneralSettings settings)
+        public RewardWinnersHandler(MonkifyDbContext context, IRpcClient client, IHubContext<ActiveSessionsHub> hub, GeneralSettings settings)
         {
             _context = context;
             _solanaClient = client;
-            _settings = settings.Token;
+            _hub = hub;
+            _settings = settings;
         }
 
         private readonly MonkifyDbContext _context;
         private readonly IRpcClient _solanaClient;
-        private readonly TokenSettings _settings;
+        private readonly IHubContext<ActiveSessionsHub> _hub;
+        private readonly GeneralSettings _settings;
 
         private BetValidator _betValidator;
+        private Guid _sessionId;
         private string _blockhashAddress;
         private Dictionary<Guid, string> _winnerWallets;
 
         public override async Task HandleRequest(RewardWinnersEvent notification, CancellationToken cancellationToken)
         {
             await GetWinnerWallets(notification);
-            await GetLatestBlockHash();
+
+            await UpdateSessionStatus(notification.Session, SessionStatus.RewardForWinnersInProgress);
+
+            await GetLatestBlockHash(notification);
             await RewardWinners();
+
+            await UpdateSessionStatus(notification.Session, SessionStatus.RewardForWinnersCompleted);
         }
 
         private async Task GetWinnerWallets(RewardWinnersEvent notification)
         {
-            _betValidator = new(notification.Session, _settings);
+            _betValidator = new(notification.Session, _settings.Token);
 
             var winnerIds = _betValidator.Winners.Select(x => x.UserId);
             _winnerWallets = await _context.Users.Where(x => winnerIds.Contains(x.Id)).ToDictionaryAsync(x => x.Id, x => x.Wallet);
         }
 
-        private async Task GetLatestBlockHash()
+        private async Task GetLatestBlockHash(RewardWinnersEvent notification)
         {
             var latestBlockHash = await _solanaClient.GetLatestBlockHashAsync();
 
             if (!latestBlockHash.WasSuccessful || string.IsNullOrWhiteSpace(latestBlockHash.Result?.Value?.Blockhash))
             {
-                Log.Error("Failed to get latest blockhash from solana client. Details: {0}", latestBlockHash.RawRpcResponse);
+                Log.Error("Failed to get latest blockhash from solana client. Reason: {0}, Details: {1}", latestBlockHash.Reason, latestBlockHash.RawRpcResponse);
+                await UpdateSessionStatus(notification.Session, SessionStatus.NeedsRefund);
                 throw new Exception("Error in solana client. Check logs.");
             }
 
@@ -76,8 +87,8 @@ namespace Monkify.Infrastructure.Background.Events
 
                 try
                 {
-                    var ownerAccount = new Account(Convert.FromBase64String(_settings.TokenOwnerPrivateKey), new PublicKey(_settings.TokenOwnerPublicKey).KeyBytes);
-                    var transferInstruction = TokenProgram.Transfer(new PublicKey(_settings.SenderAccount), new PublicKey(_winnerWallets[winner.UserId]), rewardResult.RewardInTokens, ownerAccount.PublicKey);
+                    var ownerAccount = new Account(Convert.FromBase64String(_settings.Token.TokenOwnerPrivateKey), new PublicKey(_settings.Token.TokenOwnerPublicKey).KeyBytes);
+                    var transferInstruction = TokenProgram.Transfer(new PublicKey(_settings.Token.SenderAccount), new PublicKey(_winnerWallets[winner.UserId]), rewardResult.RewardInTokens, ownerAccount.PublicKey);
 
                     var transaction = new TransactionBuilder()
                             .SetRecentBlockHash(_blockhashAddress)
@@ -99,6 +110,19 @@ namespace Monkify.Infrastructure.Background.Events
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        private async Task UpdateSessionStatus(Session session, SessionStatus status)
+        {
+            await _context.SessionLogs.AddAsync(new SessionLog(session.Id, session.Status, status));
+
+            session.UpdateStatus(status);
+            _context.Sessions.Update(session);
+            await _context.SaveChangesAsync();
+
+            var sessionJson = JsonConvert.SerializeObject(new SessionStatusUpdated(status));
+            string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionStatusEndpoint, session.Id.ToString());
+            await _hub.Clients.All.SendAsync(sessionStatusEndpoint, sessionJson);
         }
     }
 }

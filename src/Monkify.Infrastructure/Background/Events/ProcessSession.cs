@@ -20,7 +20,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
 {
     public class ProcessSession : BaseNotificationHandler<SessionCreated>
     {
-        public ProcessSession(MonkifyDbContext context, IMediator mediator, GeneralSettings settings, IHubContext<ActiveSessionsHub> hub)
+        public ProcessSession(MonkifyDbContext context, IMediator mediator, IHubContext<ActiveSessionsHub> hub, GeneralSettings settings)
         {
             _context = context;
             _mediator = mediator;
@@ -80,7 +80,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             if (status == Ended)
                 result = new SessionResult(_monkey.NumberOfWinners, _monkey.FirstChoiceTyped);
 
-            var sessionJson = JsonConvert.SerializeObject(new SessionStatusUpdated(status, result));
+            var sessionJson = JsonConvert.SerializeObject(new SessionStatusUpdated(status, result), new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
             string sessionStatusEndpoint = string.Format(_sessionSettings.SessionStatusEndpoint, _session.Id.ToString());
             await _activeSessions.Clients.All.SendAsync(sessionStatusEndpoint, sessionJson);
         }

@@ -28,6 +28,15 @@ namespace Monkify.Domain.Sessions.Services
         private readonly TokenSettings _settings;
         private decimal PotAmount;
 
+        public BetRewardResult CalculateRewardForBet(Bet winner)
+        {
+            decimal winnerReward = (PotAmount / Winners.Count()) - winner.Amount;
+            winnerReward = Math.Round(winnerReward, _settings.Decimals, MidpointRounding.ToZero);
+            ulong rewardInTokens = (ulong)(winnerReward * (decimal)Math.Pow(10, _settings.Decimals));
+
+            return new BetRewardResult(winnerReward, rewardInTokens);
+        }
+
         public static BetValidationResult ChoiceIsValidForSession(Bet bet, Session session)
         {
             var parameters = session.Parameters;
@@ -55,15 +64,6 @@ namespace Monkify.Domain.Sessions.Services
         {
             PotAmount = session.Bets.Sum(x => x.Amount);
             PotAmount *= (1 - _settings.CommisionPercentage);
-        }
-
-        public BetRewardResult CalculateRewardForBet(Bet winner)
-        {
-            decimal winnerReward = (PotAmount / Winners.Count()) - winner.Amount;
-            winnerReward = Math.Round(winnerReward, _settings.Decimals, MidpointRounding.ToZero);
-            ulong rewardInTokens = (ulong)(winnerReward * (decimal)Math.Pow(10, _settings.Decimals));
-
-            return new BetRewardResult(winnerReward, rewardInTokens);
         }
     }
 }
