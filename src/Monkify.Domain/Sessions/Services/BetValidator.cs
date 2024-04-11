@@ -1,5 +1,7 @@
-﻿using Monkify.Common.Extensions;
+﻿using MediatR;
+using Monkify.Common.Extensions;
 using Monkify.Common.Messaging;
+using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using System;
@@ -13,6 +15,19 @@ namespace Monkify.Domain.Sessions.Services
 {
     public class BetValidator
     {
+        public BetValidator(Session session, TokenSettings settings)
+        {
+            _settings = settings;
+
+            Winners = session.Bets.Where(x => x.Won);
+            SetPotAmount(session);
+        }
+
+        public readonly IEnumerable<Bet> Winners;
+
+        private readonly TokenSettings _settings;
+        private decimal PotAmount;
+
         public static BetValidationResult ChoiceIsValidForSession(Bet bet, Session session)
         {
             var parameters = session.Parameters;
@@ -34,6 +49,21 @@ namespace Monkify.Domain.Sessions.Services
             }
 
             return BetValidationResult.Valid;
+        }
+
+        private void SetPotAmount(Session session)
+        {
+            PotAmount = session.Bets.Sum(x => x.Amount);
+            PotAmount *= (1 - _settings.CommisionPercentage);
+        }
+
+        public BetRewardResult CalculateRewardForBet(Bet winner)
+        {
+            decimal winnerReward = (PotAmount / Winners.Count()) - winner.Amount;
+            winnerReward = Math.Round(winnerReward, _settings.Decimals, MidpointRounding.ToZero);
+            ulong rewardInTokens = (ulong)(winnerReward * (decimal)Math.Pow(10, _settings.Decimals));
+
+            return new BetRewardResult(winnerReward, rewardInTokens);
         }
     }
 }
