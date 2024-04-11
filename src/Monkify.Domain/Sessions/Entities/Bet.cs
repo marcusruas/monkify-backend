@@ -10,7 +10,7 @@ namespace Monkify.Domain.Sessions.Entities
 {
     public class Bet : TableEntity
     {
-        public double Amount { get; set; }
+        public decimal Amount { get; set; }
         public string Choice { get; set; }
         public User User { get; set; }
         public Guid UserId { get; set; }

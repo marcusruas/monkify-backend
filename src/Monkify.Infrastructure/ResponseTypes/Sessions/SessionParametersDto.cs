@@ -23,7 +23,7 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
 
         public Guid Id { get; set; }
         public SessionCharacterType SessionCharacterType { get; set; }
-        public double RequiredAmount { get; set; }
+        public decimal RequiredAmount { get; set; }
         public int MinimumNumberOfPlayers { get; set; }
         public int ChoiceRequiredLength { get; set; }
         public bool AcceptDuplicatedCharacters { get; set; }

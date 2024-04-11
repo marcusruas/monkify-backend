@@ -11,6 +11,7 @@ using System.Data;
 using Monkify.Domain.Users.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Monkify.Infrastructure.Context
 {
@@ -25,6 +26,12 @@ namespace Monkify.Infrastructure.Context
         public DbSet<Bet> SessionBets { get; set; }
         public DbSet<BetTransactionLog> BetLogs { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>(builder =>
@@ -33,13 +40,13 @@ namespace Monkify.Infrastructure.Context
                 builder.Property(x => x.Username).IsRequired().HasMaxLength(50);
                 builder.Property(x => x.Email).IsRequired().HasMaxLength(254);
                 builder.Property(x => x.Active).IsRequired().HasDefaultValue(false);
-                builder.Property(x => x.Wallet).IsRequired().HasMaxLength(40);
+                builder.Property(x => x.Wallet).IsRequired().HasMaxLength(50);
             });
 
             modelBuilder.Entity<SessionParameters>(builder =>
             {
                 builder.HasKey(x => x.Id);
-                builder.Property(x => x.RequiredAmount).HasPrecision(8, 8).IsRequired();
+                builder.Property(x => x.RequiredAmount).HasPrecision(18, 9).IsRequired();
                 builder.Property(x => x.MinimumNumberOfPlayers).IsRequired().HasDefaultValue(1);
                 builder.Property(x => x.ChoiceRequiredLength).IsRequired().HasDefaultValue(1);
                 builder.Property(x => x.AcceptDuplicatedCharacters).IsRequired().HasDefaultValue(true);
@@ -66,7 +73,7 @@ namespace Monkify.Infrastructure.Context
             {
                 builder.HasKey(x => x.Id);
                 builder.Property(x => x.Choice).IsRequired().HasMaxLength(20);
-                builder.Property(x => x.Amount).HasPrecision(8, 8).IsRequired();
+                builder.Property(x => x.Amount).HasPrecision(18, 9).IsRequired();
                 builder.Property(x => x.Won).IsRequired().HasDefaultValue(false);
                 builder.HasMany(x => x.Logs).WithOne(x => x.Bet).HasForeignKey(x => x.BetId);
                 builder.HasOne(x => x.User).WithMany(x => x.Bets).HasForeignKey(x => x.UserId);
@@ -75,8 +82,8 @@ namespace Monkify.Infrastructure.Context
             modelBuilder.Entity<BetTransactionLog>(builder =>
             {
                 builder.HasKey(x => x.Id);
-                builder.Property(x => x.Amount).HasPrecision(8, 8).IsRequired();
-                builder.Property(x => x.Wallet).IsRequired().HasMaxLength(40);
+                builder.Property(x => x.Amount).HasPrecision(18, 9).IsRequired();
+                builder.Property(x => x.Wallet).IsRequired().HasMaxLength(50);
                 builder.Property(x => x.Signature).IsRequired().HasMaxLength(100);
             });
         }
@@ -93,7 +100,9 @@ namespace Monkify.Infrastructure.Context
                 }
             }
 
-            return await base.SaveChangesAsync(cancellationToken);
+            var result = await base.SaveChangesAsync(cancellationToken);
+            ChangeTracker.Clear();
+            return result;
         }
     }
 }

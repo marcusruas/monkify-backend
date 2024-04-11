@@ -9,9 +9,19 @@ namespace Monkify.Domain.Sessions.Entities
 {
     public class BetTransactionLog : TableEntity
     {
+        public BetTransactionLog() { }
+
+        public BetTransactionLog(Bet bet, decimal amount, string wallet, string signature)
+        {
+            BetId = bet.Id;
+            Amount = amount;
+            Wallet = wallet;
+            Signature = signature;
+        }
+
         public Bet Bet { get; set; }
         public Guid BetId { get; set; }
-        public double Amount { get; set; }
+        public decimal Amount { get; set; }
         public string Wallet { get; set; }
         public string Signature { get; set; }
     }

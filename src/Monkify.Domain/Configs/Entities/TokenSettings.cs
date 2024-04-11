@@ -14,5 +14,6 @@ namespace Monkify.Domain.Configs.Entities
         public string TokenOwnerPublicKey { get; set; }
         public string TokenOwnerPrivateKey { get; set; }
         public int Decimals { get; set; }
+        public decimal CommisionPercentage { get; set; }
     }
 }

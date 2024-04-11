@@ -43,7 +43,7 @@ namespace Monkify.Infrastructure.Background.Workers
                     parametersTasks.Add(Task.Run(async () =>
                     {
                         var session = await CreateSession(context, parameters.Id);
-
+                        
                         var sessionCreatedEvent = new SessionCreated(session.Id, parameters);
                         var sessionJson = JsonConvert.SerializeObject(sessionCreatedEvent);
                         await openSessionsHub.Clients.All.SendAsync(sessionConfigs.Sessions.ActiveSessionsEndpoint, sessionJson);
@@ -59,12 +59,9 @@ namespace Monkify.Infrastructure.Background.Workers
         private async Task<Session> CreateSession(MonkifyDbContext context, Guid parametersId)
         {
             var session = new Session(parametersId);
-            var sessionLog = new SessionLog(session.Id, null, SessionStatus.WaitingBets);
-
             await context.Sessions.AddAsync(session);
-            await context.SessionLogs.AddAsync(sessionLog);
+
             await context.SaveChangesAsync();
-            context.ChangeTracker.Clear();
 
             return session;
         }

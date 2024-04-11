@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Monkify.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using Monkify.Infrastructure.Context;
 namespace Monkify.Infrastructure.Migrations
 {
     [DbContext(typeof(MonkifyDbContext))]
-    partial class MonkifyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240410185112_AddedExtraParameter3")]
+    partial class AddedExtraParameter3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,9 +31,9 @@ namespace Monkify.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 9)
-                        .HasColumnType("decimal(18,9)");
+                    b.Property<double>("Amount")
+                        .HasPrecision(8, 8)
+                        .HasColumnType("float(8)");
 
                     b.Property<string>("Choice")
                         .IsRequired()
@@ -72,9 +75,9 @@ namespace Monkify.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 9)
-                        .HasColumnType("decimal(18,9)");
+                    b.Property<double>("Amount")
+                        .HasPrecision(8, 8)
+                        .HasColumnType("float(8)");
 
                     b.Property<Guid>("BetId")
                         .HasColumnType("uniqueidentifier");
@@ -92,8 +95,8 @@ namespace Monkify.Infrastructure.Migrations
 
                     b.Property<string>("Wallet")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
 
                     b.HasKey("Id");
 
@@ -191,9 +194,9 @@ namespace Monkify.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(1);
 
-                    b.Property<decimal>("RequiredAmount")
-                        .HasPrecision(18, 9)
-                        .HasColumnType("decimal(18,9)");
+                    b.Property<double>("RequiredAmount")
+                        .HasPrecision(8, 8)
+                        .HasColumnType("float(8)");
 
                     b.Property<int>("SessionCharacterType")
                         .HasColumnType("int");

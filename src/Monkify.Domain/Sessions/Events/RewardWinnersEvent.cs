@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Sessions.Events
 {
-    public record RewardWinnersEvent(IEnumerable<Bet> Bets) : INotification;
+    public record RewardWinnersEvent(Session Session) : INotification;
 }

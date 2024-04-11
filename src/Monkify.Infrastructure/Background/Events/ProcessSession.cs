@@ -42,7 +42,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
         {
             await Task.Delay(_sessionSettings.WaitPeriodForBets * 1000);
 
-            _session = await _context.Sessions.Include(x => x.Bets).AsNoTracking().FirstOrDefaultAsync(x => x.Id == notification.SessionId);
+            _session = await _context.Sessions.Include(x => x.Bets).FirstOrDefaultAsync(x => x.Id == notification.SessionId);
             _sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.UserId)?.Count() >= notification.MinimumNumberOfPlayers;
 
             if (!_sessionHasEnoughPlayers)
@@ -115,12 +115,11 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
         {
             if (!_monkey.HasWinners)
                 return;
-            
+
+            _session.Bets = _monkey.Bets;
             _context.SessionBets.UpdateRange(_monkey.Bets);
             await _context.SaveChangesAsync();
-            _context.ChangeTracker.Clear();
-
-            await _mediator.Publish(new RewardWinnersEvent(_monkey.Bets.Where(x => x.Won)));
+            await _mediator.Publish(new RewardWinnersEvent(_session));
         }
     }
 }

@@ -20,6 +20,11 @@ namespace Monkify.Domain.Sessions.Entities
         {
             ParametersId = parametersId;
             Status = WaitingBets;
+
+            Logs = new Collection<SessionLog>
+            {
+                new SessionLog(Id, null, WaitingBets)
+            };
         }
 
         public SessionStatus Status { get; set; }

@@ -10,7 +10,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
     public class RegisterBetRequestBody
     {
         [Required(ErrorMessage = "Bet amount is required.")]
-        public double? BetAmount { get; set; }
+        public decimal? BetAmount { get; set; }
         [Required(ErrorMessage = "Bet choice is required.")]
         public string? BetChoice { get; set; }
     }

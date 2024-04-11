@@ -22,7 +22,7 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
         }
 
         public Guid Id { get; set; }
-        public double Amount { get; set; }
+        public decimal Amount { get; set; }
         public string Choice { get; set; }
         public string User { get; set; }
         public Guid UserId { get; set; }

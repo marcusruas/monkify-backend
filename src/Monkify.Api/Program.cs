@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Monkify.Api.Filters;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Background.Workers;
+using Solnet.Rpc;
 using System.Text;
 using static Monkify.Infrastructure.DependencyInjection;
 
@@ -51,7 +53,9 @@ var settings = new GeneralSettings();
 builder.Configuration.Bind(nameof(GeneralSettings), settings);
 builder.Services.AddSingleton(settings);
 
-//builder.Services.AddHostedService<CreateSessions>();
+builder.Services.AddSingleton(provider => ClientFactory.GetClient(settings.Token.ClusterUrl));
+
+builder.Services.AddHostedService<CreateSessions>();
 
 builder.Services.AddCors(options =>
 {
