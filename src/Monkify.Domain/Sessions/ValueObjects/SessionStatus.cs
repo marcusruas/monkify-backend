@@ -22,6 +22,10 @@ namespace Monkify.Domain.Sessions.ValueObjects
         [Description("The winners on this session are getting rewarded.")]
         RewardForWinnersInProgress,
         [Description("The winners on this session got rewarded.")]
-        RewardForWinnersCompleted
+        RewardForWinnersCompleted,
+        [Description("The players on this session are getting refunded due to an error on the session.")]
+        RefundingPlayers,
+        [Description("The winners on this session got refunded.")]
+        PlayersRefunded
     }
 }

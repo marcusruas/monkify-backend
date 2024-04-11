@@ -18,7 +18,7 @@ namespace Monkify.Infrastructure.Abstractions
 
         protected sealed override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Task.Delay(10000, stoppingToken);
+            await Task.Delay(1000, stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
             {

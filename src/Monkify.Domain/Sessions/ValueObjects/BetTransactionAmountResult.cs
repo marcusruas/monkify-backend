@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Sessions.ValueObjects
 {
-    public record BetRewardResult(decimal Reward, ulong RewardInTokens);
+    public record BetTransactionAmountResult(decimal Value, ulong ValueInTokens);
 }

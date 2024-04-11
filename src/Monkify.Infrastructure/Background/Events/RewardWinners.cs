@@ -88,7 +88,7 @@ namespace Monkify.Infrastructure.Background.Events
                 try
                 {
                     var ownerAccount = new Account(Convert.FromBase64String(_settings.Token.TokenOwnerPrivateKey), new PublicKey(_settings.Token.TokenOwnerPublicKey).KeyBytes);
-                    var transferInstruction = TokenProgram.Transfer(new PublicKey(_settings.Token.SenderAccount), new PublicKey(_winnerWallets[winner.UserId]), rewardResult.RewardInTokens, ownerAccount.PublicKey);
+                    var transferInstruction = TokenProgram.Transfer(new PublicKey(_settings.Token.SenderAccount), new PublicKey(_winnerWallets[winner.UserId]), rewardResult.ValueInTokens, ownerAccount.PublicKey);
 
                     var transaction = new TransactionBuilder()
                             .SetRecentBlockHash(_blockhashAddress)
@@ -101,7 +101,7 @@ namespace Monkify.Infrastructure.Background.Events
                     if (!result.WasSuccessful)
                         Log.Error("Failed to transfer funds to the bet's wallet. Value: {1}. Details: {2} ", winner.Id, rewardResult.AsJson(), result.RawRpcResponse);
 
-                    await _context.BetLogs.AddAsync(new BetTransactionLog(winner, rewardResult.Reward, _winnerWallets[winner.UserId], result.Result));
+                    await _context.BetLogs.AddAsync(new BetTransactionLog(winner, rewardResult.Value, _winnerWallets[winner.UserId], result.Result));
                 }
                 catch (Exception ex)
                 {
