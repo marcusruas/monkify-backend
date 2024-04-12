@@ -38,7 +38,7 @@ namespace Monkify.Infrastructure.Services.Solana
 
         public async Task<bool> TransferRefundTokens(Bet bet, BetTransactionAmountResult amount)
         {
-            var successfulTransaction = await TransferTokens(bet.Id, bet.User.Wallet, amount);
+            var successfulTransaction = await TransferTokens(bet.Id, bet.Wallet, amount);
 
             if (!successfulTransaction)
                 return false;
@@ -83,7 +83,7 @@ namespace Monkify.Infrastructure.Services.Solana
                     return false;
                 }
 
-                await _context.BetLogs.AddAsync(new BetTransactionLog(betId, amount.Value, walletId, result.Result));
+                await _context.BetLogs.AddAsync(new BetTransactionLog(amount.Value, result.Result, betId));
                 await _context.SaveChangesAsync();
                 return true;
             }

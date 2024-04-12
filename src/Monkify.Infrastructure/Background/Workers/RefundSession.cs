@@ -57,7 +57,6 @@ namespace Monkify.Infrastructure.Background.Workers
                 {
                     var sessionBets = await context.SessionBets
                         .Include(x => x.Logs)
-                        .Include(x => x.User)
                         .Where(x => x.SessionId == session.Id && !x.Refunded && !x.Won)
                         .ToListAsync();
 

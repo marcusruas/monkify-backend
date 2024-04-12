@@ -16,7 +16,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetSessionById
 
         public override async Task<SessionDto> HandleRequest(GetSessionByIdRequest request, CancellationToken cancellationToken)
         {
-            var session = await Context.Sessions.Include(x => x.Parameters).Include(x => x.Bets).ThenInclude(x => x.User).FirstOrDefaultAsync(x => x.Id == request.SessionId);
+            var session = await Context.Sessions.Include(x => x.Parameters).Include(x => x.Bets).FirstOrDefaultAsync(x => x.Id == request.SessionId);
 
             if (session is null)
                 Messaging.ReturnValidationFailureMessage("Session was not found.");

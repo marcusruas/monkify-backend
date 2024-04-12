@@ -1,14 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Monkify.Common.Models;
-using System.Data;
-using Monkify.Domain.Users.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -19,7 +10,6 @@ namespace Monkify.Infrastructure.Context
     {
         public MonkifyDbContext(DbContextOptions<MonkifyDbContext> options) : base(options) { }
 
-        public DbSet<User> Users { get; set; }
         public DbSet<SessionParameters> SessionParameters { get; set; }
         public DbSet<Session> Sessions { get; set; }
         public DbSet<SessionLog> SessionLogs { get; set; }
@@ -34,15 +24,6 @@ namespace Monkify.Infrastructure.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>(builder =>
-            {
-                builder.HasKey(x => x.Id);
-                builder.Property(x => x.Username).IsRequired().HasMaxLength(50);
-                builder.Property(x => x.Email).IsRequired().HasMaxLength(254);
-                builder.Property(x => x.Active).IsRequired().HasDefaultValue(false);
-                builder.Property(x => x.Wallet).IsRequired().HasMaxLength(50);
-            });
-
             modelBuilder.Entity<SessionParameters>(builder =>
             {
                 builder.HasKey(x => x.Id);
@@ -73,17 +54,16 @@ namespace Monkify.Infrastructure.Context
             {
                 builder.HasKey(x => x.Id);
                 builder.Property(x => x.Choice).IsRequired().HasMaxLength(20);
+                builder.Property(x => x.Wallet).IsRequired().HasMaxLength(50);
                 builder.Property(x => x.Amount).HasPrecision(18, 9).IsRequired();
                 builder.Property(x => x.Won).IsRequired().HasDefaultValue(false);
                 builder.HasMany(x => x.Logs).WithOne(x => x.Bet).HasForeignKey(x => x.BetId);
-                builder.HasOne(x => x.User).WithMany(x => x.Bets).HasForeignKey(x => x.UserId);
             });
 
             modelBuilder.Entity<BetTransactionLog>(builder =>
             {
                 builder.HasKey(x => x.Id);
                 builder.Property(x => x.Amount).HasPrecision(18, 9).IsRequired();
-                builder.Property(x => x.Wallet).IsRequired().HasMaxLength(50);
                 builder.Property(x => x.Signature).IsRequired().HasMaxLength(100);
             });
         }

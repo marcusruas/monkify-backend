@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 {
-    public class RegisterBetHandler : BaseRequestHandler<RegisterBetRequest, bool>
+    public class RegisterBetHandler : BaseRequestHandler<RegisterBetRequest, BetDto>
     {
         public RegisterBetHandler(MonkifyDbContext context, IMessaging messaging, IHubContext<ActiveSessionsHub> activeSessionsHub, GeneralSettings settings) : base(context, messaging)
         {
@@ -36,13 +36,13 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         private Session _session;
         private Bet _bet;
 
-        public override async Task<bool> HandleRequest(RegisterBetRequest request, CancellationToken cancellationToken)
+        public override async Task<BetDto> HandleRequest(RegisterBetRequest request, CancellationToken cancellationToken)
         {
             await ValidateBet(request);
             await RegisterBet();
             await SendBet();
 
-            return true;
+            return new BetDto(_bet);
         }
 
         private async Task ValidateBet(RegisterBetRequest request)
@@ -68,7 +68,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
             if (affectedRows <= 0)
             {
                 Messaging.ReturnValidationFailureMessage("The system could not register this bet at the moment, please try again later.");
-                Log.Error("An error occurred while trying to register a bet for the user {0} under the session {1}", _bet.UserId, _bet.SessionId);
+                Log.Error("An error occurred while trying to register a bet for the wallet {0} under the session {1}", _bet.Wallet, _bet.SessionId);
             }
         }
 
@@ -76,7 +76,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         {
             string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionBetsEndpoint, _bet.SessionId.ToString());
 
-            var sessionJson = new BetCreated("UserDefault", _bet.Amount, _bet.Choice).AsJson();
+            var sessionJson = new BetCreated(_bet.Wallet, _bet.Amount, _bet.Choice).AsJson();
             await _activeSessionsHub.Clients.All.SendAsync(sessionStatusEndpoint, sessionJson);
         }
     }

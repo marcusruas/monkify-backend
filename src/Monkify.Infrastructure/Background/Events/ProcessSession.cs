@@ -46,7 +46,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             await Task.Delay(_sessionSettings.WaitPeriodForBets * 1000);
 
             _session = await _context.Sessions.Include(x => x.Bets).FirstOrDefaultAsync(x => x.Id == notification.SessionId);
-            _sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.UserId)?.Count() >= notification.MinimumNumberOfPlayers;
+            _sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.Wallet)?.Count() >= notification.MinimumNumberOfPlayers;
 
             if (!_sessionHasEnoughPlayers)
             {

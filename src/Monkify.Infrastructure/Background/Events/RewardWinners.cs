@@ -43,11 +43,10 @@ namespace Monkify.Infrastructure.Background.Events
         private readonly GeneralSettings _settings;
 
         private BetValidator _betValidator;
-        private Dictionary<Guid, string> _winnerWallets;
 
         public override async Task HandleRequest(RewardWinnersEvent notification, CancellationToken cancellationToken)
         {
-            await GetWinnerWallets(notification);
+            _betValidator = new(notification.Session, _settings.Token);
 
             await _sessionService.UpdateSessionStatus(notification.Session, SessionStatus.RewardForWinnersInProgress);
 
@@ -56,7 +55,7 @@ namespace Monkify.Infrastructure.Background.Events
                 foreach (var winner in _betValidator.Winners)
                 {
                     var rewardResult = _betValidator.CalculateRewardForBet(winner);
-                    await _solanaService.TransferTokens(winner.Id, _winnerWallets[winner.UserId], rewardResult);
+                    await _solanaService.TransferTokens(winner.Id, winner.Wallet, rewardResult);
                 }
             }
             catch
@@ -66,14 +65,6 @@ namespace Monkify.Infrastructure.Background.Events
             }
 
             await _sessionService.UpdateSessionStatus(notification.Session, SessionStatus.RewardForWinnersCompleted);
-        }
-
-        private async Task GetWinnerWallets(RewardWinnersEvent notification)
-        {
-            _betValidator = new(notification.Session, _settings.Token);
-
-            var winnerIds = _betValidator.Winners.Select(x => x.UserId);
-            _winnerWallets = await _context.Users.Where(x => winnerIds.Contains(x.Id)).ToDictionaryAsync(x => x.Id, x => x.Wallet);
         }
     }
 }

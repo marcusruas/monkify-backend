@@ -21,29 +21,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(configs =>
 {
     configs.SwaggerDoc("v1", new OpenApiInfo { Title = "Monkify.Api", Version = "v1" });
-
-    configs.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-        {
-            In = ParameterLocation.Header,
-            Description = "Insert your token in the following way: 'bearer {token}'",
-            Name = "Authorization",
-            Type = SecuritySchemeType.ApiKey
-        }
-    );
-
-    configs.AddSecurityRequirement(new OpenApiSecurityRequirement {
-        {
-            new OpenApiSecurityScheme
-            {
-            Reference = new OpenApiReference
-            {
-                Type = ReferenceType.SecurityScheme,
-                Id = "Bearer"
-            }
-            },
-            new string[] { }
-        }
-    });
 });
 
 builder.AddLogs("MonkifyApiLogs");
@@ -69,32 +46,6 @@ builder.Services.AddCors(options =>
     );
 });
 
-builder.Services
-    .AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = settings.Authentication.Issuer,
-
-            ValidateAudience = true,
-            ValidAudience = settings.Authentication.Audience,
-
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Authentication.SigningKey)),
-
-            RequireExpirationTime = true,
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero
-        };
-    });
-
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -109,9 +60,6 @@ app.MapHub<OpenSessionsHub>("/Hubs/OpenSessions");
 app.MapHub<ActiveSessionsHub>("/Hubs/ActiveSessions");
 
 app.UseHttpsRedirection();
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.MapControllers();
 

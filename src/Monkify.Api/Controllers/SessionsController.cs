@@ -27,8 +27,7 @@ namespace Monkify.Api.Controllers
             => await ProcessRequest(request);
 
         [HttpPost("{id}/bets")]
-        [Authorize]
         public async Task<IActionResult> RegisterBet(Guid id, [FromBody] RegisterBetRequestBody body)
-            => await ProcessRequest(new RegisterBetRequest(id, Guid.NewGuid(), body));
+            => await ProcessRequest(new RegisterBetRequest(id, body));
     }
 }
