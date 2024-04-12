@@ -52,6 +52,10 @@ namespace Monkify.Domain.Sessions.Services
 
             var refundValue = Math.Round(bet.Amount, _settings.Decimals, MidpointRounding.ToZero);
             refundValue -= credits;
+
+            if (refundValue < 0)
+                return new BetTransactionAmountResult(0, 0);
+
             var refundInTokens = (ulong)(refundValue * (decimal)Math.Pow(10, _settings.Decimals));
 
             return new BetTransactionAmountResult(refundValue, refundInTokens);

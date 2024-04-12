@@ -45,8 +45,6 @@ namespace Monkify.Infrastructure.Background.Workers
                 var sessionService = scope.GetService<ISessionService>();
 
                 var sessionsToBeRefunded = await context.Sessions
-                    .Include(x => x.Bets).ThenInclude(x => x.Logs)
-                    .Include(x => x.Bets).ThenInclude(x => x.User)
                     .Where(x => x.Status == SessionStatus.NeedsRefund)
                     .ToListAsync(cancellationToken);
 
@@ -57,9 +55,15 @@ namespace Monkify.Infrastructure.Background.Workers
 
                 foreach(var session in sessionsToBeRefunded)
                 {
+                    var sessionBets = await context.SessionBets
+                        .Include(x => x.Logs)
+                        .Include(x => x.User)
+                        .Where(x => x.SessionId == session.Id && !x.Refunded && !x.Won)
+                        .ToListAsync();
+
                     await sessionService.UpdateSessionStatus(session, SessionStatus.RefundingPlayers);
 
-                    if (session.Bets.IsNullOrEmpty())
+                    if (sessionBets.IsNullOrEmpty())
                     {
                         await sessionService.UpdateSessionStatus(session, SessionStatus.PlayersRefunded);
                         continue;
@@ -67,7 +71,7 @@ namespace Monkify.Infrastructure.Background.Workers
 
                     bool successInAllRefunds = true;
 
-                    foreach(var bet in session.Bets)
+                    foreach(var bet in sessionBets)
                     {
                         if (bet.Refunded)
                             continue;
