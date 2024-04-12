@@ -11,9 +11,9 @@ namespace Monkify.Domain.Sessions.Entities
     {
         public BetTransactionLog() { }
 
-        public BetTransactionLog(Bet bet, decimal amount, string wallet, string signature)
+        public BetTransactionLog(Guid betId, decimal amount, string wallet, string signature)
         {
-            BetId = bet.Id;
+            BetId = betId;
             Amount = amount;
             Wallet = wallet;
             Signature = signature;

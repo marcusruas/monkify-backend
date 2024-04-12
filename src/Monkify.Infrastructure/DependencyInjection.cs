@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Monkify.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
+using Monkify.Infrastructure.Services.Sessions;
+using Monkify.Infrastructure.Services.Solana;
 
 namespace Monkify.Infrastructure
 {
@@ -22,6 +24,9 @@ namespace Monkify.Infrastructure
             var monkifyConnectionString = configuration.GetConnectionString("Monkify");
 
             services.AddScoped<IMessaging, Messaging>();
+            services.AddScoped<ISolanaService, SolanaService>();
+            services.AddScoped<ISessionService, SessionService>();
+
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddDbContext<MonkifyDbContext>(options => options.UseSqlServer(monkifyConnectionString));
             services.AddSignalR();

@@ -11,6 +11,7 @@ using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
+using Monkify.Infrastructure.Services.Sessions;
 using Newtonsoft.Json;
 using Serilog;
 using System.Collections.ObjectModel;
@@ -20,17 +21,19 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
 {
     public class ProcessSession : BaseNotificationHandler<SessionCreated>
     {
-        public ProcessSession(MonkifyDbContext context, IMediator mediator, IHubContext<ActiveSessionsHub> hub, GeneralSettings settings)
+        public ProcessSession(MonkifyDbContext context, IMediator mediator, IHubContext<ActiveSessionsHub> hub, ISessionService sessionService, GeneralSettings settings)
         {
             _context = context;
             _mediator = mediator;
             _activeSessions = hub;
+            _sessionService = sessionService;
             _sessionSettings = settings.Sessions;
         }
 
         private readonly MonkifyDbContext _context;
         private readonly IMediator _mediator;
         private readonly IHubContext<ActiveSessionsHub> _activeSessions;
+        private readonly ISessionService _sessionService;
         private readonly SessionSettings _sessionSettings;
 
         private Session _session;
@@ -49,8 +52,8 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             {
                 _session.Bets.Clear();
 
-                await UpdateSessionStatus(NotEnoughPlayersToStart);
-                await UpdateSessionStatus(NeedsRefund);
+                await _sessionService.UpdateSessionStatus(_session, NotEnoughPlayersToStart);
+                await _sessionService.UpdateSessionStatus(_session, NeedsRefund);
 
                 await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
                 return;
@@ -59,35 +62,16 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             _monkey = new MonkifyTyper(notification.CharacterType, _session.Bets);
             _session.Bets.Clear();
 
-            await UpdateSessionStatus(Started);
+            await _sessionService.UpdateSessionStatus(_session, Started);
             await SendTerminalCharacters(notification);
-            await UpdateSessionStatus(Ended);
+            await _sessionService.UpdateSessionStatus(_session, Ended, _monkey);
             await DeclareWinners();
 
             await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
         }
 
-        private async Task UpdateSessionStatus(SessionStatus status)
-        {
-            await _context.SessionLogs.AddAsync(new SessionLog(_session.Id, _session.Status, status));
-            
-            _session.UpdateStatus(status);
-            _context.Sessions.Update(_session);
-            await _context.SaveChangesAsync();
-
-            SessionResult? result = null;
-
-            if (status == Ended)
-                result = new SessionResult(_monkey.NumberOfWinners, _monkey.FirstChoiceTyped);
-
-            var statusJson = new SessionStatusUpdated(status, result).AsJson();
-            string sessionStatusEndpoint = string.Format(_sessionSettings.SessionStatusEndpoint, _session.Id.ToString());
-            await _activeSessions.Clients.All.SendAsync(sessionStatusEndpoint, statusJson);
-        }
-
         private async Task SendTerminalCharacters(SessionCreated notification)
         {
-            
             string terminalEndpoint = string.Format(_sessionSettings.SessionTerminalEndpoint, notification.SessionId.ToString());
             List<char> batch = new(_sessionSettings.TerminalBatchLimit);
 
@@ -117,7 +101,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
                 return;
 
             _session.Bets = _monkey.Bets;
-            _context.SessionBets.UpdateRange(_monkey.Bets);
+            _context.SessionBets.UpdateRange(_session.Bets);
             await _context.SaveChangesAsync();
             await _mediator.Publish(new RewardWinnersEvent(_session));
         }

@@ -12,6 +12,8 @@ using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
+using Monkify.Infrastructure.Services.Sessions;
+using Monkify.Infrastructure.Services.Solana;
 using Serilog;
 using Solnet.Programs;
 using Solnet.Rpc;
@@ -39,9 +41,14 @@ namespace Monkify.Infrastructure.Background.Workers
             {
                 var settings = scope.GetService<GeneralSettings>();
                 var context = scope.GetService<MonkifyDbContext>();
-                var solanaClient = scope.GetService<IRpcClient>();
+                var solanaService = scope.GetService<ISolanaService>();
+                var sessionService = scope.GetService<ISessionService>();
 
-                var sessionsToBeRefunded = await context.Sessions.Include(x => x.Bets).ThenInclude(x => x.Logs).Where(x => x.Status == SessionStatus.NeedsRefund).ToListAsync(cancellationToken);
+                var sessionsToBeRefunded = await context.Sessions
+                    .Include(x => x.Bets).ThenInclude(x => x.Logs)
+                    .Include(x => x.Bets).ThenInclude(x => x.User)
+                    .Where(x => x.Status == SessionStatus.NeedsRefund)
+                    .ToListAsync(cancellationToken);
 
                 if (!sessionsToBeRefunded.Any())
                     return;
@@ -50,31 +57,31 @@ namespace Monkify.Infrastructure.Background.Workers
 
                 foreach(var session in sessionsToBeRefunded)
                 {
-                    await UpdateSessionStatus(context, session, SessionStatus.RefundingPlayers);
+                    await sessionService.UpdateSessionStatus(session, SessionStatus.RefundingPlayers);
 
                     if (session.Bets.IsNullOrEmpty())
                     {
-                        await UpdateSessionStatus(context, session, SessionStatus.PlayersRefunded);
+                        await sessionService.UpdateSessionStatus(session, SessionStatus.PlayersRefunded);
                         continue;
                     }
 
+                    bool successInAllRefunds = true;
+
                     foreach(var bet in session.Bets)
                     {
-                        var refundResult = betValidator.CalculateRefundForBet(bet);
-                    }                    
+                        if (bet.Refunded)
+                            continue;
 
-                    await UpdateSessionStatus(context, session, SessionStatus.PlayersRefunded);
+                        var refundResult = betValidator.CalculateRefundForBet(bet);
+                        successInAllRefunds &= await solanaService.TransferRefundTokens(bet, refundResult);
+                    }
+
+                    if (successInAllRefunds)
+                        await sessionService.UpdateSessionStatus(session, SessionStatus.PlayersRefunded);
+                    else
+                        await sessionService.UpdateSessionStatus(session, SessionStatus.NeedsRefund);
                 }
             }
-        }
-
-        private async Task UpdateSessionStatus(MonkifyDbContext context, Session session, SessionStatus status)
-        {
-            await context.SessionLogs.AddAsync(new SessionLog(session.Id, session.Status, status));
-
-            session.UpdateStatus(status);
-            context.Sessions.Update(session);
-            await context.SaveChangesAsync();
         }
     }
 }

@@ -14,7 +14,10 @@ namespace Monkify.Domain.Sessions.Entities
 {
     public class Session : TableEntity
     {
-        public Session() { }
+        public Session()
+        {
+            Logs = new Collection<SessionLog>();
+        }
 
         public Session(Guid parametersId)
         {
