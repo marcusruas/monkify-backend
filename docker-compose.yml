@@ -1,19 +1,21 @@
 version: '3.8'
 services:
-  api:
-    build: .
-    ports:
-      - "80:80"
-    depends_on:
-      - db
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
     environment:
-      - Monkify=Server=db,1433;Database=Monkify;User Id=sa;Password=Marcus@123;TrustServerCertificate=True;Encrypt=False;
-      - Logs=Server=db,1433;Database=Logs;User Id=sa;Password=Marcus@123;TrustServerCertificate=True;Encrypt=False;
-
-  db:
-    image: "mcr.microsoft.com/mssql/server"
-    environment:
-      SA_PASSWORD: "Marcus@123"
+      SA_PASSWORD: "Monkify@123"
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
+
+  monkify.api:
+    build: .
+    depends_on:
+      - sqlserver
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__Monkify: "Server=sqlserver,1433;Database=Monkify;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;"
+      ConnectionStrings__Logs: "Server=sqlserver,1433;Database=Logs;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;"

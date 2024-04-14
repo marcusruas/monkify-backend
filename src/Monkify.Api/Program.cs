@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -6,8 +7,12 @@ using Monkify.Api.Filters;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Background.Workers;
+using Monkify.Infrastructure.Context;
+using Serilog;
 using Solnet.Rpc;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using static Monkify.Infrastructure.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,6 +53,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+ApplyMigrations(app);
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -64,3 +71,21 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+void ApplyMigrations(WebApplication app)
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+
+        try
+        {
+            var dbContext = services.GetRequiredService<MonkifyDbContext>();
+            dbContext.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to apply migrations of the database.");
+        }
+    }
+}
