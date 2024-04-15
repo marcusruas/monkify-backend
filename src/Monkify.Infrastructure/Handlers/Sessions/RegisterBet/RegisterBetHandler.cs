@@ -47,7 +47,10 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
         private async Task ValidateBet(RegisterBetRequest request)
         {
-            _session = await Context.Sessions.Include(x => x.Parameters).FirstOrDefaultAsync(x => x.Id == request.SessionId && x.Status == SessionStatus.WaitingBets);
+            _session = await Context.Sessions
+                .Include(x => x.Parameters)
+                .ThenInclude(x => x.PresetChoices)
+                .FirstOrDefaultAsync(x => x.Id == request.SessionId && x.Status == SessionStatus.WaitingBets);
 
             if (_session is null)
                 Messaging.ReturnValidationFailureMessage("The requested session was not found or is not receiving bets at the current moment.");

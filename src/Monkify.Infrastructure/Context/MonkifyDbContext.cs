@@ -10,6 +10,7 @@ namespace Monkify.Infrastructure.Context
     {
         public MonkifyDbContext(DbContextOptions<MonkifyDbContext> options) : base(options) { }
 
+        public DbSet<PresetChoices> PresetChoices { get; set; }
         public DbSet<SessionParameters> SessionParameters { get; set; }
         public DbSet<Session> Sessions { get; set; }
         public DbSet<SessionLog> SessionLogs { get; set; }
@@ -29,9 +30,15 @@ namespace Monkify.Infrastructure.Context
                 builder.HasKey(x => x.Id);
                 builder.Property(x => x.RequiredAmount).HasPrecision(18, 9).IsRequired();
                 builder.Property(x => x.MinimumNumberOfPlayers).IsRequired().HasDefaultValue(1);
-                builder.Property(x => x.ChoiceRequiredLength).IsRequired().HasDefaultValue(1);
+                builder.Property(x => x.ChoiceRequiredLength).HasDefaultValue(1);
                 builder.Property(x => x.AcceptDuplicatedCharacters).IsRequired().HasDefaultValue(true);
                 builder.Property(x => x.Active).IsRequired().HasDefaultValue(false);
+            });
+
+            modelBuilder.Entity<PresetChoices>(builder =>
+            {
+                builder.HasKey(x => x.Id);
+                builder.Property(x => x.Choice).IsRequired().HasMaxLength(20);
             });
 
             modelBuilder.Entity<Session>(builder =>

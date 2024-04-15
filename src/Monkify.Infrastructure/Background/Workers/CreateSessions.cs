@@ -29,7 +29,7 @@ namespace Monkify.Infrastructure.Background.Workers
                 var mediator = scope.GetService<IMediator>();
                 var openSessionsHub = scope.GetService<IHubContext<OpenSessionsHub>>();
 
-                var activeParameters = await context.SessionParameters.Where(x => x.Active).ToListAsync();
+                var activeParameters = await context.SessionParameters.Include(x => x.PresetChoices).Where(x => x.Active).ToListAsync();
 
                 foreach (var parameters in activeParameters)
                 {

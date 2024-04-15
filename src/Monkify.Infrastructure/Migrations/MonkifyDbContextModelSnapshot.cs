@@ -97,6 +97,33 @@ namespace Monkify.Infrastructure.Migrations
                     b.ToTable("BetLogs");
                 });
 
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.PresetChoices", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Choice")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ParametersId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParametersId");
+
+                    b.ToTable("PresetChoices");
+                });
+
             modelBuilder.Entity("Monkify.Domain.Sessions.Entities.Session", b =>
                 {
                     b.Property<Guid>("Id")
@@ -173,7 +200,7 @@ namespace Monkify.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<int>("ChoiceRequiredLength")
+                    b.Property<int?>("ChoiceRequiredLength")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(1);
@@ -223,6 +250,17 @@ namespace Monkify.Infrastructure.Migrations
                     b.Navigation("Bet");
                 });
 
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.PresetChoices", b =>
+                {
+                    b.HasOne("Monkify.Domain.Sessions.Entities.SessionParameters", "Parameters")
+                        .WithMany("PresetChoices")
+                        .HasForeignKey("ParametersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Parameters");
+                });
+
             modelBuilder.Entity("Monkify.Domain.Sessions.Entities.Session", b =>
                 {
                     b.HasOne("Monkify.Domain.Sessions.Entities.SessionParameters", "Parameters")
@@ -255,6 +293,11 @@ namespace Monkify.Infrastructure.Migrations
                     b.Navigation("Bets");
 
                     b.Navigation("Logs");
+                });
+
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.SessionParameters", b =>
+                {
+                    b.Navigation("PresetChoices");
                 });
 #pragma warning restore 612, 618
         }

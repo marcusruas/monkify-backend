@@ -17,6 +17,8 @@ namespace Monkify.Domain.Sessions.ValueObjects
         InvalidCharacters,
         [Description("Requested bet amount is invalid for this session")]
         InvalidAmount,
+        [Description("Requested choice is invalid due to it not being part of the preset choices")]
+        InvalidChoice,
         Valid
     }
 }

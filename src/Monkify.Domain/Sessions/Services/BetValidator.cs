@@ -65,8 +65,20 @@ namespace Monkify.Domain.Sessions.Services
         {
             var parameters = session.Parameters;
 
-            if (string.IsNullOrEmpty(bet.Choice) && bet.Choice.Length != parameters.ChoiceRequiredLength)
+            if (!parameters.PresetChoices.IsNullOrEmpty() && !parameters.PresetChoices.Any(x => x.Choice == bet.Choice))
+            {
+                return BetValidationResult.InvalidChoice;
+            }
+            else if (parameters.SessionCharacterType.ContainsAttribute<DescriptionAttribute>())
+            {
+                var acceptedCharacters = parameters.SessionCharacterType.StringValueOf().ToArray();
+                if (!bet.Choice.All(character => acceptedCharacters.Contains(character)))
+                    return BetValidationResult.InvalidCharacters;
+            }
+            else if (string.IsNullOrEmpty(bet.Choice) || bet.Choice.Length != parameters.ChoiceRequiredLength)
+            {
                 return BetValidationResult.WrontChoiceLength;
+            }
 
             if (!parameters.AcceptDuplicatedCharacters && bet.Choice.ContainsDuplicateCharacters())
                 return BetValidationResult.UnacceptedDuplicateCharacters;
@@ -74,12 +86,6 @@ namespace Monkify.Domain.Sessions.Services
             if (bet.Amount != session.Parameters.RequiredAmount)
                 return BetValidationResult.InvalidAmount;
 
-            if (parameters.SessionCharacterType.ContainsAttribute<DescriptionAttribute>())
-            {
-                var acceptedCharacters = parameters.SessionCharacterType.StringValueOf().ToArray();
-                if (!bet.Choice.All(character => acceptedCharacters.Contains(character)))
-                    return BetValidationResult.InvalidCharacters;
-            }
 
             return BetValidationResult.Valid;
         }

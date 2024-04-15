@@ -12,8 +12,8 @@ using Monkify.Infrastructure.Context;
 namespace Monkify.Infrastructure.Migrations
 {
     [DbContext(typeof(MonkifyDbContext))]
-    [Migration("20240410185112_AddedExtraParameter3")]
-    partial class AddedExtraParameter3
+    [Migration("20240415015136_FirstMigration")]
+    partial class FirstMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,9 +31,9 @@ namespace Monkify.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<double>("Amount")
-                        .HasPrecision(8, 8)
-                        .HasColumnType("float(8)");
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 9)
+                        .HasColumnType("decimal(18,9)");
 
                     b.Property<string>("Choice")
                         .IsRequired()
@@ -52,8 +52,10 @@ namespace Monkify.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Wallet")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("Won")
                         .ValueGeneratedOnAdd()
@@ -64,8 +66,6 @@ namespace Monkify.Infrastructure.Migrations
 
                     b.HasIndex("SessionId");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("SessionBets");
                 });
 
@@ -75,9 +75,9 @@ namespace Monkify.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<double>("Amount")
-                        .HasPrecision(8, 8)
-                        .HasColumnType("float(8)");
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 9)
+                        .HasColumnType("decimal(18,9)");
 
                     b.Property<Guid>("BetId")
                         .HasColumnType("uniqueidentifier");
@@ -93,16 +93,38 @@ namespace Monkify.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Wallet")
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BetId");
 
                     b.ToTable("BetLogs");
+                });
+
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.PresetChoices", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Choice")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ParametersId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParametersId");
+
+                    b.ToTable("PresetChoices");
                 });
 
             modelBuilder.Entity("Monkify.Domain.Sessions.Entities.Session", b =>
@@ -181,7 +203,7 @@ namespace Monkify.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<int>("ChoiceRequiredLength")
+                    b.Property<int?>("ChoiceRequiredLength")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(1);
@@ -194,9 +216,9 @@ namespace Monkify.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(1);
 
-                    b.Property<double>("RequiredAmount")
-                        .HasPrecision(8, 8)
-                        .HasColumnType("float(8)");
+                    b.Property<decimal>("RequiredAmount")
+                        .HasPrecision(18, 9)
+                        .HasColumnType("decimal(18,9)");
 
                     b.Property<int>("SessionCharacterType")
                         .HasColumnType("int");
@@ -209,43 +231,6 @@ namespace Monkify.Infrastructure.Migrations
                     b.ToTable("SessionParameters");
                 });
 
-            modelBuilder.Entity("Monkify.Domain.Users.Entities.User", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Active")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(254)
-                        .HasColumnType("nvarchar(254)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Wallet")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Users");
-                });
-
             modelBuilder.Entity("Monkify.Domain.Sessions.Entities.Bet", b =>
                 {
                     b.HasOne("Monkify.Domain.Sessions.Entities.Session", "Session")
@@ -254,15 +239,7 @@ namespace Monkify.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Monkify.Domain.Users.Entities.User", "User")
-                        .WithMany("Bets")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Session");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Monkify.Domain.Sessions.Entities.BetTransactionLog", b =>
@@ -274,6 +251,17 @@ namespace Monkify.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Bet");
+                });
+
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.PresetChoices", b =>
+                {
+                    b.HasOne("Monkify.Domain.Sessions.Entities.SessionParameters", "Parameters")
+                        .WithMany("PresetChoices")
+                        .HasForeignKey("ParametersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Parameters");
                 });
 
             modelBuilder.Entity("Monkify.Domain.Sessions.Entities.Session", b =>
@@ -310,9 +298,9 @@ namespace Monkify.Infrastructure.Migrations
                     b.Navigation("Logs");
                 });
 
-            modelBuilder.Entity("Monkify.Domain.Users.Entities.User", b =>
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.SessionParameters", b =>
                 {
-                    b.Navigation("Bets");
+                    b.Navigation("PresetChoices");
                 });
 #pragma warning restore 612, 618
         }

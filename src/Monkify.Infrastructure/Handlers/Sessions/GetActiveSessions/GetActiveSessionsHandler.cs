@@ -17,7 +17,12 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetActiveSessions
 
         public override async Task<IEnumerable<SessionDto>> HandleRequest(GetActiveSessionsRequest request, CancellationToken cancellationToken)
         {
-            var activeSessions = await Context.Sessions.Include(x => x.Parameters).Where(x => Session.SessionInProgressStatus.Contains(x.Status)).ToListAsync();
+            var activeSessions = await Context.Sessions
+                .Include(x => x.Parameters)
+                .ThenInclude(x => x.PresetChoices)
+                .Where(x => Session.SessionInProgressStatus.Contains(x.Status))
+                .ToListAsync();
+
             return activeSessions.Select(x => new SessionDto(x));
         }
     }

@@ -1,4 +1,5 @@
-﻿using Monkify.Domain.Sessions.Entities;
+﻿using Microsoft.IdentityModel.Tokens;
+using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -19,14 +20,18 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
             ChoiceRequiredLength = parameters.ChoiceRequiredLength;
             AcceptDuplicatedCharacters = parameters.AcceptDuplicatedCharacters;
             Active = parameters.Active;
+
+            if (!parameters.PresetChoices.IsNullOrEmpty())
+                PresetChoices = parameters.PresetChoices.Select(x => x.Choice).ToList();
         }
 
         public Guid Id { get; set; }
         public SessionCharacterType SessionCharacterType { get; set; }
         public decimal RequiredAmount { get; set; }
         public int MinimumNumberOfPlayers { get; set; }
-        public int ChoiceRequiredLength { get; set; }
         public bool AcceptDuplicatedCharacters { get; set; }
+        public int? ChoiceRequiredLength { get; set; }
+        public List<string> PresetChoices { get; set; }
         public bool Active { get; set; }
     }
 }

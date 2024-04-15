@@ -15,6 +15,7 @@ using Monkify.Infrastructure.Services.Sessions;
 using Newtonsoft.Json;
 using Serilog;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using static Monkify.Domain.Sessions.ValueObjects.SessionStatus;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.Events
@@ -37,18 +38,23 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
         private readonly SessionSettings _sessionSettings;
 
         private Session _session;
-        private bool _sessionHasEnoughPlayers;
-
         private MonkifyTyper _monkey;
 
         public override async Task HandleRequest(SessionCreated notification, CancellationToken cancellationToken)
         {
-            await Task.Delay(_sessionSettings.WaitPeriodForBets * 1000);
+            bool sessionHasEnoughPlayers = false;
 
-            _session = await _context.Sessions.Include(x => x.Bets).FirstOrDefaultAsync(x => x.Id == notification.SessionId);
-            _sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.Wallet)?.Count() >= notification.MinimumNumberOfPlayers;
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            while (!sessionHasEnoughPlayers || stopwatch.Elapsed.TotalMinutes <= _sessionSettings.WaitPeriodForBets)
+            {
+                _session = await _context.Sessions.Include(x => x.Bets).FirstOrDefaultAsync(x => x.Id == notification.SessionId);
+                sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.Wallet)?.Count() >= notification.MinimumNumberOfPlayers;
 
-            if (!_sessionHasEnoughPlayers)
+                await Task.Delay(5000, cancellationToken);
+            }
+            stopwatch.Stop();
+
+            if (!sessionHasEnoughPlayers)
             {
                 _session.Bets.Clear();
 
