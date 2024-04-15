@@ -3,61 +3,82 @@ using Monkify.Common.Extensions;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Monkify.Domain.Sessions.Services
 {
     public class MonkifyTyper
     {
-        public MonkifyTyper(SessionCharacterType characterType, ICollection<Bet> bets)
+        public MonkifyTyper(Session session)
         {
-            if (bets.IsNullOrEmpty())
+            if (session.Bets.IsNullOrEmpty())
                 throw new ArgumentException("At least one bet must be made to start a session. Session has ended");
 
-            Bets = new Collection<Bet>();
+            _random = new Random(session.GetHashCode());
 
-            foreach (var bet in bets)
-                Bets.Add(bet);
-
-            _queueLength = Bets.Max(x => x.Choice.Length);
-
-            SetCharactersOnTyper(characterType);
-
-            _random = new Random();
-            _lastTypedCharacters = new Queue<char>();
+            SetBets(session);
+            SetCharactersOnTyper(session);            
         }
 
         public bool HasWinners { get; private set; }
         public int NumberOfWinners { get; private set; }
         public string FirstChoiceTyped { get; private set; }
 
-        public ICollection<Bet> Bets { get; private set; }
-        private char[] _charactersOnTyper { get; set; }
-
+        private Dictionary<string, List<Bet>> Bets;
+        private int QueueLength { get; set; }
+        private char[] CharactersOnTyper { get; set; }
+        private Queue<char> TypedCharacters { get; set; }
         private Random _random;
-        private int _queueLength { get; set; }
-        private Queue<char> _lastTypedCharacters { get; set; }
 
-        private void SetCharactersOnTyper(SessionCharacterType characterType)
+        private void SetBets(Session session)
         {
-            var terminalCharactersForType = characterType.StringValueOf();
-            if (!string.IsNullOrWhiteSpace(terminalCharactersForType))
-                _charactersOnTyper = terminalCharactersForType.ToArray();
-            else
-                SetCharactersOnTyperByBets();
+            Bets = [];
+
+            if (session.Parameters.PresetChoices.IsNullOrEmpty())
+            {
+                foreach(var presetChoice in  session.Parameters.PresetChoices)
+                {
+                    if (presetChoice.Choice.Length > QueueLength)
+                        QueueLength = presetChoice.Choice.Length;
+
+                    Bets.Add(presetChoice.Choice, new List<Bet>());
+                }
+            }
+
+            foreach (var bet in session.Bets)
+            {
+                if (bet.Choice.Length > QueueLength)
+                    QueueLength = bet.Choice.Length;
+
+                if (Bets.ContainsKey(bet.Choice))
+                    Bets[bet.Choice].Add(bet);
+                else
+                    Bets.Add(bet.Choice, new List<Bet>() { bet });
+            }
+
+            TypedCharacters = new Queue<char>(QueueLength);
         }
 
-        private void SetCharactersOnTyperByBets()
+        private void SetCharactersOnTyper(Session session)
+        {
+            if (session.Parameters.SessionCharacterType.ContainsAttribute<DescriptionAttribute>())
+                CharactersOnTyper = [.. session.Parameters.SessionCharacterType.StringValueOf()];
+            else
+                SetCharactersOnTyperByBets(session);
+        }
+
+        private void SetCharactersOnTyperByBets(Session session)
         {
             var result = new HashSet<char>();
 
-            foreach (var bet in Bets)
+            foreach (var bet in session.Bets)
             {
                 foreach (var character in bet.Choice)
                     result.Add(character);
             }
 
-            _charactersOnTyper = result.Order().ToArray();
+            CharactersOnTyper = [.. result.Order()];
         }
 
         public char GenerateNextCharacter()
@@ -65,13 +86,13 @@ namespace Monkify.Domain.Sessions.Services
             if (HasWinners)
                 throw new ArgumentException("Cannot generate next character, as there is already a Winner.");
 
-            var characterIndex = _random.Next(0, _charactersOnTyper.Length - 1);
-            var character = _charactersOnTyper[characterIndex];
+            var characterIndex = _random.Next(0, CharactersOnTyper.Length - 1);
+            var character = CharactersOnTyper[characterIndex];
 
-            if (_lastTypedCharacters.Count() == _queueLength + 1)
-                _lastTypedCharacters.Dequeue();
+            if (TypedCharacters.Count == QueueLength)
+                TypedCharacters.Dequeue();
 
-            _lastTypedCharacters.Enqueue(character);
+            TypedCharacters.Enqueue(character);
 
             CheckForWinners();
 
@@ -80,15 +101,14 @@ namespace Monkify.Domain.Sessions.Services
 
         private void CheckForWinners()
         {
-            foreach (var bet in Bets)
+            string choice = new string(TypedCharacters.ToArray());
+
+            if (Bets.TryGetValue(choice, out List<Bet>? value))
             {
-                if (new string(_lastTypedCharacters.ToArray()).Contains(bet.Choice))
-                {
-                    HasWinners = true;
-                    NumberOfWinners++;
-                    FirstChoiceTyped = bet.Choice;
-                    bet.Won = true;
-                }
+                HasWinners = value.Count != 0;
+                NumberOfWinners += value.Count;
+                FirstChoiceTyped = choice;
+                value.ForEach(x => x.Won = true);
             }
         }
     }

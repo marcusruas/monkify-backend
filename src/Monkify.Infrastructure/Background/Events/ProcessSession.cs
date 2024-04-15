@@ -45,14 +45,22 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             _session = notification.Session;
 
             bool sessionHasEnoughPlayers = false;
+            bool minimumTimeElapsed = false;
+            bool maximumTimeElapsed = false;
 
-            while (!sessionHasEnoughPlayers && (_session.CreatedDate - DateTime.UtcNow).TotalMinutes <= _sessionSettings.WaitPeriodForBets)
+            while ((!minimumTimeElapsed || !sessionHasEnoughPlayers) && !maximumTimeElapsed)
             {
-                _session.Bets = await _context.SessionBets.Where(x => x.SessionId == _session.Id).ToListAsync();
-                sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.Wallet)?.Count() >= _session.Parameters.MinimumNumberOfPlayers;
+                var elapsedTimeSinceCreation = (DateTime.UtcNow - _session.CreatedDate).TotalSeconds;
+                minimumTimeElapsed = elapsedTimeSinceCreation > _sessionSettings.MinimumWaitPeriodForBets;
+                maximumTimeElapsed = elapsedTimeSinceCreation > _sessionSettings.MaximumWaitPeriodForBets;
 
                 if (!sessionHasEnoughPlayers)
-                    await Task.Delay(5000, cancellationToken);
+                {
+                    _session.Bets = await _context.SessionBets.Where(x => x.SessionId == _session.Id).ToListAsync();
+                    sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.Wallet)?.Count() >= _session.Parameters.MinimumNumberOfPlayers;
+                }
+
+                await Task.Delay(2000, cancellationToken);
             }
 
             if (!sessionHasEnoughPlayers)
@@ -64,7 +72,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
                 return;
             }
 
-            _monkey = new MonkifyTyper(_session.Parameters.SessionCharacterType, _session.Bets);
+            _monkey = new MonkifyTyper(_session);
 
             await _sessionService.UpdateSessionStatus(_session, Started);
             await SendTerminalCharacters();

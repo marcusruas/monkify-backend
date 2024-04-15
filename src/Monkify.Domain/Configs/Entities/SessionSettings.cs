@@ -8,7 +8,8 @@ namespace Monkify.Domain.Configs.Entities
 {
     public class SessionSettings
     {
-        public int WaitPeriodForBets { get; set; }
+        public int MinimumWaitPeriodForBets { get; set; }
+        public int MaximumWaitPeriodForBets { get; set; }
         public int TerminalBatchLimit { get; set; }
         public int DelayBetweenTerminalBatches { get; set; }
         public int DelayBetweenSessions { get; set; }
