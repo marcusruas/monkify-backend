@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Sessions.Events
 {
-    public class SessionCreated : INotification
+    public class SessionCreated
     {
         public SessionCreated(Guid sessionId, SessionParameters parameters)
         {

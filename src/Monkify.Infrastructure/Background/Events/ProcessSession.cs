@@ -20,7 +20,7 @@ using static Monkify.Domain.Sessions.ValueObjects.SessionStatus;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.Events
 {
-    public class ProcessSession : BaseNotificationHandler<SessionCreated>
+    public class ProcessSession : BaseNotificationHandler<SessionForProcessing>
     {
         public ProcessSession(MonkifyDbContext context, IMediator mediator, IHubContext<ActiveSessionsHub> hub, ISessionService sessionService, GeneralSettings settings)
         {
@@ -40,24 +40,23 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
         private Session _session;
         private MonkifyTyper _monkey;
 
-        public override async Task HandleRequest(SessionCreated notification, CancellationToken cancellationToken)
+        public override async Task HandleRequest(SessionForProcessing notification, CancellationToken cancellationToken)
         {
+            _session = notification.Session;
+
             bool sessionHasEnoughPlayers = false;
 
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            while (!sessionHasEnoughPlayers || stopwatch.Elapsed.TotalMinutes <= _sessionSettings.WaitPeriodForBets)
+            while (!sessionHasEnoughPlayers && (_session.CreatedDate - DateTime.UtcNow).TotalMinutes <= _sessionSettings.WaitPeriodForBets)
             {
-                _session = await _context.Sessions.Include(x => x.Bets).FirstOrDefaultAsync(x => x.Id == notification.SessionId);
-                sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.Wallet)?.Count() >= notification.MinimumNumberOfPlayers;
+                _session.Bets = await _context.SessionBets.Where(x => x.SessionId == _session.Id).ToListAsync();
+                sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.Wallet)?.Count() >= _session.Parameters.MinimumNumberOfPlayers;
 
-                await Task.Delay(5000, cancellationToken);
+                if (!sessionHasEnoughPlayers)
+                    await Task.Delay(5000, cancellationToken);
             }
-            stopwatch.Stop();
 
             if (!sessionHasEnoughPlayers)
             {
-                _session.Bets.Clear();
-
                 await _sessionService.UpdateSessionStatus(_session, NotEnoughPlayersToStart);
                 await _sessionService.UpdateSessionStatus(_session, NeedsRefund);
 
@@ -65,40 +64,37 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
                 return;
             }
 
-            _monkey = new MonkifyTyper(notification.CharacterType, _session.Bets);
-            _session.Bets.Clear();
+            _monkey = new MonkifyTyper(_session.Parameters.SessionCharacterType, _session.Bets);
 
             await _sessionService.UpdateSessionStatus(_session, Started);
-            await SendTerminalCharacters(notification);
+            await SendTerminalCharacters();
             await _sessionService.UpdateSessionStatus(_session, Ended, _monkey);
             await DeclareWinners();
 
             await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
         }
 
-        private async Task SendTerminalCharacters(SessionCreated notification)
+        private async Task SendTerminalCharacters()
         {
-            string terminalEndpoint = string.Format(_sessionSettings.SessionTerminalEndpoint, notification.SessionId.ToString());
+            string terminalEndpoint = string.Format(_sessionSettings.SessionTerminalEndpoint, _session.Id.ToString());
             List<char> batch = new(_sessionSettings.TerminalBatchLimit);
 
             while (!_monkey.HasWinners)
             {
-                var character = _monkey.GenerateNextCharacter();
-                batch.Add(character);
+                batch.Add(_monkey.GenerateNextCharacter());
                 if (batch.Count >= _sessionSettings.TerminalBatchLimit)
-                {
-                    await Task.Delay(_sessionSettings.DelayBetweenTerminalBatches);
-                    await _activeSessions.Clients.All.SendAsync(terminalEndpoint, batch);
-                    batch.Clear();
-                }
+                    await SendBatch(terminalEndpoint, batch);
             }
 
             if (batch.Count > 0)
-            {
-                await Task.Delay(_sessionSettings.DelayBetweenTerminalBatches);
-                await _activeSessions.Clients.All.SendAsync(terminalEndpoint, batch);
-                batch.Clear();
-            }
+                await SendBatch(terminalEndpoint, batch);
+        }
+
+        private async Task SendBatch(string endpoint, List<char> batch)
+        {
+            await Task.Delay(_sessionSettings.DelayBetweenTerminalBatches);
+            await _activeSessions.Clients.All.SendAsync(endpoint, batch);
+            batch.Clear();
         }
 
         private async Task DeclareWinners()
@@ -106,7 +102,6 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             if (!_monkey.HasWinners)
                 return;
 
-            _session.Bets = _monkey.Bets;
             _context.SessionBets.UpdateRange(_session.Bets);
             await _context.SaveChangesAsync();
             await _mediator.Publish(new RewardWinnersEvent(_session));

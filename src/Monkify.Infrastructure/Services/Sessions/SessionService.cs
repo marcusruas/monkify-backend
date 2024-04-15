@@ -34,14 +34,6 @@ namespace Monkify.Infrastructure.Services.Sessions
         {
             try
             {
-                if (!session.Bets.IsNullOrEmpty())
-                {
-                    foreach (var bet in session.Bets)
-                    {
-                        _context.Entry(bet).State = EntityState.Unchanged;
-                    }
-                }
-
                 session.UpdateStatus(status);
                 _context.Entry(session).Property(x => x.Status).IsModified = true;
                 _context.Entry(session).Property(x => x.EndDate).IsModified = true;

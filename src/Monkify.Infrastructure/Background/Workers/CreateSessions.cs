@@ -38,23 +38,24 @@ namespace Monkify.Infrastructure.Background.Workers
                     if (sessionIsOpen)
                         return;
 
-                    var session = await CreateSession(context, parameters.Id);
+                    var session = await CreateSession(context, parameters);
 
                     var sessionCreatedEvent = new SessionCreated(session.Id, parameters);
                     var sessionJson = sessionCreatedEvent.AsJson();
                     await openSessionsHub.Clients.All.SendAsync(sessionConfigs.Sessions.ActiveSessionsEndpoint, sessionJson);
 
-                    await mediator.Publish(sessionCreatedEvent, cancellationToken);
+                    await mediator.Publish(new SessionForProcessing(session), cancellationToken);
                 }
             }
         }
 
-        private async Task<Session> CreateSession(MonkifyDbContext context, Guid parametersId)
+        private async Task<Session> CreateSession(MonkifyDbContext context, SessionParameters parameters)
         {
-            var session = new Session(parametersId);
+            var session = new Session(parameters.Id);
             await context.Sessions.AddAsync(session);
 
             await context.SaveChangesAsync();
+            session.Parameters = parameters;
 
             return session;
         }
