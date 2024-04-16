@@ -18,9 +18,9 @@ namespace Monkify.Domain.Sessions.Entities
             BetId = betId;
         }
 
-        public decimal Amount { get; set; }
-        public string Signature { get; set; }
         public Bet Bet { get; set; }
         public Guid BetId { get; set; }
+        public decimal Amount { get; set; }
+        public string Signature { get; set; }
     }
 }

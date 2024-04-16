@@ -56,9 +56,9 @@ namespace Monkify.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ParametersId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ParametersId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -81,9 +81,9 @@ namespace Monkify.Infrastructure.Migrations
                     Wallet = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Choice = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,9)", precision: 18, scale: 9, nullable: false),
+                    SessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Won = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     Refunded = table.Column<bool>(type: "bit", nullable: false),
-                    SessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -121,31 +121,26 @@ namespace Monkify.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BetLogs",
+                name: "TransactionLogs",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BetId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,9)", precision: 18, scale: 9, nullable: false),
                     Signature = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    BetId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BetLogs", x => x.Id);
+                    table.PrimaryKey("PK_TransactionLogs", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BetLogs_SessionBets_BetId",
+                        name: "FK_TransactionLogs_SessionBets_BetId",
                         column: x => x.BetId,
                         principalTable: "SessionBets",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BetLogs_BetId",
-                table: "BetLogs",
-                column: "BetId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PresetChoices_ParametersId",
@@ -166,19 +161,24 @@ namespace Monkify.Infrastructure.Migrations
                 name: "IX_Sessions_ParametersId",
                 table: "Sessions",
                 column: "ParametersId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransactionLogs_BetId",
+                table: "TransactionLogs",
+                column: "BetId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "BetLogs");
-
-            migrationBuilder.DropTable(
                 name: "PresetChoices");
 
             migrationBuilder.DropTable(
                 name: "SessionLogs");
+
+            migrationBuilder.DropTable(
+                name: "TransactionLogs");
 
             migrationBuilder.DropTable(
                 name: "SessionBets");

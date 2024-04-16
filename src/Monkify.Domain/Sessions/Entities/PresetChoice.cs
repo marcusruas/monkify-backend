@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Sessions.Entities
 {
-    public class PresetChoices : TableEntity
+    public class PresetChoice : TableEntity
     {
         public SessionParameters Parameters { get; set; }
         public Guid ParametersId { get; set; }

@@ -30,10 +30,10 @@ namespace Monkify.Domain.Sessions.Entities
             };
         }
 
-        public SessionStatus Status { get; set; }
-        public DateTime? EndDate { get; set; }
         public SessionParameters Parameters { get; set; }
         public Guid ParametersId { get; set; }
+        public SessionStatus Status { get; set; }
+        public DateTime? EndDate { get; set; }
         public ICollection<Bet> Bets { get; set; }
         public ICollection<SessionLog> Logs { get; set; }
 

@@ -94,10 +94,10 @@ namespace Monkify.Infrastructure.Migrations
 
                     b.HasIndex("BetId");
 
-                    b.ToTable("BetLogs");
+                    b.ToTable("TransactionLogs");
                 });
 
-            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.PresetChoices", b =>
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.PresetChoice", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -250,7 +250,7 @@ namespace Monkify.Infrastructure.Migrations
                     b.Navigation("Bet");
                 });
 
-            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.PresetChoices", b =>
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.PresetChoice", b =>
                 {
                     b.HasOne("Monkify.Domain.Sessions.Entities.SessionParameters", "Parameters")
                         .WithMany("PresetChoices")

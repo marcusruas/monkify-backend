@@ -6,6 +6,7 @@ COPY ["src/Monkify.Api/Monkify.Api.csproj", "Monkify.Api/"]
 COPY ["src/Monkify.Domain/Monkify.Domain.csproj", "Monkify.Domain/"]
 COPY ["src/Monkify.Common/Monkify.Common.csproj", "Monkify.Common/"]
 COPY ["src/Monkify.Infrastructure/Monkify.Infrastructure.csproj", "Monkify.Infrastructure/"]
+COPY ["src/Monkify.Tests/Monkify.Tests.csproj", "Monkify.Tests/"]
 
 RUN dotnet restore
 

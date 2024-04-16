@@ -10,12 +10,12 @@ namespace Monkify.Infrastructure.Context
     {
         public MonkifyDbContext(DbContextOptions<MonkifyDbContext> options) : base(options) { }
 
-        public DbSet<PresetChoices> PresetChoices { get; set; }
+        public DbSet<PresetChoice> PresetChoices { get; set; }
         public DbSet<SessionParameters> SessionParameters { get; set; }
         public DbSet<Session> Sessions { get; set; }
         public DbSet<SessionLog> SessionLogs { get; set; }
         public DbSet<Bet> SessionBets { get; set; }
-        public DbSet<BetTransactionLog> BetLogs { get; set; }
+        public DbSet<BetTransactionLog> TransactionLogs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -35,7 +35,7 @@ namespace Monkify.Infrastructure.Context
                 builder.Property(x => x.Active).IsRequired().HasDefaultValue(false);
             });
 
-            modelBuilder.Entity<PresetChoices>(builder =>
+            modelBuilder.Entity<PresetChoice>(builder =>
             {
                 builder.HasKey(x => x.Id);
                 builder.Property(x => x.Choice).IsRequired().HasMaxLength(20);

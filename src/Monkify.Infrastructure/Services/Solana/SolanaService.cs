@@ -83,7 +83,7 @@ namespace Monkify.Infrastructure.Services.Solana
                     return false;
                 }
 
-                await _context.BetLogs.AddAsync(new BetTransactionLog(amount.Value, result.Result, betId));
+                await _context.TransactionLogs.AddAsync(new BetTransactionLog(amount.Value, result.Result, betId));
                 await _context.SaveChangesAsync();
                 return true;
             }

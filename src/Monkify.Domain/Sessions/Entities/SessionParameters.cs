@@ -16,6 +16,6 @@ namespace Monkify.Domain.Sessions.Entities
         public int? ChoiceRequiredLength { get; set; }
         public bool AcceptDuplicatedCharacters { get; set; }
         public bool Active { get; set; }
-        public ICollection<PresetChoices> PresetChoices { get; set; }
+        public ICollection<PresetChoice> PresetChoices { get; set; }
     }
 }
