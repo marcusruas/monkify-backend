@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Monkify.Domain.Sessions.Services
 {
@@ -20,7 +21,14 @@ namespace Monkify.Domain.Sessions.Services
         {
             _settings = settings;
 
+            if (session.Bets.IsNullOrEmpty())
+                throw new ArgumentException("Session has no bets.");
+
             Winners = session.Bets.Where(x => x.Won);
+
+            if (Winners.IsNullOrEmpty())
+                throw new ArgumentException("There are no winners in this session. Transfers cannot be made");
+
             SetPotAmount(session);
         }
 
@@ -30,13 +38,20 @@ namespace Monkify.Domain.Sessions.Services
         }
 
         public readonly IEnumerable<Bet> Winners;
+        public decimal PotAmount { get; private set; } 
 
         private readonly TokenSettings _settings;
-        private decimal PotAmount;
 
         public BetTransactionAmountResult CalculateRewardForBet(Bet winner)
         {
+            if (!winner.Won)
+                throw new ArgumentException("Bet has not won, therefore cannot receive a reward for this session.");
+
             decimal winnerReward = (PotAmount / Winners.Count()) - winner.Amount;
+
+            if (winnerReward < 0)
+                throw new ArgumentException("Bet reward cannot be bigger than the pot");
+
             winnerReward = Math.Round(winnerReward, _settings.Decimals, MidpointRounding.ToZero);
             ulong rewardInTokens = (ulong)(winnerReward * (decimal)Math.Pow(10, _settings.Decimals));
 
@@ -85,7 +100,6 @@ namespace Monkify.Domain.Sessions.Services
 
             if (bet.Amount != session.Parameters.RequiredAmount)
                 return BetValidationResult.InvalidAmount;
-
 
             return BetValidationResult.Valid;
         }
