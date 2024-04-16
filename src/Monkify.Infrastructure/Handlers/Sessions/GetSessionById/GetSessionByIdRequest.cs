@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.GetSessionById
 {
-    public record GetSessionByIdRequest(Guid SessionId) : IRequest<SessionDto>;
+    public record GetSessionByIdRequest(Guid SessionId) : IRequest<SessionDto?>;
 }

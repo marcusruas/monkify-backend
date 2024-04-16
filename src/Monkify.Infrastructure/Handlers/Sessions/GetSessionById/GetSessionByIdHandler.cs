@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.GetSessionById
 {
-    public class GetSessionByIdHandler : BaseRequestHandler<GetSessionByIdRequest, SessionDto>
+    public class GetSessionByIdHandler : BaseRequestHandler<GetSessionByIdRequest, SessionDto?>
     {
         public GetSessionByIdHandler(MonkifyDbContext context, IMessaging messaging) : base(context, messaging) { }
 
-        public override async Task<SessionDto> HandleRequest(GetSessionByIdRequest request, CancellationToken cancellationToken)
+        public override async Task<SessionDto?> HandleRequest(GetSessionByIdRequest request, CancellationToken cancellationToken)
         {
             var session = await Context.Sessions
                 .Include(x => x.Parameters)
@@ -23,7 +23,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetSessionById
                 .FirstOrDefaultAsync(x => x.Id == request.SessionId);
 
             if (session is null)
-                Messaging.ReturnValidationFailureMessage("Session was not found.");
+                return null;
 
             return new SessionDto(session);
         }

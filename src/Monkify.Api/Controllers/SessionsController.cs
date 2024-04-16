@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Monkify.Common.Messaging;
 using Monkify.Infrastructure.Handlers.Sessions.GetActiveSessions;
 using Monkify.Infrastructure.Handlers.Sessions.GetAllBets;
 using Monkify.Infrastructure.Handlers.Sessions.GetSessionById;
@@ -12,7 +13,7 @@ namespace Monkify.Api.Controllers
     [Produces("application/json")]
     public class SessionsController : BaseController
     {
-        public SessionsController(IMediator mediador) : base(mediador) { }
+        public SessionsController(IMediator mediador, IMessaging messaging) : base(mediador, messaging) { }
 
         [HttpGet("active-sessions")]
         public async Task<IActionResult> GetActiveSessions()
