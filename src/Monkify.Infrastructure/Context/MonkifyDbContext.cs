@@ -46,6 +46,7 @@ namespace Monkify.Infrastructure.Context
                 builder.HasKey(x => x.Id);
                 builder.Property(x => x.Status).IsRequired().HasDefaultValue(SessionStatus.WaitingBets);
                 builder.Property(x => x.ParametersId).IsRequired();
+                builder.Property(x => x.WinningChoice).HasMaxLength(20);
                 builder.HasOne(x => x.Parameters).WithMany().HasForeignKey(x => x.ParametersId);
                 builder.HasMany(x => x.Bets).WithOne(x => x.Session).HasForeignKey(x => x.SessionId);
                 builder.HasMany(x => x.Logs).WithOne(x => x.Session).HasForeignKey(x => x.SessionId);

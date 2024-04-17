@@ -49,7 +49,10 @@ namespace Monkify.Infrastructure.Background.Workers
                     .ToListAsync(cancellationToken);
 
                 if (!sessionsToBeRefunded.Any())
+                {
+                    await Task.Delay(10000, cancellationToken);
                     return;
+                }
 
                 foreach(var session in sessionsToBeRefunded)
                 {

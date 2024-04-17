@@ -34,15 +34,19 @@ namespace Monkify.Domain.Sessions.Entities
         public Guid ParametersId { get; set; }
         public SessionStatus Status { get; set; }
         public DateTime? EndDate { get; set; }
+        public string? WinningChoice { get; set; }
         public ICollection<Bet> Bets { get; set; }
         public ICollection<SessionLog> Logs { get; set; }
 
-        public void UpdateStatus(SessionStatus status)
+        public void UpdateStatus(SessionStatus status, string? winningChoice = null)
         {
             Status = status;
 
             if (SessionEndedStatus.Contains(status))
+            {
                 EndDate = DateTime.UtcNow;
+                WinningChoice = winningChoice;
+            }
         }
 
         public static SessionStatus[] SessionInProgressStatus = { WaitingBets, Started };
