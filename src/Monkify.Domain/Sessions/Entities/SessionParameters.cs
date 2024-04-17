@@ -17,5 +17,6 @@ namespace Monkify.Domain.Sessions.Entities
         public bool AcceptDuplicatedCharacters { get; set; }
         public bool Active { get; set; }
         public ICollection<PresetChoice> PresetChoices { get; set; }
+        public ICollection<Session> Sessions { get; set; }
     }
 }

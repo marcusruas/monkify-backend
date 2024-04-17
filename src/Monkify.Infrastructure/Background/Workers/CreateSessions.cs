@@ -13,6 +13,7 @@ using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
 using Newtonsoft.Json;
 using Serilog;
+using System.Threading;
 
 namespace Monkify.Infrastructure.Background.Workers
 {
@@ -22,42 +23,51 @@ namespace Monkify.Infrastructure.Background.Workers
 
         protected override async Task ExecuteProcess(CancellationToken cancellationToken)
         {
-            using (var scope = Services.CreateScope())
+            using (var upperScope = Services.CreateScope())
             {
-                var sessionConfigs = scope.GetService<GeneralSettings>();
-                var context = scope.GetService<MonkifyDbContext>();
-                var mediator = scope.GetService<IMediator>();
-                var openSessionsHub = scope.GetService<IHubContext<OpenSessionsHub>>();
+                var settings = upperScope.GetService<GeneralSettings>();
+                var context = upperScope.GetService<MonkifyDbContext>();
 
-                var activeParameters = await context.SessionParameters.Include(x => x.PresetChoices).Where(x => x.Active).ToListAsync();
+                var activeParameters = await context.SessionParameters
+                    .Include(x => x.Sessions.Where(y => Session.SessionInProgressStatus.Contains(y.Status)))
+                    .Include(x => x.PresetChoices)
+                    .Where(x => x.Active &&  !x.Sessions.Any(y => Session.SessionInProgressStatus.Contains(y.Status)))
+                    .ToListAsync();
+
+                if (!activeParameters.Any())
+                {
+                    await Task.Delay(2000, cancellationToken);
+                    return;
+                }
+
+                var tasks = new List<Task>();
 
                 foreach (var parameters in activeParameters)
-                {
-                    var sessionIsOpen = await context.Sessions.AnyAsync(x => x.ParametersId == parameters.Id && Session.SessionInProgressStatus.Contains(x.Status));
+                    tasks.Add(Task.Run(() => CreateNewSession(parameters, settings, cancellationToken), cancellationToken));
 
-                    if (sessionIsOpen)
-                        return;
-
-                    var session = await CreateSession(context, parameters);
-
-                    var sessionCreatedEvent = new SessionCreated(session.Id, parameters);
-                    var sessionJson = sessionCreatedEvent.AsJson();
-                    await openSessionsHub.Clients.All.SendAsync(sessionConfigs.Sessions.ActiveSessionsEndpoint, sessionJson);
-
-                    await mediator.Publish(new SessionForProcessing(session), cancellationToken);
-                }
+                await Task.WhenAll(tasks);
             }
         }
 
-        private async Task<Session> CreateSession(MonkifyDbContext context, SessionParameters parameters)
+        private async Task CreateNewSession(SessionParameters parameters, GeneralSettings settings, CancellationToken cancellationToken)
         {
-            var session = new Session(parameters.Id);
-            await context.Sessions.AddAsync(session);
+            using var innerScope = Services.CreateScope();
 
-            await context.SaveChangesAsync();
+            var innerContext = innerScope.GetService<MonkifyDbContext>();
+            var mediator = innerScope.GetService<IMediator>();
+            var openSessionsHub = innerScope.GetService<IHubContext<OpenSessionsHub>>();
+
+            var session = new Session(parameters.Id);
+
+            await innerContext.Sessions.AddAsync(session, cancellationToken);
+            await innerContext.SaveChangesAsync(cancellationToken);
+
             session.Parameters = parameters;
 
-            return session;
+            var sessionCreatedEvent = new SessionCreated(session.Id, parameters);
+            await openSessionsHub.Clients.All.SendAsync(settings.Sessions.ActiveSessionsEndpoint, sessionCreatedEvent.AsJson(), cancellationToken);
+
+            await mediator.Publish(new SessionForProcessing(session), cancellationToken);
         }
     }
 }
