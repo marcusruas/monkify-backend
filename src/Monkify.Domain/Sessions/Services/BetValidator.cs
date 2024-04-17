@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Monkify.Common.Extensions;
 using Monkify.Common.Messaging;
+using Monkify.Common.Resources;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
@@ -22,19 +23,14 @@ namespace Monkify.Domain.Sessions.Services
             _settings = settings;
 
             if (session.Bets.IsNullOrEmpty())
-                throw new ArgumentException("Session has no bets.");
+                throw new ArgumentException(ErrorMessages.SessionWithNoBets);
 
             Winners = session.Bets.Where(x => x.Won);
 
             if (Winners.IsNullOrEmpty())
-                throw new ArgumentException("There are no winners in this session. Transfers cannot be made");
+                throw new ArgumentException(ErrorMessages.SessionWithoutWinners);
 
             SetPotAmount(session);
-        }
-
-        public BetValidator(TokenSettings settings)
-        {
-            _settings = settings;
         }
 
         public readonly IEnumerable<Bet> Winners;
@@ -45,12 +41,12 @@ namespace Monkify.Domain.Sessions.Services
         public BetTransactionAmountResult CalculateRewardForBet(Bet winner)
         {
             if (!winner.Won)
-                throw new ArgumentException("Bet has not won, therefore cannot receive a reward for this session.");
+                throw new ArgumentException(ErrorMessages.BetCannotReceiveReward);
 
             decimal winnerReward = (PotAmount / Winners.Count()) - winner.Amount;
 
             if (winnerReward < 0)
-                throw new ArgumentException("Bet reward cannot be bigger than the pot");
+                throw new ArgumentException(ErrorMessages.BetRewardBiggerThanThePot);
 
             winnerReward = Math.Round(winnerReward, _settings.Decimals, MidpointRounding.ToZero);
             ulong rewardInTokens = (ulong)(winnerReward * (decimal)Math.Pow(10, _settings.Decimals));
@@ -58,20 +54,20 @@ namespace Monkify.Domain.Sessions.Services
             return new BetTransactionAmountResult(winnerReward, rewardInTokens);
         }
 
-        public BetTransactionAmountResult CalculateRefundForBet(Bet bet)
+        public static BetTransactionAmountResult CalculateRefundForBet(TokenSettings settings, Bet bet)
         {
             decimal credits = 0;
 
             if (!bet.Logs.IsNullOrEmpty())
                 credits = bet.Logs.Sum(x => x.Amount);
 
-            var refundValue = Math.Round(bet.Amount, _settings.Decimals, MidpointRounding.ToZero);
+            var refundValue = Math.Round(bet.Amount, settings.Decimals, MidpointRounding.ToZero);
             refundValue -= credits;
 
             if (refundValue < 0)
                 return new BetTransactionAmountResult(0, 0);
 
-            var refundInTokens = (ulong)(refundValue * (decimal)Math.Pow(10, _settings.Decimals));
+            var refundInTokens = (ulong)(refundValue * (decimal)Math.Pow(10, settings.Decimals));
 
             return new BetTransactionAmountResult(refundValue, refundInTokens);
         }
@@ -79,6 +75,15 @@ namespace Monkify.Domain.Sessions.Services
         public static BetValidationResult ChoiceIsValidForSession(Bet bet, Session session)
         {
             var parameters = session.Parameters;
+
+            if (string.IsNullOrEmpty(bet.Choice) || bet.Choice.Length != parameters.ChoiceRequiredLength)
+                return BetValidationResult.WrongChoiceLength;
+
+            if (!parameters.AcceptDuplicatedCharacters && bet.Choice.ContainsDuplicateCharacters())
+                return BetValidationResult.UnacceptedDuplicateCharacters;
+
+            if (bet.Amount != session.Parameters.RequiredAmount)
+                return BetValidationResult.InvalidAmount;
 
             if (!parameters.PresetChoices.IsNullOrEmpty() && !parameters.PresetChoices.Any(x => x.Choice == bet.Choice))
             {
@@ -90,16 +95,6 @@ namespace Monkify.Domain.Sessions.Services
                 if (!bet.Choice.All(character => acceptedCharacters.Contains(character)))
                     return BetValidationResult.InvalidCharacters;
             }
-            else if (string.IsNullOrEmpty(bet.Choice) || bet.Choice.Length != parameters.ChoiceRequiredLength)
-            {
-                return BetValidationResult.WrontChoiceLength;
-            }
-
-            if (!parameters.AcceptDuplicatedCharacters && bet.Choice.ContainsDuplicateCharacters())
-                return BetValidationResult.UnacceptedDuplicateCharacters;
-
-            if (bet.Amount != session.Parameters.RequiredAmount)
-                return BetValidationResult.InvalidAmount;
 
             return BetValidationResult.Valid;
         }

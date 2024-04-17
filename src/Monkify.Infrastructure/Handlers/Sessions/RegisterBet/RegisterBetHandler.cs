@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Monkify.Common.Extensions;
 using Monkify.Common.Messaging;
+using Monkify.Common.Resources;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Configs.ValueObjects;
 using Monkify.Domain.Sessions.Entities;
@@ -53,7 +54,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
                 .FirstOrDefaultAsync(x => x.Id == request.SessionId && x.Status == SessionStatus.WaitingBets);
 
             if (_session is null)
-                Messaging.ReturnValidationFailureMessage("The requested session was not found or is not receiving bets at the current moment.");
+                Messaging.ReturnValidationFailureMessage(ErrorMessages.SessionNotValidForBets);
 
             _bet = request.ToBet();
 
@@ -70,7 +71,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
             if (affectedRows <= 0)
             {
-                Messaging.ReturnValidationFailureMessage("The system could not register this bet at the moment, please try again later.");
+                Messaging.ReturnValidationFailureMessage(ErrorMessages.FailedToRegisterBet);
                 Log.Error("An error occurred while trying to register a bet for the wallet {0} under the session {1}", _bet.Wallet, _bet.SessionId);
             }
         }

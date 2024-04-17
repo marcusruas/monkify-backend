@@ -1,7 +1,6 @@
 ﻿using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Events;
 using Monkify.Domain.Sessions.ValueObjects;
-using Monkify.Tests.Builders.StubBuilders;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -16,11 +15,22 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void Constructor_InitializesPropertiesCorrectly()
         {
-            var builder = new SessionParametersStubBuilder();
-            builder.AddPresetChoices(2);
+            SessionParameters sessionParameters = new SessionParameters
+            {
+                SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                RequiredAmount = 100.0m,
+                MinimumNumberOfPlayers = 5,
+                ChoiceRequiredLength = 3,
+                AcceptDuplicatedCharacters = false,
+                Active = true,
+                PresetChoices = new List<PresetChoice>
+                {
+                    new PresetChoice { Choice = "ABC" },
+                    new PresetChoice { Choice = "XYZ" }
+                }
+            };
 
             var sessionId = Guid.NewGuid();
-            var sessionParameters = builder.BuildFirst();
             var sessionCreated = new SessionCreated(sessionId, sessionParameters);
 
             sessionCreated.SessionId.ShouldBe(sessionId);

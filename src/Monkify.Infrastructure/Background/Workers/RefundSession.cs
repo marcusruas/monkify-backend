@@ -51,8 +51,6 @@ namespace Monkify.Infrastructure.Background.Workers
                 if (!sessionsToBeRefunded.Any())
                     return;
 
-                var betValidator = new BetValidator(settings.Token);
-
                 foreach(var session in sessionsToBeRefunded)
                 {
                     var sessionBets = await context.SessionBets
@@ -75,7 +73,7 @@ namespace Monkify.Infrastructure.Background.Workers
                         if (bet.Refunded)
                             continue;
 
-                        var refundResult = betValidator.CalculateRefundForBet(bet);
+                        var refundResult = BetValidator.CalculateRefundForBet(settings.Token, bet);
                         successInAllRefunds &= await solanaService.TransferRefundTokens(bet, refundResult);
                     }
 
