@@ -5,6 +5,7 @@ using Monkify.Domain.Sessions.ValueObjects;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace Monkify.Domain.Sessions.Services
 {
@@ -15,8 +16,7 @@ namespace Monkify.Domain.Sessions.Services
             if (session.Bets.IsNullOrEmpty())
                 throw new ArgumentException("At least one bet must be made to start a session. Session has ended");
 
-            _random = new Random(session.GetHashCode());
-
+            GenerateRandom();
             SetBets(session);
             SetCharactersOnTyper(session);            
         }
@@ -86,7 +86,7 @@ namespace Monkify.Domain.Sessions.Services
             if (HasWinners)
                 throw new ArgumentException("Cannot generate next character, as there is already a Winner.");
 
-            var characterIndex = _random.Next(0, CharactersOnTyper.Length - 1);
+            var characterIndex = _random.Next(CharactersOnTyper.Length);
             var character = CharactersOnTyper[characterIndex];
 
             if (TypedCharacters.Count == QueueLength)
@@ -101,7 +101,7 @@ namespace Monkify.Domain.Sessions.Services
 
         private void CheckForWinners()
         {
-            string choice = new string(TypedCharacters.ToArray());
+            string choice = new (TypedCharacters.ToArray());
 
             if (Bets.TryGetValue(choice, out List<Bet>? value))
             {
@@ -110,6 +110,14 @@ namespace Monkify.Domain.Sessions.Services
                 FirstChoiceTyped = choice;
                 value.ForEach(x => x.Won = true);
             }
+        }
+
+        private void GenerateRandom()
+        {
+            var seedInBytes = RandomNumberGenerator.GetBytes(4);
+            var seed = BitConverter.ToInt32(seedInBytes, 0);
+
+            _random = new Random(seed);
         }
     }
 }
