@@ -120,8 +120,9 @@ namespace Monkify.Tests.Domain.Sessions
             settings.CommisionPercentage = 0.5m;
             var validator = new BetValidator(session, settings);
 
-            var exception = Should.Throw<ArgumentException>(() => validator.CalculateRewardForBet(loserBet));
-            exception.Message.ShouldBe(ErrorMessages.BetCannotReceiveReward);
+            var result = validator.CalculateRewardForBet(loserBet);
+            result.Value.ShouldBe(0);
+            result.ErrorMessage.ShouldBe(ErrorMessages.BetCannotReceiveReward);
         }
 
         [Fact]
@@ -142,8 +143,9 @@ namespace Monkify.Tests.Domain.Sessions
 
             var validator = new BetValidator(session, settings);
 
-            var exception = Should.Throw<ArgumentException>(() => validator.CalculateRewardForBet(winnerBet));
-            exception.Message.ShouldBe(ErrorMessages.BetRewardBiggerThanThePot);
+            var result = validator.CalculateRewardForBet(winnerBet);
+            result.Value.ShouldBe(0);
+            result.ErrorMessage.ShouldBe(ErrorMessages.BetRewardBiggerThanThePot);
         }
 
         [Fact]
@@ -174,19 +176,19 @@ namespace Monkify.Tests.Domain.Sessions
         }
 
         [Theory]
-        [InlineData(6)]
-        [InlineData(7)]
-        public void CalculateRefundForBet_RefundedBet_ShouldCalculateCorrectly(int amount)
+        [InlineData(6, 0)]
+        [InlineData(7, -1)]
+        public void CalculateRefundForBet_RefundedBet_ShouldCalculateCorrectly(int amount, decimal value)
         {
             var log = new BetTransactionLog() { Amount = amount };
             var bet = new Bet() { Won = false, Amount = 6, Logs = new List<BetTransactionLog>() { log } };
 
             var settings = new TokenSettings();
-            settings.CommisionPercentage = 0.1m;
             settings.Decimals = 5;
 
             var refund = BetValidator.CalculateRefundForBet(settings, bet);
-            refund.Value.ShouldBe(0);
+            refund.Value.ShouldBe(value);
+            refund.ValueInTokens.ShouldBe(ulong.MinValue);
         }
 
         [Theory]

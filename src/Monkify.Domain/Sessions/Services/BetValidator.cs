@@ -41,12 +41,12 @@ namespace Monkify.Domain.Sessions.Services
         public BetTransactionAmountResult CalculateRewardForBet(Bet winner)
         {
             if (!winner.Won)
-                throw new ArgumentException(ErrorMessages.BetCannotReceiveReward);
+                return new BetTransactionAmountResult(ErrorMessages.BetCannotReceiveReward);
 
             decimal winnerReward = (PotAmount / Winners.Count()) - winner.Amount;
 
             if (winnerReward < 0)
-                throw new ArgumentException(ErrorMessages.BetRewardBiggerThanThePot);
+                return new BetTransactionAmountResult(ErrorMessages.BetRewardBiggerThanThePot);
 
             winnerReward = Math.Round(winnerReward, _settings.Decimals, MidpointRounding.ToZero);
             ulong rewardInTokens = (ulong)(winnerReward * (decimal)Math.Pow(10, _settings.Decimals));
@@ -64,8 +64,8 @@ namespace Monkify.Domain.Sessions.Services
             var refundValue = Math.Round(bet.Amount, settings.Decimals, MidpointRounding.ToZero);
             refundValue -= credits;
 
-            if (refundValue < 0)
-                return new BetTransactionAmountResult(0, 0);
+            if (refundValue <= 0)
+                return new BetTransactionAmountResult(refundValue, ulong.MinValue);
 
             var refundInTokens = (ulong)(refundValue * (decimal)Math.Pow(10, settings.Decimals));
 

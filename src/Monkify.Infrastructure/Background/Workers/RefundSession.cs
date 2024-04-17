@@ -74,6 +74,13 @@ namespace Monkify.Infrastructure.Background.Workers
                             continue;
 
                         var refundResult = BetValidator.CalculateRefundForBet(settings.Token, bet);
+
+                        if (refundResult.Value <= 0)
+                        {
+                            Log.Warning("Bet {0} has already been properly refunded. Value needing to be refunded: {1}", bet.Id, refundResult.Value);
+                            continue;
+                        }
+
                         successInAllRefunds &= await solanaService.TransferRefundTokens(bet, refundResult);
                     }
 

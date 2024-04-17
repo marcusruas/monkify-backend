@@ -6,5 +6,21 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Sessions.ValueObjects
 {
-    public record BetTransactionAmountResult(decimal Value, ulong ValueInTokens);
+    public record BetTransactionAmountResult
+    {
+        public BetTransactionAmountResult(decimal value, ulong valueInTokens)
+        {
+            Value = value;
+            ValueInTokens = valueInTokens;
+        }
+
+        public BetTransactionAmountResult(string? errorMessage)
+        {
+            ErrorMessage = errorMessage;
+        }
+
+        public decimal Value { get; set; }
+        public ulong ValueInTokens { get; set; }
+        public string? ErrorMessage { get; set; }
+    }
 }

@@ -55,6 +55,13 @@ namespace Monkify.Infrastructure.Background.Events
                 foreach (var winner in _betValidator.Winners)
                 {
                     var rewardResult = _betValidator.CalculateRewardForBet(winner);
+
+                    if (!string.IsNullOrWhiteSpace(rewardResult.ErrorMessage))
+                    {
+                        Log.Warning("Bet {0} could not be rewarded due to an error. details: {1}", winner.Id, rewardResult.ErrorMessage);
+                        continue;
+                    }
+
                     await _solanaService.TransferTokens(winner.Id, winner.Wallet, rewardResult);
                 }
             }
