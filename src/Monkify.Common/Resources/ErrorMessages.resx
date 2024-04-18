@@ -135,6 +135,9 @@
   <data name="FailedToRegisterBet" xml:space="preserve">
     <value>The system could not register this bet at the moment, please try again later.</value>
   </data>
+  <data name="InvalidPaymentSignature" xml:space="preserve">
+    <value>The requested payment signature has already been used. Make another transaction with the appropriate amount.</value>
+  </data>
   <data name="SessionNotValidForBets" xml:space="preserve">
     <value>The requested session was not found or is not receiving bets at the current moment.</value>
   </data>

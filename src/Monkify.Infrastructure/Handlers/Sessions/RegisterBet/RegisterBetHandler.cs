@@ -62,6 +62,11 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
             if (betValidationResult != BetValidationResult.Valid)
                 Messaging.ReturnValidationFailureMessage(betValidationResult.StringValueOf());
+
+            var signatureHasBeenUsed = await Context.SessionBets.AnyAsync(x => x.PaymentSignature == request.Body.PaymentSignature);
+
+            if (signatureHasBeenUsed)
+                Messaging.ReturnValidationFailureMessage(ErrorMessages.InvalidPaymentSignature);
         }
 
         private async Task RegisterBet()

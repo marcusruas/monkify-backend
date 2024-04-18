@@ -115,6 +115,15 @@ namespace Monkify.Common.Resources {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The requested payment signature has already been used. Make another transaction with the appropriate amount..
+        /// </summary>
+        public static string InvalidPaymentSignature {
+            get {
+                return ResourceManager.GetString("InvalidPaymentSignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a The requested session was not found or is not receiving bets at the current moment..
         /// </summary>
         public static string SessionNotValidForBets {
