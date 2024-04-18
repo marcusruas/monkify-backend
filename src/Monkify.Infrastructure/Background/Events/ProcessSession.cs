@@ -49,7 +49,9 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             if (!sessionHasEnoughPlayers)
             {
                 await _sessionService.UpdateSessionStatus(_session, NotEnoughPlayersToStart);
-                await _sessionService.UpdateSessionStatus(_session, NeedsRefund);
+
+                if (_session.Bets.Any())
+                    await _sessionService.UpdateBetStatus(_session.Bets, BetStatus.NeedsRefunding);
 
                 await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
                 return;
@@ -60,7 +62,6 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             await _sessionService.UpdateSessionStatus(_session, Started);
             await SendTerminalCharacters();
             await _sessionService.UpdateSessionStatus(_session, Ended, _monkey);
-            await _sessionService.UpdateSessionStatus(_session, NeedsRewarding);
             await DeclareWinners();
 
             await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
@@ -118,7 +119,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             if (!_monkey.HasWinners)
                 return;
 
-            await _sessionService.UpdateBetPaymentStatus(_session.Bets.Where(x => x.Choice == _monkey.FirstChoiceTyped), BetPaymentStatus.NeedsRewarding);
+            await _sessionService.UpdateBetStatus(_session.Bets.Where(x => x.Choice == _monkey.FirstChoiceTyped), BetStatus.NeedsRewarding);
             await _mediator.Publish(new RewardWinnersEvent(_session));
         }
     }

@@ -12,7 +12,7 @@ namespace Monkify.Domain.Sessions.Entities
     {
         public BetStatusLog() { }
 
-        public BetStatusLog(Guid betId, BetPaymentStatus? previousStatus, BetPaymentStatus newStatus)
+        public BetStatusLog(Guid betId, BetStatus? previousStatus, BetStatus newStatus)
         {
             BetId = betId;
             PreviousStatus = previousStatus;
@@ -21,7 +21,7 @@ namespace Monkify.Domain.Sessions.Entities
 
         public Bet Bet { get; set; }
         public Guid BetId { get; set; }
-        public BetPaymentStatus? PreviousStatus { get; set; }
-        public BetPaymentStatus NewStatus { get; set; }
+        public BetStatus? PreviousStatus { get; set; }
+        public BetStatus NewStatus { get; set; }
     }
 }

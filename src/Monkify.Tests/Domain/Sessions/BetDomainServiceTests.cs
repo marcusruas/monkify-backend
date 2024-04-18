@@ -31,9 +31,9 @@ namespace Monkify.Tests.Domain.Sessions
             var session = new Session();
             session.Bets = new List<Bet>()
             {
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
             };
             var settings = new TokenSettings();
 
@@ -47,9 +47,9 @@ namespace Monkify.Tests.Domain.Sessions
             var session = new Session();
             session.Bets = new List<Bet>()
             {
-                new () { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NeedsRewarding, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.5m;
@@ -61,14 +61,14 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_SessionWithBets_ShouldCalculateCorrectly()
         {
-            var winnerBet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 };
+            var winnerBet = new Bet() { Status = BetStatus.NeedsRewarding, Amount = 4 };
             var session = new Session();
 
             session.Bets = new List<Bet>()
             {
                 winnerBet,
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
@@ -83,15 +83,15 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_BetWithCredits_ShouldCalculateCorrectly()
         {
-            var winnerBet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 };
+            var winnerBet = new Bet() { Status = BetStatus.NeedsRewarding, Amount = 4 };
             winnerBet.TransactionLogs = new List<TransactionLog>() { new() { Amount = 3 } };
             var session = new Session();
 
             session.Bets = new List<Bet>()
             {
                 winnerBet,
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
@@ -106,17 +106,17 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_SessionWithMultipleWinners_ShouldCalculateCorrectly()
         {
-            var winnerBet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 };
+            var winnerBet = new Bet() { Status = BetStatus.NeedsRewarding, Amount = 4 };
             var session = new Session();
 
             session.Bets = new List<Bet>()
             {
                 winnerBet,
-                new () { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 7.33654m },
-                new () { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 7.33654m },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 7.33654m },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 7.33654m },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 7.33654m },
+                new () { Status = BetStatus.NeedsRewarding, Amount = 7.33654m },
+                new () { Status = BetStatus.NeedsRewarding, Amount = 7.33654m },
+                new () { Status = BetStatus.NotApplicable, Amount = 7.33654m },
+                new () { Status = BetStatus.NotApplicable, Amount = 7.33654m },
+                new () { Status = BetStatus.NotApplicable, Amount = 7.33654m },
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
@@ -131,12 +131,12 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_NonWinnerBet_ShouldThrowException()
         {
-            var loserBet = new Bet() { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 };
+            var loserBet = new Bet() { Status = BetStatus.NotApplicable, Amount = 4 };
             var session = new Session();
             session.Bets = new List<Bet>()
             {
-                new () { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NeedsRewarding, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
                 loserBet,
             };
             var settings = new TokenSettings();
@@ -151,14 +151,14 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_BiggerRewardThanPot_ShouldThrowException()
         {
-            var winnerBet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 20 };
+            var winnerBet = new Bet() { Status = BetStatus.NeedsRewarding, Amount = 20 };
             var session = new Session();
 
             session.Bets = new List<Bet>()
             {
-                new () { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NeedsRewarding, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
@@ -174,15 +174,15 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_AlreadyRewardedBet_ShouldCalculateCorrectly()
         {
-            var winnerBet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 };
+            var winnerBet = new Bet() { Status = BetStatus.NeedsRewarding, Amount = 4 };
             winnerBet.TransactionLogs = new List<TransactionLog>() { new () { Amount = 6.8m } };
             var session = new Session();
 
             session.Bets = new List<Bet>()
             {
                 winnerBet,
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
-                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
+                new () { Status = BetStatus.NotApplicable, Amount = 4 },
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
@@ -198,7 +198,7 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRefundForBet_ValidBet_ShouldCalculateCorrectly()
         {
-            var bet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRefunding, Amount = 6 };
+            var bet = new Bet() { Status = BetStatus.NeedsRefunding, Amount = 6 };
 
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
@@ -212,7 +212,7 @@ namespace Monkify.Tests.Domain.Sessions
         public void CalculateRefundForBet_BetWithCredits_ShouldCalculateCorrectly()
         {
             var log = new TransactionLog() { Amount = 4 };
-            var bet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRefunding, Amount = 6, TransactionLogs = new List<TransactionLog>() { log } };
+            var bet = new Bet() { Status = BetStatus.NeedsRefunding, Amount = 6, TransactionLogs = new List<TransactionLog>() { log } };
 
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
@@ -228,7 +228,7 @@ namespace Monkify.Tests.Domain.Sessions
         public void CalculateRefundForBet_RefundedBet_ShouldCalculateCorrectly(int amount, decimal value)
         {
             var log = new TransactionLog() { Amount = amount };
-            var bet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRefunding, Amount = 6, TransactionLogs = new List<TransactionLog>() { log } };
+            var bet = new Bet() { Status = BetStatus.NeedsRefunding, Amount = 6, TransactionLogs = new List<TransactionLog>() { log } };
 
             var settings = new TokenSettings();
             settings.Decimals = 5;

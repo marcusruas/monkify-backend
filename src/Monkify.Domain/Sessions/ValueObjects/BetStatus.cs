@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Sessions.ValueObjects
 {
-    public enum BetPaymentStatus
+    public enum BetStatus
     {
         NotApplicable,
         NeedsRewarding,

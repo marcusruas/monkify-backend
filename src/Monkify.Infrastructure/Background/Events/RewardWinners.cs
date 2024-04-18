@@ -50,7 +50,10 @@ namespace Monkify.Infrastructure.Background.Events
             bool solanaIsUp = await _solanaService.SetLatestBlockhashForTokenTransfer();
 
             if (!solanaIsUp)
+            {
+                await _sessionService.UpdateSessionStatus(notification.Session, SessionStatus.ErrorWhenProcessingRewards);
                 return;
+            }
 
             bool allBetsRewarded = true;
 
@@ -62,12 +65,12 @@ namespace Monkify.Infrastructure.Background.Events
 
                 if (string.IsNullOrWhiteSpace(rewardResult.ErrorMessage))
                 {
-                    bool transactionSuccessful = await _solanaService.TransferTokensForBet(winner, rewardResult);
+                    bool currentBetRewarded = await _solanaService.TransferTokensForBet(winner, rewardResult);
 
-                    if (transactionSuccessful)
-                        await _sessionService.UpdateBetPaymentStatus(winner, BetPaymentStatus.Rewarded);
+                    if (currentBetRewarded)
+                        await _sessionService.UpdateBetStatus(winner, BetStatus.Rewarded);
 
-                    allBetsRewarded &= transactionSuccessful;
+                    allBetsRewarded &= currentBetRewarded;
 
                     continue;
                 }
@@ -75,16 +78,16 @@ namespace Monkify.Infrastructure.Background.Events
                 Log.Warning("Bet {0} could not be rewarded due to an error. details: {1}", winner.Id, rewardResult.ErrorMessage);
 
                 if (rewardResult.ErrorMessage == ErrorMessages.BetHasAlreadyBeenRewarded)
-                    await _sessionService.UpdateBetPaymentStatus(winner, BetPaymentStatus.Rewarded);
+                    await _sessionService.UpdateBetStatus(winner, BetStatus.Rewarded);
 
                 if (rewardResult.ErrorMessage == ErrorMessages.BetRewardBiggerThanThePot)
-                    await _sessionService.UpdateBetPaymentStatus(winner, BetPaymentStatus.NeedsManualAnalysis);
+                    await _sessionService.UpdateBetStatus(winner, BetStatus.NeedsManualAnalysis);
             }
 
             if (allBetsRewarded)
                 await _sessionService.UpdateSessionStatus(notification.Session, SessionStatus.RewardForWinnersCompleted);
             else
-                await _sessionService.UpdateSessionStatus(notification.Session, SessionStatus.NeedsRewarding);
+                await _sessionService.UpdateSessionStatus(notification.Session, SessionStatus.ErrorWhenProcessingRewards);
         }
     }
 }

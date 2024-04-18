@@ -30,8 +30,12 @@ namespace Monkify.Infrastructure.Background.Workers
             var mediator = scope.GetService<IMediator>();
 
             var sessionsToBeRewarded = await context.Sessions
-                .Include(x => x.Bets.Where(x => x.PaymentStatus == BetPaymentStatus.NeedsRewarding)).ThenInclude(x => x.TransactionLogs)
-                .Where(x => x.Status == SessionStatus.NeedsRewarding && x.Bets.Any(x => x.PaymentStatus == BetPaymentStatus.NeedsRewarding))
+                .Include(x => x.Bets).ThenInclude(x => x.TransactionLogs)
+                .Where(x => 
+                    x.Status == SessionStatus.ErrorWhenProcessingRewards 
+                 && x.CreatedDate > DateTime.UtcNow.AddMinutes(-60) 
+                 && x.Bets.Any(x => x.Status == BetStatus.NeedsRewarding)
+                 )
                 .ToListAsync(cancellationToken);
 
             if (!sessionsToBeRewarded.Any())

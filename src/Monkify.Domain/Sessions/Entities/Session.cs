@@ -51,6 +51,5 @@ namespace Monkify.Domain.Sessions.Entities
 
         public static SessionStatus[] SessionInProgressStatus = [WaitingBets, Started];
         public static SessionStatus[] SessionEndedStatus = [NotEnoughPlayersToStart, Ended];
-        public static SessionStatus[] DontSendNotificationStatus = [NeedsRewarding, NeedsRefund];
     }
 }

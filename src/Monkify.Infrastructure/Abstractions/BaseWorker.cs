@@ -14,7 +14,7 @@ namespace Monkify.Infrastructure.Abstractions
 
         protected readonly IServiceProvider Services;
 
-        private string _workerName;
+        private readonly string _workerName;
 
         protected sealed override async Task ExecuteAsync(CancellationToken stoppingToken)
         {

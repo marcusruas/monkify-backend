@@ -11,5 +11,6 @@ namespace Monkify.Domain.Configs.Entities
         public SessionSettings Sessions { get; set; }
         public TokenSettings Token { get; set; }
         public WorkerSettings Workers { get; set; }
+        public PollySettings Polly { get; set; }
     }
 }

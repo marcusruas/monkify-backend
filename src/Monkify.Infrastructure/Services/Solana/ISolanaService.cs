@@ -1,4 +1,5 @@
-﻿using Monkify.Domain.Sessions.Entities;
+﻿using Monkify.Common.Results;
+using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -12,5 +13,6 @@ namespace Monkify.Infrastructure.Services.Solana
     {
         Task<bool> SetLatestBlockhashForTokenTransfer();
         Task<bool> TransferTokensForBet(Bet bet, BetTransactionAmountResult amount);
+        Task<ValidationResult> ValidateBetPayment(Bet bet, string transactionSignature);
     }
 }

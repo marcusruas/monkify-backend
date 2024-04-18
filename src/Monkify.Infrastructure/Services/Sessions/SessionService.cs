@@ -51,9 +51,6 @@ namespace Monkify.Infrastructure.Services.Sessions
                 
                 await _context.SaveChangesAsync();
 
-                if (Session.DontSendNotificationStatus.Contains(status))
-                    return;
-
                 var statusJson = new SessionStatusUpdated(status, result).AsJson();
                 string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionStatusEndpoint, session.Id.ToString());
                 await _activeSessionsHub.Clients.All.SendAsync(sessionStatusEndpoint, statusJson);
@@ -64,24 +61,24 @@ namespace Monkify.Infrastructure.Services.Sessions
             }
         }
 
-        public async Task UpdateBetPaymentStatus(IEnumerable<Bet> bets, BetPaymentStatus status)
+        public async Task UpdateBetStatus(IEnumerable<Bet> bets, BetStatus status)
         {
             foreach(var bet in bets)
-                await UpdateBetPaymentStatusWithoutSaving(bet, status);
+                await UpdateBetStatusWithoutSaving(bet, status);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateBetPaymentStatus(Bet bet, BetPaymentStatus status)
+        public async Task UpdateBetStatus(Bet bet, BetStatus status)
         {
-            await UpdateBetPaymentStatusWithoutSaving(bet, status);
+            await UpdateBetStatusWithoutSaving(bet, status);
             await _context.SaveChangesAsync();
         }
 
-        private async Task UpdateBetPaymentStatusWithoutSaving(Bet bet, BetPaymentStatus status)
+        private async Task UpdateBetStatusWithoutSaving(Bet bet, BetStatus status)
         {
-            await _context.BetStatusLogs.AddAsync(new BetStatusLog(bet.Id, bet.PaymentStatus, status));
-            bet.PaymentStatus = status;
-            _context.Entry(bet).Property(x => x.PaymentStatus).IsModified = true;
+            await _context.BetStatusLogs.AddAsync(new BetStatusLog(bet.Id, bet.Status, status));
+            bet.Status = status;
+            _context.Entry(bet).Property(x => x.Status).IsModified = true;
         }
     }
 }

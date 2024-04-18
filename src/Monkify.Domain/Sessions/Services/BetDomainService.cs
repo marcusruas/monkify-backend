@@ -18,7 +18,7 @@ namespace Monkify.Domain.Sessions.Services
             if (session.Bets.IsNullOrEmpty())
                 throw new ArgumentException(ErrorMessages.SessionWithNoBets);
 
-            Winners = session.Bets.Where(x => x.PaymentStatus == BetPaymentStatus.NeedsRewarding);
+            Winners = session.Bets.Where(x => x.Status == BetStatus.NeedsRewarding);
 
             if (Winners.IsNullOrEmpty())
                 throw new ArgumentException(ErrorMessages.SessionWithoutWinners);
@@ -60,7 +60,7 @@ namespace Monkify.Domain.Sessions.Services
 
         public BetTransactionAmountResult CalculateRewardForBet(Bet bet)
         {
-            if (bet.PaymentStatus != BetPaymentStatus.NeedsRewarding)
+            if (bet.Status != BetStatus.NeedsRewarding)
                 return new BetTransactionAmountResult(ErrorMessages.BetCannotReceiveReward);
 
             decimal winnerReward = (PotAmount / Winners.Count()) - bet.Amount;
@@ -82,7 +82,7 @@ namespace Monkify.Domain.Sessions.Services
 
         public static BetTransactionAmountResult CalculateRefundForBet(TokenSettings settings, Bet bet)
         {
-            if (bet.PaymentStatus != BetPaymentStatus.NeedsRefunding)
+            if (bet.Status != BetStatus.NeedsRefunding)
                 return new BetTransactionAmountResult(ErrorMessages.BetCannotReceiveRefund);
 
             var credits = CalculateCreditsForBet(bet);

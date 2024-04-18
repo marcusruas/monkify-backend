@@ -17,7 +17,8 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
             Status = session.Status;
             StartDate = session.CreatedDate;
             EndDate = session.EndDate;
-            Bets = new();
+            WinningChoice = session.WinningChoice;
+            Bets = [];
 
             if (session.Parameters != null)
                 Parameters = new SessionParametersDto(session.Parameters);
@@ -30,6 +31,7 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
         public SessionStatus Status { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public string? WinningChoice { get; set; }
         public SessionParametersDto Parameters { get; set; }
         public List<BetDto> Bets { get; set; }
     }

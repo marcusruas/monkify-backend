@@ -45,7 +45,7 @@ namespace Monkify.Infrastructure.Context
             modelBuilder.Entity<Session>(builder =>
             {
                 builder.HasKey(x => x.Id);
-                builder.Property(x => x.Status).IsRequired().HasDefaultValue(SessionStatus.WaitingBets);
+                builder.Property(x => x.Status).IsRequired().HasDefaultValue(SessionStatus.WaitingBets).HasSentinel(SessionStatus.WaitingBets);
                 builder.Property(x => x.ParametersId).IsRequired();
                 builder.Property(x => x.WinningChoice).HasMaxLength(20);
                 builder.HasOne(x => x.Parameters).WithMany(x => x.Sessions).HasForeignKey(x => x.ParametersId);
@@ -56,16 +56,17 @@ namespace Monkify.Infrastructure.Context
             modelBuilder.Entity<SessionStatusLog>(builder =>
             {
                 builder.HasKey(x => x.Id);
-                builder.Property(x => x.NewStatus).IsRequired().HasDefaultValue(SessionStatus.WaitingBets);
+                builder.Property(x => x.NewStatus).IsRequired().HasDefaultValue(SessionStatus.WaitingBets).HasSentinel(SessionStatus.WaitingBets);
             });
 
             modelBuilder.Entity<Bet>(builder =>
             {
                 builder.HasKey(x => x.Id);
+                builder.Property(x => x.PaymentSignature).IsRequired().HasMaxLength(100);
                 builder.Property(x => x.Choice).IsRequired().HasMaxLength(20);
                 builder.Property(x => x.Wallet).IsRequired().HasMaxLength(50);
                 builder.Property(x => x.Amount).HasPrecision(18, 9).IsRequired();
-                builder.Property(x => x.PaymentStatus).IsRequired().HasDefaultValue(BetPaymentStatus.NotApplicable);
+                builder.Property(x => x.Status).IsRequired().HasDefaultValue(BetStatus.NotApplicable).HasSentinel(BetStatus.NotApplicable);
                 builder.HasMany(x => x.TransactionLogs).WithOne(x => x.Bet).HasForeignKey(x => x.BetId);
                 builder.HasMany(x => x.StatusLogs).WithOne(x => x.Bet).HasForeignKey(x => x.BetId);
             });
@@ -73,7 +74,7 @@ namespace Monkify.Infrastructure.Context
             modelBuilder.Entity<BetStatusLog>(builder =>
             {
                 builder.HasKey(x => x.Id);
-                builder.Property(x => x.NewStatus).IsRequired().HasDefaultValue(BetPaymentStatus.NotApplicable);
+                builder.Property(x => x.NewStatus).IsRequired().HasDefaultValue(BetStatus.NotApplicable).HasSentinel(BetStatus.NotApplicable);
             });
 
             modelBuilder.Entity<TransactionLog>(builder =>

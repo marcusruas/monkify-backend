@@ -17,17 +17,11 @@ namespace Monkify.Domain.Sessions.ValueObjects
         Started,
         [Description("Session has ended.")]
         Ended,
-        [Description("The session has ended, so the winners must be rewarded.")]
-        NeedsRewarding,
         [Description("The winners on this session are getting rewarded.")]
         RewardForWinnersInProgress,
         [Description("The winners on this session got rewarded.")]
         RewardForWinnersCompleted,
-        [Description("There was an error processing the session, so all players need to be refunded.")]
-        NeedsRefund,
-        [Description("The players on this session are getting refunded due to an error on the session.")]
-        RefundingPlayers,
-        [Description("The winners on this session got refunded.")]
-        PlayersRefunded
+        [Description("An error occurred while processing rewards for this session..")]
+        ErrorWhenProcessingRewards
     }
 }
