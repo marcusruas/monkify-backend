@@ -117,11 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="BetCannotReceiveRefund" xml:space="preserve">
+    <value>Bet is not in the status to receive refund.</value>
+  </data>
   <data name="BetCannotReceiveReward" xml:space="preserve">
     <value>Bet has not won, therefore cannot receive a reward for this session.</value>
   </data>
+  <data name="BetHasAlreadyBeenRefunded" xml:space="preserve">
+    <value>Bet has already been refunded.</value>
+  </data>
+  <data name="BetHasAlreadyBeenRewarded" xml:space="preserve">
+    <value>Bet has already been rewarded.</value>
+  </data>
   <data name="BetRewardBiggerThanThePot" xml:space="preserve">
-    <value>Bet reward cannot be bigger than the pot</value>
+    <value>Bet reward cannot be bigger than the pot.</value>
   </data>
   <data name="FailedToRegisterBet" xml:space="preserve">
     <value>The system could not register this bet at the moment, please try again later.</value>

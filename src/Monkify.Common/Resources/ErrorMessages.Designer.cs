@@ -61,6 +61,15 @@ namespace Monkify.Common.Resources {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Bet is not in the status to receive refund..
+        /// </summary>
+        public static string BetCannotReceiveRefund {
+            get {
+                return ResourceManager.GetString("BetCannotReceiveRefund", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Bet has not won, therefore cannot receive a reward for this session..
         /// </summary>
         public static string BetCannotReceiveReward {
@@ -70,7 +79,25 @@ namespace Monkify.Common.Resources {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a Bet reward cannot be bigger than the pot.
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Bet has already been refunded..
+        /// </summary>
+        public static string BetHasAlreadyBeenRefunded {
+            get {
+                return ResourceManager.GetString("BetHasAlreadyBeenRefunded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Bet has already been rewarded..
+        /// </summary>
+        public static string BetHasAlreadyBeenRewarded {
+            get {
+                return ResourceManager.GetString("BetHasAlreadyBeenRewarded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Bet reward cannot be bigger than the pot..
         /// </summary>
         public static string BetRewardBiggerThanThePot {
             get {

@@ -16,8 +16,8 @@ namespace Monkify.Tests.Domain.Sessions
         {
             var session = new Session();
 
-            session.Logs.ShouldNotBeNull();
-            session.Logs.ShouldBeEmpty();
+            session.StatusLogs.ShouldNotBeNull();
+            session.StatusLogs.ShouldBeEmpty();
         }
 
         [Fact]
@@ -28,9 +28,9 @@ namespace Monkify.Tests.Domain.Sessions
 
             session.ParametersId.ShouldBe(parametersId);
             session.Status.ShouldBe(SessionStatus.WaitingBets);
-            session.Logs.ShouldNotBeNull();
-            session.Logs.Count.ShouldBe(1);
-            session.Logs.First().NewStatus.ShouldBe(SessionStatus.WaitingBets);
+            session.StatusLogs.ShouldNotBeNull();
+            session.StatusLogs.Count.ShouldBe(1);
+            session.StatusLogs.First().NewStatus.ShouldBe(SessionStatus.WaitingBets);
         }
 
         [Fact]

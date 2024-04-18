@@ -48,7 +48,8 @@ builder.Services.AddSingleton(settings);
 builder.Services.AddSingleton(provider => ClientFactory.GetClient(settings.Token.ClusterUrl));
 
 builder.Services.AddHostedService<CreateSessions>();
-builder.Services.AddHostedService<RefundSession>();
+builder.Services.AddHostedService<RefundSessions>();
+builder.Services.AddHostedService<RewardSessions>();
 
 builder.Services.AddCors(options =>
 {

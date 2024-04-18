@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Monkify.Tests.Domain.Sessions
 {
-    public class BetValidatorTests
+    public class BetDomainServiceTests
     {
         [Fact]
         public void Constructor_NoBets_ShouldThrowException()
@@ -21,7 +21,7 @@ namespace Monkify.Tests.Domain.Sessions
             var session = new Session();
             var settings = new TokenSettings();
 
-            var exception = Should.Throw<ArgumentException>(() => new BetValidator(session, settings));
+            var exception = Should.Throw<ArgumentException>(() => new BetDomainService(session, settings));
             exception.Message.ShouldBe(ErrorMessages.SessionWithNoBets);
         }
 
@@ -31,13 +31,13 @@ namespace Monkify.Tests.Domain.Sessions
             var session = new Session();
             session.Bets = new List<Bet>()
             {
-                new () { Won = false, Amount = 4 },
-                new () { Won = false, Amount = 4 },
-                new () { Won = false, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
             };
             var settings = new TokenSettings();
 
-            var exception = Should.Throw<ArgumentException>(() => new BetValidator(session, settings));
+            var exception = Should.Throw<ArgumentException>(() => new BetDomainService(session, settings));
             exception.Message.ShouldBe(ErrorMessages.SessionWithoutWinners);
         }
 
@@ -47,59 +47,82 @@ namespace Monkify.Tests.Domain.Sessions
             var session = new Session();
             session.Bets = new List<Bet>()
             {
-                new () { Won = true, Amount = 4 },
-                new () { Won = false, Amount = 4 },
-                new () { Won = false, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.5m;
 
-            var validator = new BetValidator(session, settings);
+            var validator = new BetDomainService(session, settings);
             validator.PotAmount.ShouldBe(6);
         }
 
         [Fact]
         public void CalculateRewardForBet_SessionWithBets_ShouldCalculateCorrectly()
         {
-            var winnerBet = new Bet() { Won = true, Amount = 4 };
+            var winnerBet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 };
             var session = new Session();
 
             session.Bets = new List<Bet>()
             {
                 winnerBet,
-                new () { Won = false, Amount = 4 },
-                new () { Won = false, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
             settings.Decimals = 5;
 
-            var validator = new BetValidator(session, settings);
+            var validator = new BetDomainService(session, settings);
             var result = validator.CalculateRewardForBet(winnerBet);
 
             result.Value.ShouldBe(6.8m);
         }
 
         [Fact]
-        public void CalculateRewardForBet_SessionWithMultipleWinners_ShouldCalculateCorrectly()
+        public void CalculateRewardForBet_BetWithCredits_ShouldCalculateCorrectly()
         {
-            var winnerBet = new Bet() { Won = true, Amount = 4 };
+            var winnerBet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 };
+            winnerBet.TransactionLogs = new List<TransactionLog>() { new() { Amount = 3 } };
             var session = new Session();
 
             session.Bets = new List<Bet>()
             {
                 winnerBet,
-                new () { Won = true, Amount = 7.33654m },
-                new () { Won = true, Amount = 7.33654m },
-                new () { Won = false, Amount = 7.33654m },
-                new () { Won = false, Amount = 7.33654m },
-                new () { Won = false, Amount = 7.33654m },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
             settings.Decimals = 5;
 
-            var validator = new BetValidator(session, settings);
+            var validator = new BetDomainService(session, settings);
+            var result = validator.CalculateRewardForBet(winnerBet);
+
+            result.Value.ShouldBe(3.8m);
+        }
+
+        [Fact]
+        public void CalculateRewardForBet_SessionWithMultipleWinners_ShouldCalculateCorrectly()
+        {
+            var winnerBet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 };
+            var session = new Session();
+
+            session.Bets = new List<Bet>()
+            {
+                winnerBet,
+                new () { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 7.33654m },
+                new () { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 7.33654m },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 7.33654m },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 7.33654m },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 7.33654m },
+            };
+            var settings = new TokenSettings();
+            settings.CommisionPercentage = 0.1m;
+            settings.Decimals = 5;
+
+            var validator = new BetDomainService(session, settings);
             var result = validator.CalculateRewardForBet(winnerBet);
 
             result.Value.ShouldBe(8.20481M);
@@ -108,17 +131,17 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_NonWinnerBet_ShouldThrowException()
         {
-            var loserBet = new Bet() { Won = false, Amount = 4 };
+            var loserBet = new Bet() { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 };
             var session = new Session();
             session.Bets = new List<Bet>()
             {
-                new () { Won = true, Amount = 4 },
-                new () { Won = false, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
                 loserBet,
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.5m;
-            var validator = new BetValidator(session, settings);
+            var validator = new BetDomainService(session, settings);
 
             var result = validator.CalculateRewardForBet(loserBet);
             result.Value.ShouldBe(0);
@@ -128,20 +151,20 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_BiggerRewardThanPot_ShouldThrowException()
         {
-            var winnerBet = new Bet() { Won = true, Amount = 20 };
+            var winnerBet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 20 };
             var session = new Session();
 
             session.Bets = new List<Bet>()
             {
-                new () { Won = true, Amount = 4 },
-                new () { Won = false, Amount = 4 },
-                new () { Won = false, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
             settings.Decimals = 5;
 
-            var validator = new BetValidator(session, settings);
+            var validator = new BetDomainService(session, settings);
 
             var result = validator.CalculateRewardForBet(winnerBet);
             result.Value.ShouldBe(0);
@@ -149,29 +172,53 @@ namespace Monkify.Tests.Domain.Sessions
         }
 
         [Fact]
+        public void CalculateRewardForBet_AlreadyRewardedBet_ShouldCalculateCorrectly()
+        {
+            var winnerBet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRewarding, Amount = 4 };
+            winnerBet.TransactionLogs = new List<TransactionLog>() { new () { Amount = 6.8m } };
+            var session = new Session();
+
+            session.Bets = new List<Bet>()
+            {
+                winnerBet,
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+                new () { PaymentStatus = BetPaymentStatus.NotApplicable, Amount = 4 },
+            };
+            var settings = new TokenSettings();
+            settings.CommisionPercentage = 0.1m;
+            settings.Decimals = 5;
+
+            var validator = new BetDomainService(session, settings);
+            var result = validator.CalculateRewardForBet(winnerBet);
+
+            result.Value.ShouldBe(0);
+            result.ErrorMessage.ShouldBe(ErrorMessages.BetHasAlreadyBeenRewarded);
+        }
+
+        [Fact]
         public void CalculateRefundForBet_ValidBet_ShouldCalculateCorrectly()
         {
-            var bet = new Bet() { Won = false, Amount = 6 };
+            var bet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRefunding, Amount = 6 };
 
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
             settings.Decimals = 5;
 
-            var refund = BetValidator.CalculateRefundForBet(settings, bet);
+            var refund = BetDomainService.CalculateRefundForBet(settings, bet);
             refund.Value.ShouldBe(6);
         }
 
         [Fact]
         public void CalculateRefundForBet_BetWithCredits_ShouldCalculateCorrectly()
         {
-            var log = new BetTransactionLog() { Amount = 4 };
-            var bet = new Bet() { Won = false, Amount = 6, Logs = new List<BetTransactionLog>() { log } };
+            var log = new TransactionLog() { Amount = 4 };
+            var bet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRefunding, Amount = 6, TransactionLogs = new List<TransactionLog>() { log } };
 
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
             settings.Decimals = 5;
 
-            var refund = BetValidator.CalculateRefundForBet(settings, bet);
+            var refund = BetDomainService.CalculateRefundForBet(settings, bet);
             refund.Value.ShouldBe(2);
         }
 
@@ -180,13 +227,13 @@ namespace Monkify.Tests.Domain.Sessions
         [InlineData(7, -1)]
         public void CalculateRefundForBet_RefundedBet_ShouldCalculateCorrectly(int amount, decimal value)
         {
-            var log = new BetTransactionLog() { Amount = amount };
-            var bet = new Bet() { Won = false, Amount = 6, Logs = new List<BetTransactionLog>() { log } };
+            var log = new TransactionLog() { Amount = amount };
+            var bet = new Bet() { PaymentStatus = BetPaymentStatus.NeedsRefunding, Amount = 6, TransactionLogs = new List<TransactionLog>() { log } };
 
             var settings = new TokenSettings();
             settings.Decimals = 5;
 
-            var refund = BetValidator.CalculateRefundForBet(settings, bet);
+            var refund = BetDomainService.CalculateRefundForBet(settings, bet);
             refund.Value.ShouldBe(value);
             refund.ValueInTokens.ShouldBe(ulong.MinValue);
         }
@@ -208,7 +255,7 @@ namespace Monkify.Tests.Domain.Sessions
             };
             var bet = new Bet { Choice = choice };
 
-            var result = BetValidator.ChoiceIsValidForSession(bet, session);
+            var result = BetDomainService.ChoiceIsValidForSession(bet, session);
 
             result.ShouldBe(BetValidationResult.InvalidChoice);
         }
@@ -230,7 +277,7 @@ namespace Monkify.Tests.Domain.Sessions
             };
             var bet = new Bet { Choice = choice };
 
-            var result = BetValidator.ChoiceIsValidForSession(bet, session);
+            var result = BetDomainService.ChoiceIsValidForSession(bet, session);
 
             result.ShouldBe(BetValidationResult.InvalidCharacters);
         }
@@ -251,7 +298,7 @@ namespace Monkify.Tests.Domain.Sessions
             };
             var bet = new Bet { Choice = choice };
 
-            var result = BetValidator.ChoiceIsValidForSession(bet, session);
+            var result = BetDomainService.ChoiceIsValidForSession(bet, session);
 
             result.ShouldBe(BetValidationResult.WrongChoiceLength);
         }
@@ -273,7 +320,7 @@ namespace Monkify.Tests.Domain.Sessions
             };
             var bet = new Bet { Choice = choice };
 
-            var result = BetValidator.ChoiceIsValidForSession(bet, session);
+            var result = BetDomainService.ChoiceIsValidForSession(bet, session);
 
             result.ShouldBe(BetValidationResult.UnacceptedDuplicateCharacters);
         }
@@ -294,7 +341,7 @@ namespace Monkify.Tests.Domain.Sessions
             };
             var bet = new Bet { Choice = "abc", Amount = betAmount };
 
-            var result = BetValidator.ChoiceIsValidForSession(bet, session);
+            var result = BetDomainService.ChoiceIsValidForSession(bet, session);
 
             result.ShouldBe(BetValidationResult.InvalidAmount);
         }
@@ -314,7 +361,7 @@ namespace Monkify.Tests.Domain.Sessions
             };
             var bet = new Bet { Choice = "abcd", Amount = 2 };
 
-            var result = BetValidator.ChoiceIsValidForSession(bet, session);
+            var result = BetDomainService.ChoiceIsValidForSession(bet, session);
 
             result.ShouldBe(BetValidationResult.Valid);
         }
@@ -336,7 +383,7 @@ namespace Monkify.Tests.Domain.Sessions
             };
             var bet = new Bet { Choice = "abcd", Amount = 2 };
 
-            var result = BetValidator.ChoiceIsValidForSession(bet, session);
+            var result = BetDomainService.ChoiceIsValidForSession(bet, session);
 
             result.ShouldBe(BetValidationResult.Valid);
         }

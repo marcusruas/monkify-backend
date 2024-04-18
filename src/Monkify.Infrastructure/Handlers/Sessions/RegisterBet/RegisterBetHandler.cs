@@ -56,9 +56,9 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
             if (_session is null)
                 Messaging.ReturnValidationFailureMessage(ErrorMessages.SessionNotValidForBets);
 
-            _bet = request.ToBet();
+            _bet = new(request.SessionId, request.Body.Wallet, request.Body.Choice, request.Body.Amount.Value);
 
-            var betValidationResult = BetValidator.ChoiceIsValidForSession(_bet, _session);
+            var betValidationResult = BetDomainService.ChoiceIsValidForSession(_bet, _session);
 
             if (betValidationResult != BetValidationResult.Valid)
                 Messaging.ReturnValidationFailureMessage(betValidationResult.StringValueOf());

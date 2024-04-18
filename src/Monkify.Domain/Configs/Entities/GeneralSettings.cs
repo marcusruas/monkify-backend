@@ -9,7 +9,7 @@ namespace Monkify.Domain.Configs.Entities
     public class GeneralSettings
     {
         public SessionSettings Sessions { get; set; }
-        public AuthenticationSettings Authentication { get; set; }
         public TokenSettings Token { get; set; }
+        public WorkerSettings Workers { get; set; }
     }
 }

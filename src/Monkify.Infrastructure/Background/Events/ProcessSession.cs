@@ -44,6 +44,30 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
         {
             _session = notification.Session;
 
+            var sessionHasEnoughPlayers = await WaitForBets(cancellationToken);
+
+            if (!sessionHasEnoughPlayers)
+            {
+                await _sessionService.UpdateSessionStatus(_session, NotEnoughPlayersToStart);
+                await _sessionService.UpdateSessionStatus(_session, NeedsRefund);
+
+                await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
+                return;
+            }
+
+            _monkey = new MonkifyTyper(_session);
+
+            await _sessionService.UpdateSessionStatus(_session, Started);
+            await SendTerminalCharacters();
+            await _sessionService.UpdateSessionStatus(_session, Ended, _monkey);
+            await _sessionService.UpdateSessionStatus(_session, NeedsRewarding);
+            await DeclareWinners();
+
+            await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
+        }
+
+        private async Task<bool> WaitForBets(CancellationToken cancellationToken)
+        {
             bool sessionHasEnoughPlayers = false;
             bool minimumTimeElapsed = false;
             bool maximumTimeElapsed = false;
@@ -63,23 +87,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
                 await Task.Delay(2000, cancellationToken);
             }
 
-            if (!sessionHasEnoughPlayers)
-            {
-                await _sessionService.UpdateSessionStatus(_session, NotEnoughPlayersToStart);
-                await _sessionService.UpdateSessionStatus(_session, NeedsRefund);
-
-                await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
-                return;
-            }
-
-            _monkey = new MonkifyTyper(_session);
-
-            await _sessionService.UpdateSessionStatus(_session, Started);
-            await SendTerminalCharacters();
-            await _sessionService.UpdateSessionStatus(_session, Ended, _monkey);
-            await DeclareWinners();
-
-            await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
+            return sessionHasEnoughPlayers;
         }
 
         private async Task SendTerminalCharacters()
@@ -110,8 +118,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.Events
             if (!_monkey.HasWinners)
                 return;
 
-            _context.SessionBets.UpdateRange(_session.Bets);
-            await _context.SaveChangesAsync();
+            await _sessionService.UpdateBetPaymentStatus(_session.Bets.Where(x => x.Choice == _monkey.FirstChoiceTyped), BetPaymentStatus.NeedsRewarding);
             await _mediator.Publish(new RewardWinnersEvent(_session));
         }
     }

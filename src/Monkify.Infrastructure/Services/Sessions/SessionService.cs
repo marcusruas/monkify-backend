@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Monkify.Domain.Configs.Entities;
@@ -42,13 +43,16 @@ namespace Monkify.Infrastructure.Services.Sessions
                     _context.Entry(session).Property(x => x.WinningChoice).IsModified = true;
                 }
 
-                await _context.SessionLogs.AddAsync(new SessionLog(session.Id, session.Status, status));
+                await _context.SessionStatusLogs.AddAsync(new SessionStatusLog(session.Id, session.Status, status));
 
                 session.UpdateStatus(status, monkey?.FirstChoiceTyped);
                 _context.Entry(session).Property(x => x.Status).IsModified = true;
                 _context.Entry(session).Property(x => x.EndDate).IsModified = true;
                 
                 await _context.SaveChangesAsync();
+
+                if (Session.DontSendNotificationStatus.Contains(status))
+                    return;
 
                 var statusJson = new SessionStatusUpdated(status, result).AsJson();
                 string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionStatusEndpoint, session.Id.ToString());
@@ -58,6 +62,26 @@ namespace Monkify.Infrastructure.Services.Sessions
             {
                 Log.Error(ex, "Failed to change status for session {0}. CurrentStatus: {1}, New status {2}.", session.Id, session.Status, status);
             }
+        }
+
+        public async Task UpdateBetPaymentStatus(IEnumerable<Bet> bets, BetPaymentStatus status)
+        {
+            foreach(var bet in bets)
+                await UpdateBetPaymentStatusWithoutSaving(bet, status);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateBetPaymentStatus(Bet bet, BetPaymentStatus status)
+        {
+            await UpdateBetPaymentStatusWithoutSaving(bet, status);
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task UpdateBetPaymentStatusWithoutSaving(Bet bet, BetPaymentStatus status)
+        {
+            await _context.BetStatusLogs.AddAsync(new BetStatusLog(bet.Id, bet.PaymentStatus, status));
+            bet.PaymentStatus = status;
+            _context.Entry(bet).Property(x => x.PaymentStatus).IsModified = true;
         }
     }
 }

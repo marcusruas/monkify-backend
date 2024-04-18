@@ -16,7 +16,7 @@ namespace Monkify.Domain.Sessions.Entities
     {
         public Session()
         {
-            Logs = new Collection<SessionLog>();
+            StatusLogs = new Collection<SessionStatusLog>();
         }
 
         public Session(Guid parametersId)
@@ -24,9 +24,9 @@ namespace Monkify.Domain.Sessions.Entities
             ParametersId = parametersId;
             Status = WaitingBets;
 
-            Logs = new Collection<SessionLog>
+            StatusLogs = new Collection<SessionStatusLog>
             {
-                new SessionLog(Id, null, WaitingBets)
+                new SessionStatusLog(Id, null, WaitingBets)
             };
         }
 
@@ -36,7 +36,7 @@ namespace Monkify.Domain.Sessions.Entities
         public DateTime? EndDate { get; set; }
         public string? WinningChoice { get; set; }
         public ICollection<Bet> Bets { get; set; }
-        public ICollection<SessionLog> Logs { get; set; }
+        public ICollection<SessionStatusLog> StatusLogs { get; set; }
 
         public void UpdateStatus(SessionStatus status, string? winningChoice = null)
         {
@@ -49,7 +49,8 @@ namespace Monkify.Domain.Sessions.Entities
             }
         }
 
-        public static SessionStatus[] SessionInProgressStatus = { WaitingBets, Started };
-        public static SessionStatus[] SessionEndedStatus = { NotEnoughPlayersToStart, Ended };
+        public static SessionStatus[] SessionInProgressStatus = [WaitingBets, Started];
+        public static SessionStatus[] SessionEndedStatus = [NotEnoughPlayersToStart, Ended];
+        public static SessionStatus[] DontSendNotificationStatus = [NeedsRewarding, NeedsRefund];
     }
 }

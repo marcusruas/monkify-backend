@@ -14,14 +14,5 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
         public Guid SessionId { get; set; }
         public RegisterBetRequestBody Body { get; set; }
-
-        public Bet ToBet()
-            => new()
-            {
-                SessionId = SessionId,
-                Wallet = Body.Wallet,
-                Choice = Body.Choice,
-                Amount = Body.Amount.Value
-            };
     }
 }

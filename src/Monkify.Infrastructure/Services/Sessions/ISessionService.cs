@@ -12,5 +12,7 @@ namespace Monkify.Infrastructure.Services.Sessions
     public interface ISessionService
     {
         Task UpdateSessionStatus(Session session, SessionStatus status, MonkifyTyper? monkey = null);
+        Task UpdateBetPaymentStatus(IEnumerable<Bet> bets, BetPaymentStatus status);
+        Task UpdateBetPaymentStatus(Bet bet, BetPaymentStatus status);
     }
 }

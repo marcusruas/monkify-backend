@@ -13,9 +13,10 @@ namespace Monkify.Infrastructure.Context
         public DbSet<PresetChoice> PresetChoices { get; set; }
         public DbSet<SessionParameters> SessionParameters { get; set; }
         public DbSet<Session> Sessions { get; set; }
-        public DbSet<SessionLog> SessionLogs { get; set; }
+        public DbSet<SessionStatusLog> SessionStatusLogs { get; set; }
         public DbSet<Bet> SessionBets { get; set; }
-        public DbSet<BetTransactionLog> TransactionLogs { get; set; }
+        public DbSet<BetStatusLog> BetStatusLogs { get; set; }
+        public DbSet<TransactionLog> TransactionLogs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -49,10 +50,10 @@ namespace Monkify.Infrastructure.Context
                 builder.Property(x => x.WinningChoice).HasMaxLength(20);
                 builder.HasOne(x => x.Parameters).WithMany(x => x.Sessions).HasForeignKey(x => x.ParametersId);
                 builder.HasMany(x => x.Bets).WithOne(x => x.Session).HasForeignKey(x => x.SessionId);
-                builder.HasMany(x => x.Logs).WithOne(x => x.Session).HasForeignKey(x => x.SessionId);
+                builder.HasMany(x => x.StatusLogs).WithOne(x => x.Session).HasForeignKey(x => x.SessionId);
             });
 
-            modelBuilder.Entity<SessionLog>(builder =>
+            modelBuilder.Entity<SessionStatusLog>(builder =>
             {
                 builder.HasKey(x => x.Id);
                 builder.Property(x => x.NewStatus).IsRequired().HasDefaultValue(SessionStatus.WaitingBets);
@@ -64,11 +65,18 @@ namespace Monkify.Infrastructure.Context
                 builder.Property(x => x.Choice).IsRequired().HasMaxLength(20);
                 builder.Property(x => x.Wallet).IsRequired().HasMaxLength(50);
                 builder.Property(x => x.Amount).HasPrecision(18, 9).IsRequired();
-                builder.Property(x => x.Won).IsRequired().HasDefaultValue(false);
-                builder.HasMany(x => x.Logs).WithOne(x => x.Bet).HasForeignKey(x => x.BetId);
+                builder.Property(x => x.PaymentStatus).IsRequired().HasDefaultValue(BetPaymentStatus.NotApplicable);
+                builder.HasMany(x => x.TransactionLogs).WithOne(x => x.Bet).HasForeignKey(x => x.BetId);
+                builder.HasMany(x => x.StatusLogs).WithOne(x => x.Bet).HasForeignKey(x => x.BetId);
             });
 
-            modelBuilder.Entity<BetTransactionLog>(builder =>
+            modelBuilder.Entity<BetStatusLog>(builder =>
+            {
+                builder.HasKey(x => x.Id);
+                builder.Property(x => x.NewStatus).IsRequired().HasDefaultValue(BetPaymentStatus.NotApplicable);
+            });
+
+            modelBuilder.Entity<TransactionLog>(builder =>
             {
                 builder.HasKey(x => x.Id);
                 builder.Property(x => x.Amount).HasPrecision(18, 9).IsRequired();

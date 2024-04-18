@@ -10,7 +10,7 @@ namespace Monkify.Infrastructure.Services.Solana
 {
     public interface ISolanaService
     {
-        Task<bool> TransferTokens(Guid betId, string walletId, BetTransactionAmountResult amount);
-        Task<bool> TransferRefundTokens(Bet bet, BetTransactionAmountResult amount);
+        Task<bool> SetLatestBlockhashForTokenTransfer();
+        Task<bool> TransferTokensForBet(Bet bet, BetTransactionAmountResult amount);
     }
 }

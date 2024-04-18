@@ -36,7 +36,7 @@ namespace Monkify.Infrastructure.Background.Workers
 
                 if (!activeParameters.Any())
                 {
-                    await Task.Delay(2000, cancellationToken);
+                    await Task.Delay(settings.Workers.CreateSessionsInterval * 1000, cancellationToken);;
                     return;
                 }
 

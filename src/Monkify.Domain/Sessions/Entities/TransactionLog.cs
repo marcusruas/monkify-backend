@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Sessions.Entities
 {
-    public class BetTransactionLog : TableEntity
+    public class TransactionLog : TableEntity
     {
-        public BetTransactionLog() { }
+        public TransactionLog() { }
 
-        public BetTransactionLog(decimal amount, string signature, Guid betId)
+        public TransactionLog(Guid betId, decimal amount, string signature)
         {
+            BetId = betId;
             Amount = amount;
             Signature = signature;
-            BetId = betId;
         }
 
         public Bet Bet { get; set; }

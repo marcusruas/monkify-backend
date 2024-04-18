@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Monkify.Common.Resources;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Events;
@@ -29,49 +30,61 @@ namespace Monkify.Infrastructure.Background.Events
 {
     public class RewardWinners : BaseNotificationHandler<RewardWinnersEvent>
     {
-        public RewardWinners(MonkifyDbContext context, ISolanaService client, ISessionService sessionService, GeneralSettings settings)
+        public RewardWinners(ISolanaService client, ISessionService sessionService, GeneralSettings settings)
         {
-            _context = context;
             _solanaService = client;
             _sessionService = sessionService;
             _settings = settings;
         }
 
-        private readonly MonkifyDbContext _context;
         private readonly ISolanaService _solanaService;
         private readonly ISessionService _sessionService;
         private readonly GeneralSettings _settings;
 
-        private BetValidator _betValidator;
+        private BetDomainService _betService;
 
         public override async Task HandleRequest(RewardWinnersEvent notification, CancellationToken cancellationToken)
         {
-            _betValidator = new(notification.Session, _settings.Token);
+            _betService = new(notification.Session, _settings.Token);
+
+            bool solanaIsUp = await _solanaService.SetLatestBlockhashForTokenTransfer();
+
+            if (!solanaIsUp)
+                return;
+
+            bool allBetsRewarded = true;
 
             await _sessionService.UpdateSessionStatus(notification.Session, SessionStatus.RewardForWinnersInProgress);
 
-            try
+            foreach (var winner in _betService.Winners)
             {
-                foreach (var winner in _betValidator.Winners)
+                var rewardResult = _betService.CalculateRewardForBet(winner);
+
+                if (string.IsNullOrWhiteSpace(rewardResult.ErrorMessage))
                 {
-                    var rewardResult = _betValidator.CalculateRewardForBet(winner);
+                    bool transactionSuccessful = await _solanaService.TransferTokensForBet(winner, rewardResult);
 
-                    if (!string.IsNullOrWhiteSpace(rewardResult.ErrorMessage))
-                    {
-                        Log.Warning("Bet {0} could not be rewarded due to an error. details: {1}", winner.Id, rewardResult.ErrorMessage);
-                        continue;
-                    }
+                    if (transactionSuccessful)
+                        await _sessionService.UpdateBetPaymentStatus(winner, BetPaymentStatus.Rewarded);
 
-                    await _solanaService.TransferTokens(winner.Id, winner.Wallet, rewardResult);
+                    allBetsRewarded &= transactionSuccessful;
+
+                    continue;
                 }
-            }
-            catch
-            {
-                await _sessionService.UpdateSessionStatus(notification.Session, SessionStatus.NeedsRefund);
-                return;
+
+                Log.Warning("Bet {0} could not be rewarded due to an error. details: {1}", winner.Id, rewardResult.ErrorMessage);
+
+                if (rewardResult.ErrorMessage == ErrorMessages.BetHasAlreadyBeenRewarded)
+                    await _sessionService.UpdateBetPaymentStatus(winner, BetPaymentStatus.Rewarded);
+
+                if (rewardResult.ErrorMessage == ErrorMessages.BetRewardBiggerThanThePot)
+                    await _sessionService.UpdateBetPaymentStatus(winner, BetPaymentStatus.NeedsManualAnalysis);
             }
 
-            await _sessionService.UpdateSessionStatus(notification.Session, SessionStatus.RewardForWinnersCompleted);
+            if (allBetsRewarded)
+                await _sessionService.UpdateSessionStatus(notification.Session, SessionStatus.RewardForWinnersCompleted);
+            else
+                await _sessionService.UpdateSessionStatus(notification.Session, SessionStatus.NeedsRewarding);
         }
     }
 }

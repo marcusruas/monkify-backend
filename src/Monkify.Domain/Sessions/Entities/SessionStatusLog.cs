@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Sessions.Entities
 {
-    public class SessionLog : TableEntity
+    public class SessionStatusLog : TableEntity
     {
-        public SessionLog() { }
+        public SessionStatusLog() { }
 
-        public SessionLog(Guid sessionId, SessionStatus? previousStatus, SessionStatus newStatus)
+        public SessionStatusLog(Guid sessionId, SessionStatus? previousStatus, SessionStatus newStatus)
         {
             SessionId = sessionId;
             PreviousStatus = previousStatus;

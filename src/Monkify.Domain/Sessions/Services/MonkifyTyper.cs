@@ -25,7 +25,7 @@ namespace Monkify.Domain.Sessions.Services
         public int NumberOfWinners { get; private set; }
         public string FirstChoiceTyped { get; private set; }
 
-        private Dictionary<string, List<Bet>> Bets;
+        private Dictionary<string, int> Bets;
         private int QueueLength { get; set; }
         private char[] CharactersOnTyper { get; set; }
         private Queue<char> TypedCharacters { get; set; }
@@ -42,7 +42,7 @@ namespace Monkify.Domain.Sessions.Services
                     if (presetChoice.Choice.Length > QueueLength)
                         QueueLength = presetChoice.Choice.Length;
 
-                    Bets.Add(presetChoice.Choice, new List<Bet>());
+                    Bets.Add(presetChoice.Choice, 0);
                 }
             }
 
@@ -52,9 +52,9 @@ namespace Monkify.Domain.Sessions.Services
                     QueueLength = bet.Choice.Length;
 
                 if (Bets.ContainsKey(bet.Choice))
-                    Bets[bet.Choice].Add(bet);
+                    Bets[bet.Choice]++;
                 else
-                    Bets.Add(bet.Choice, new List<Bet>() { bet });
+                    Bets.Add(bet.Choice, 1);
             }
 
             TypedCharacters = new Queue<char>(QueueLength);
@@ -103,12 +103,11 @@ namespace Monkify.Domain.Sessions.Services
         {
             string choice = new (TypedCharacters.ToArray());
 
-            if (Bets.TryGetValue(choice, out List<Bet>? value))
+            if (Bets.TryGetValue(choice, out int amountOfPlayers))
             {
-                HasWinners = value.Count != 0;
-                NumberOfWinners += value.Count;
+                HasWinners = amountOfPlayers != 0;
+                NumberOfWinners += amountOfPlayers;
                 FirstChoiceTyped = choice;
-                value.ForEach(x => x.Won = true);
             }
         }
 
