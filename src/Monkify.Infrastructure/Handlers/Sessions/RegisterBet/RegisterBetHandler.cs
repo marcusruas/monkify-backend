@@ -12,29 +12,29 @@ using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.ResponseTypes.Sessions;
-using Newtonsoft.Json;
+using Monkify.Infrastructure.Services.Solana;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 {
     public class RegisterBetHandler : BaseRequestHandler<RegisterBetRequest, BetDto>
     {
-        public RegisterBetHandler(MonkifyDbContext context, IMessaging messaging, IHubContext<ActiveSessionsHub> activeSessionsHub, GeneralSettings settings) : base(context, messaging)
+        public RegisterBetHandler(
+            MonkifyDbContext context, 
+            IMessaging messaging, 
+            IHubContext<ActiveSessionsHub> activeSessionsHub, GeneralSettings settings,
+            ISolanaService solanaService
+        ) : base(context, messaging)
         {
             _activeSessionsHub = activeSessionsHub;
             _settings = settings;
+            _solanaService = solanaService;
         }
 
         private readonly IHubContext<ActiveSessionsHub> _activeSessionsHub;
         private readonly GeneralSettings _settings;
+        private readonly ISolanaService _solanaService;
 
-        private Session _session;
         private Bet _bet;
 
         public override async Task<BetDto> HandleRequest(RegisterBetRequest request, CancellationToken cancellationToken)
@@ -48,17 +48,17 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
         private async Task ValidateBet(RegisterBetRequest request)
         {
-            _session = await Context.Sessions
+            var session = await Context.Sessions
                 .Include(x => x.Parameters)
                 .ThenInclude(x => x.PresetChoices)
                 .FirstOrDefaultAsync(x => x.Id == request.SessionId && x.Status == SessionStatus.WaitingBets);
 
-            if (_session is null)
+            if (session is null)
                 Messaging.ReturnValidationFailureMessage(ErrorMessages.SessionNotValidForBets);
 
             _bet = new(request.SessionId, request.Body.PaymentSignature, request.Body.Wallet, request.Body.Choice, request.Body.Amount.Value);
 
-            var betValidationResult = BetDomainService.ChoiceIsValidForSession(_bet, _session);
+            var betValidationResult = BetDomainService.ChoiceIsValidForSession(_bet, session);
 
             if (betValidationResult != BetValidationResult.Valid)
                 Messaging.ReturnValidationFailureMessage(betValidationResult.StringValueOf());
@@ -67,6 +67,11 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
             if (signatureHasBeenUsed)
                 Messaging.ReturnValidationFailureMessage(ErrorMessages.InvalidPaymentSignature);
+
+            var paymentResult = await _solanaService.ValidateBetPayment(_bet);
+
+            if (!paymentResult.IsValid)
+                Messaging.ReturnValidationFailureMessage(paymentResult.ErrorMessage);
         }
 
         private async Task RegisterBet()
@@ -85,7 +90,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         {
             string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionBetsEndpoint, _bet.SessionId.ToString());
 
-            var sessionJson = new BetCreated(_bet.Wallet, _bet.Amount, _bet.Choice).AsJson();
+            var sessionJson = new BetCreated(_bet.Wallet, _bet.PaymentSignature, _bet.Amount, _bet.Choice).AsJson();
             await _activeSessionsHub.Clients.All.SendAsync(sessionStatusEndpoint, sessionJson);
         }
     }

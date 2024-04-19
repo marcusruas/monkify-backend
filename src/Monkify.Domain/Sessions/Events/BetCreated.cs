@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Sessions.Events
 {
-    public record BetCreated(string Wallet, decimal Amount, string Choice) { }
+    public record BetCreated(string Wallet, string PaymentSignature, decimal Amount, string Choice) { }
 }

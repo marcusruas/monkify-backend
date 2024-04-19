@@ -61,6 +61,15 @@ namespace Monkify.Common.Resources {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a If you requested a transaction and it has a different amount than you desired. You can request a refund for the transaction sending an email with the signature to marcusruas.andrade@gmail.com.
+        /// </summary>
+        public static string AdviceOnDifferentSignatureBetAmount {
+            get {
+                return ResourceManager.GetString("AdviceOnDifferentSignatureBetAmount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Bet is not in the status to receive refund..
         /// </summary>
         public static string BetCannotReceiveRefund {
@@ -115,11 +124,20 @@ namespace Monkify.Common.Resources {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a The requested payment signature has already been used. Make another transaction with the appropriate amount..
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The requested payment signature is not valid. Please check the data and try again..
         /// </summary>
         public static string InvalidPaymentSignature {
             get {
                 return ResourceManager.GetString("InvalidPaymentSignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The requested payment signature has already been used. Make another transaction with the appropriate amount..
+        /// </summary>
+        public static string PaymentSignatureHasBeenUsed {
+            get {
+                return ResourceManager.GetString("PaymentSignatureHasBeenUsed", resourceCulture);
             }
         }
         
@@ -147,6 +165,42 @@ namespace Monkify.Common.Resources {
         public static string SessionWithoutWinners {
             get {
                 return ResourceManager.GetString("SessionWithoutWinners", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The requested payment signature has sent less tokens than informed in the request. .
+        /// </summary>
+        public static string SignaturePaidLessThanBetAmount {
+            get {
+                return ResourceManager.GetString("SignaturePaidLessThanBetAmount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The requested payment signature has sent more tokens than informed in the request. .
+        /// </summary>
+        public static string SignaturePaidMoreThanBetAmount {
+            get {
+                return ResourceManager.GetString("SignaturePaidMoreThanBetAmount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The requested payment signature have not sent tokens from the request wallet. Please try sending a valid transaction..
+        /// </summary>
+        public static string SignatureWithoutBetAccount {
+            get {
+                return ResourceManager.GetString("SignatureWithoutBetAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The requested payment signature have not sent tokens to our accounts. Please try sending a valid transaction..
+        /// </summary>
+        public static string SignatureWithoutOwnerAccount {
+            get {
+                return ResourceManager.GetString("SignatureWithoutOwnerAccount", resourceCulture);
             }
         }
     }

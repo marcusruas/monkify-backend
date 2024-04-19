@@ -13,6 +13,6 @@ namespace Monkify.Infrastructure.Services.Solana
     {
         Task<bool> SetLatestBlockhashForTokenTransfer();
         Task<bool> TransferTokensForBet(Bet bet, BetTransactionAmountResult amount);
-        Task<ValidationResult> ValidateBetPayment(Bet bet, string transactionSignature);
+        Task<ValidationResult> ValidateBetPayment(Bet bet);
     }
 }

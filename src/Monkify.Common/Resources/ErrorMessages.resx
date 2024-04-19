@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AdviceOnDifferentSignatureBetAmount" xml:space="preserve">
+    <value>If you requested a transaction and it has a different amount than you desired. You can request a refund for the transaction sending an email with the signature to marcusruas.andrade@gmail.com</value>
+  </data>
   <data name="BetCannotReceiveRefund" xml:space="preserve">
     <value>Bet is not in the status to receive refund.</value>
   </data>
@@ -136,6 +139,9 @@
     <value>The system could not register this bet at the moment, please try again later.</value>
   </data>
   <data name="InvalidPaymentSignature" xml:space="preserve">
+    <value>The requested payment signature is not valid. Please check the data and try again.</value>
+  </data>
+  <data name="PaymentSignatureHasBeenUsed" xml:space="preserve">
     <value>The requested payment signature has already been used. Make another transaction with the appropriate amount.</value>
   </data>
   <data name="SessionNotValidForBets" xml:space="preserve">
@@ -146,5 +152,17 @@
   </data>
   <data name="SessionWithoutWinners" xml:space="preserve">
     <value>There are no winners in this session. Transfers cannot be made.</value>
+  </data>
+  <data name="SignaturePaidLessThanBetAmount" xml:space="preserve">
+    <value>The requested payment signature has sent less tokens than informed in the request. </value>
+  </data>
+  <data name="SignaturePaidMoreThanBetAmount" xml:space="preserve">
+    <value>The requested payment signature has sent more tokens than informed in the request. </value>
+  </data>
+  <data name="SignatureWithoutBetAccount" xml:space="preserve">
+    <value>The requested payment signature have not sent tokens from the request wallet. Please try sending a valid transaction.</value>
+  </data>
+  <data name="SignatureWithoutOwnerAccount" xml:space="preserve">
+    <value>The requested payment signature have not sent tokens to our accounts. Please try sending a valid transaction.</value>
   </data>
 </root>

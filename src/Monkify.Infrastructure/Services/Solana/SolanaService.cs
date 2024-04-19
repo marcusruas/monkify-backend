@@ -1,4 +1,5 @@
-﻿using Monkify.Common.Results;
+﻿using Monkify.Common.Resources;
+using Monkify.Common.Results;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
@@ -38,7 +39,7 @@ namespace Monkify.Infrastructure.Services.Solana
                 .RetryAsync(_settings.Polly.GetTransactionRetryCount, onRetry: (response, retryCount) =>
                 {
                     var result = response.Result;
-                    Serilog.Log.Error("Attempt {0}, Failed to get latest blockhash from solana client. Reason: {1}, Details: {2}", retryCount, result.Reason, result.RawRpcResponse);
+                    Serilog.Log.Error("Attempt {0}: Failed to get data for the transaction. Reason: {1}, Details: {2}", retryCount, result.Reason, result.RawRpcResponse);
                 });
         }
 
@@ -100,26 +101,86 @@ namespace Monkify.Infrastructure.Services.Solana
             }
         }
 
-        public async Task<ValidationResult> ValidateBetPayment(Bet bet, string transactionSignature)
+        public async Task<ValidationResult> ValidateBetPayment(Bet bet)
         {
             if (bet.Amount == 0)
             {
-                Serilog.Log.Warning("An attempt to check for a paid transaction with 0 tokens has been made. Bet: {0}, Signature: {1}", bet.Id, transactionSignature);
+                Serilog.Log.Warning("An attempt to check for a paid transaction with 0 tokens has been made. Bet: {0}, Signature: {1}", bet.Id, bet.PaymentSignature);
                 return new ValidationResult();
             }
-            
-            var transactionResponse = await _getTransactionPolicy.ExecuteAsync(async () => await _rpcClient.GetTransactionAsync(transactionSignature));
 
-            //if (transactionResponse.WasSuccessful)
-            //    return false;
+            var transactionResponse = await _getTransactionPolicy.ExecuteAsync(async () => await _rpcClient.GetTransactionAsync(bet.PaymentSignature));
 
-            var senderIndex = Array.IndexOf(transactionResponse.Result.Transaction.Message.AccountKeys, _settings.Token.SenderAccount);
-            var recipientIndex = Array.IndexOf(transactionResponse.Result.Transaction.Message.AccountKeys, bet.Wallet);
+            if (transactionResponse.WasSuccessful)
+                return new ValidationResult(ErrorMessages.InvalidPaymentSignature);
 
-            var senderPreBalanceAccount = transactionResponse.Result.Meta.PreTokenBalances.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.AccountIndex == senderIndex);
-            var senderPostBalanceAccount = transactionResponse.Result.Meta.PostTokenBalances.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.AccountIndex == recipientIndex);
+            var tokensBet = (ulong)(bet.Amount * (decimal)Math.Pow(10, _settings.Token.Decimals));
+
+            var recipientErrorMessage = ValidateTokenExchangeForOwnerAccount(bet, tokensBet, transactionResponse.Result);
+
+            if (!string.IsNullOrWhiteSpace(recipientErrorMessage))
+                return new ValidationResult(recipientErrorMessage);
+
+            var senderErrorMessage = ValidateTokenExchangeForSenderAccount(bet, tokensBet, transactionResponse.Result);
+
+            if (!string.IsNullOrWhiteSpace(senderErrorMessage))
+                return new ValidationResult(senderErrorMessage);
 
             return new ValidationResult();
+        }
+
+        private string? ValidateTokenExchangeForOwnerAccount(Bet bet, ulong tokensBet, TransactionMetaSlotInfo transaction)
+        {
+            var tokenOwnerIndex = Array.IndexOf(transaction.Transaction.Message.AccountKeys, _settings.Token.SenderAccount);
+
+            if (tokenOwnerIndex == -1)
+                return ErrorMessages.SignatureWithoutOwnerAccount;
+
+            var recipientPreBalanceAccount = transaction.Meta.PreTokenBalances.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.AccountIndex == tokenOwnerIndex);
+            var recipientPostBalanceAccount = transaction.Meta.PostTokenBalances.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.AccountIndex == tokenOwnerIndex);
+
+            var tokensExchanged = recipientPostBalanceAccount.UiTokenAmount.AmountUlong - recipientPreBalanceAccount.UiTokenAmount.AmountUlong;
+
+            if (tokensExchanged == tokensBet)
+                return null;
+
+            Serilog.Log.Warning("An attempt to register a bet with invalid amounts for the token account was made. Bet data: {0}, Tokens exchanged: {1}", bet.AsJson(), tokensExchanged);
+
+            return GenerateErrorMessageForTokenExchange(tokensExchanged, tokensBet);
+        }
+
+        private string? ValidateTokenExchangeForSenderAccount(Bet bet, ulong tokensBet, TransactionMetaSlotInfo transaction)
+        {
+            var senderIndex = Array.IndexOf(transaction.Transaction.Message.AccountKeys, bet.Wallet);
+
+            if (senderIndex == -1)
+                return ErrorMessages.SignatureWithoutBetAccount;
+
+            var senderPreBalanceAccount = transaction.Meta.PreTokenBalances.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.AccountIndex == senderIndex);
+            var senderPostBalanceAccount = transaction.Meta.PostTokenBalances.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.AccountIndex == senderIndex);
+
+            var tokensExchanged = senderPreBalanceAccount.UiTokenAmount.AmountUlong - senderPostBalanceAccount.UiTokenAmount.AmountUlong;
+
+            if (tokensExchanged == tokensBet)
+                return null;
+
+            Serilog.Log.Warning("An attempt to register a bet with invalid amounts for the sender account was made. Bet data: {0}, Tokens exchanged: {1}", bet.AsJson(), tokensExchanged);
+
+            return GenerateErrorMessageForTokenExchange(tokensExchanged, tokensBet);
+        }
+
+        private string GenerateErrorMessageForTokenExchange(ulong tokensExchanged, ulong tokensBet)
+        {
+            string? errorMessage;
+
+            if (tokensExchanged < tokensBet)
+                errorMessage = ErrorMessages.SignaturePaidLessThanBetAmount;
+            else
+                errorMessage = ErrorMessages.SignaturePaidMoreThanBetAmount;
+
+            errorMessage += ErrorMessages.AdviceOnDifferentSignatureBetAmount;
+
+            return errorMessage;
         }
     }
 }
