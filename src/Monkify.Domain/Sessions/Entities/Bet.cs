@@ -6,6 +6,13 @@ namespace Monkify.Domain.Sessions.Entities
     public class Bet : TableEntity
     {
         public Bet() { }
+
+        public Bet(BetStatus status, decimal amount)
+        {
+            Status = status;
+            Amount = amount;
+        }
+
         public Bet(Guid sessionId, string paymentSignature, string wallet, string choice, decimal amount)
         {
             SessionId = sessionId;

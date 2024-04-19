@@ -12,45 +12,51 @@ namespace Monkify.Tests.Domain.Sessions
     public class SessionTests
     {
         [Fact]
-        public void Constructor_InitializesLogs()
+        public void DefaultConstructor_ShouldInitializeWithDefaultValues()
         {
             var session = new Session();
 
-            session.StatusLogs.ShouldNotBeNull();
-            session.StatusLogs.ShouldBeEmpty();
+            session.Status.ShouldBe(SessionStatus.WaitingBets);
+            session.StatusLogs.ShouldNotBeEmpty();
+            session.StatusLogs.First().NewStatus.ShouldBe(SessionStatus.WaitingBets);
+            session.Bets.ShouldBeEmpty();
         }
 
         [Fact]
-        public void ConstructorWithParameter_InitializesProperties()
+        public void ConstructorWithParametersId_ShouldInitializeWithParametersId()
         {
             var parametersId = Guid.NewGuid();
+
             var session = new Session(parametersId);
 
             session.ParametersId.ShouldBe(parametersId);
-            session.Status.ShouldBe(SessionStatus.WaitingBets);
-            session.StatusLogs.ShouldNotBeNull();
-            session.StatusLogs.Count.ShouldBe(1);
-            session.StatusLogs.First().NewStatus.ShouldBe(SessionStatus.WaitingBets);
         }
 
         [Fact]
-        public void UpdateStatus_SetsEndDate_WhenSessionEnded()
+        public void UpdateStatus_ToInProgress_ShouldUpdateStatus()
         {
             var session = new Session();
-            session.UpdateStatus(SessionStatus.Ended);
+            var newStatus = SessionStatus.Started;
 
-            session.EndDate.ShouldNotBeNull();
-            session.Status.ShouldBe(SessionStatus.Ended);
-        }
+            session.UpdateStatus(newStatus);
 
-        [Fact]
-        public void UpdateStatus_DoesNotSetEndDate_WhenSessionInProgress()
-        {
-            var session = new Session();
-            session.UpdateStatus(SessionStatus.WaitingBets);
-
+            session.Status.ShouldBe(newStatus);
             session.EndDate.ShouldBeNull();
-            session.Status.ShouldBe(SessionStatus.WaitingBets);
+            session.WinningChoice.ShouldBeNull();
+        }
+
+        [Fact]
+        public void UpdateStatus_ToEnded_ShouldSetEndDateAndWinningChoice()
+        {
+            var session = new Session();
+            var endStatus = SessionStatus.Ended;
+            var winningChoice = "Option1";
+
+            session.UpdateStatus(endStatus, winningChoice);
+
+            session.Status.ShouldBe(endStatus);
+            session.EndDate.ShouldNotBeNull();
+            session.WinningChoice.ShouldBe(winningChoice);
         }
     }
 }

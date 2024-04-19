@@ -165,4 +165,7 @@
   <data name="SignatureWithoutOwnerAccount" xml:space="preserve">
     <value>The requested payment signature have not sent tokens to our accounts. Please try sending a valid transaction.</value>
   </data>
+  <data name="TyperStartedWithoutBets" xml:space="preserve">
+    <value>At least one bet must be made to start a session. Session has ended</value>
+  </data>
 </root>

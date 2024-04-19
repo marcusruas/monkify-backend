@@ -16,18 +16,14 @@ namespace Monkify.Domain.Sessions.Entities
     {
         public Session()
         {
-            StatusLogs = new Collection<SessionStatusLog>();
+            Status = WaitingBets;
+            StatusLogs = new Collection<SessionStatusLog>() { new SessionStatusLog(Id, null, SessionStatus.WaitingBets) };
+            Bets = new Collection<Bet>();
         }
 
-        public Session(Guid parametersId)
+        public Session(Guid parametersId) : base()
         {
             ParametersId = parametersId;
-            Status = WaitingBets;
-
-            StatusLogs = new Collection<SessionStatusLog>
-            {
-                new SessionStatusLog(Id, null, WaitingBets)
-            };
         }
 
         public SessionParameters Parameters { get; set; }

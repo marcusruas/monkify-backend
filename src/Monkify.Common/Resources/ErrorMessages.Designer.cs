@@ -203,5 +203,14 @@ namespace Monkify.Common.Resources {
                 return ResourceManager.GetString("SignatureWithoutOwnerAccount", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a At least one bet must be made to start a session. Session has ended.
+        /// </summary>
+        public static string TyperStartedWithoutBets {
+            get {
+                return ResourceManager.GetString("TyperStartedWithoutBets", resourceCulture);
+            }
+        }
     }
 }

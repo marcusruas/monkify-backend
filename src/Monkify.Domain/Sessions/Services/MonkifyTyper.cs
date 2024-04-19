@@ -1,5 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using Monkify.Common.Extensions;
+using Monkify.Common.Resources;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using System.Collections.ObjectModel;
@@ -14,7 +15,7 @@ namespace Monkify.Domain.Sessions.Services
         public MonkifyTyper(Session session)
         {
             if (session.Bets.IsNullOrEmpty())
-                throw new ArgumentException("At least one bet must be made to start a session. Session has ended");
+                throw new ArgumentException(ErrorMessages.TyperStartedWithoutBets);
 
             GenerateRandom();
             SetBets(session);
@@ -25,19 +26,19 @@ namespace Monkify.Domain.Sessions.Services
         public int NumberOfWinners { get; private set; }
         public string FirstChoiceTyped { get; private set; }
 
-        private Dictionary<string, int> Bets;
-        private int QueueLength { get; set; }
-        private char[] CharactersOnTyper { get; set; }
-        private Queue<char> TypedCharacters { get; set; }
-        private Random _random;
+        public Random _random { get; private set; }
+        public Dictionary<string, int> Bets { get; private set; }
+        public int QueueLength { get; private set; }
+        public char[] CharactersOnTyper { get; private set; }
+        public Queue<char> TypedCharacters { get; private set; }
 
         private void SetBets(Session session)
         {
             Bets = [];
 
-            if (session.Parameters.PresetChoices.IsNullOrEmpty())
+            if (!session.Parameters.PresetChoices.IsNullOrEmpty())
             {
-                foreach(var presetChoice in  session.Parameters.PresetChoices)
+                foreach(var presetChoice in session.Parameters.PresetChoices)
                 {
                     if (presetChoice.Choice.Length > QueueLength)
                         QueueLength = presetChoice.Choice.Length;
@@ -83,9 +84,6 @@ namespace Monkify.Domain.Sessions.Services
 
         public char GenerateNextCharacter()
         {
-            if (HasWinners)
-                throw new ArgumentException("Cannot generate next character, as there is already a Winner.");
-
             var characterIndex = _random.Next(CharactersOnTyper.Length);
             var character = CharactersOnTyper[characterIndex];
 
