@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Background.Hubs
 {
-    public class OpenSessionsHub : Hub { }
+    public class RecentBetsHub : Hub { }
 }

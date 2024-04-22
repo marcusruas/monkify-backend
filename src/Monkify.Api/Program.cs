@@ -77,8 +77,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("DevOrigins");
 
-app.MapHub<OpenSessionsHub>("/Hubs/OpenSessions");
-app.MapHub<ActiveSessionsHub>("/Hubs/ActiveSessions");
+app.MapHub<RecentBetsHub>("/Hubs/RecentBets");
+app.MapHub<ActiveSessionsHub>("/Hubs/Sessions");
 
 app.UseHttpsRedirection();
 

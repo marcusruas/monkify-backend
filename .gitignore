@@ -32,7 +32,6 @@ bld/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
-src/Monkify.Tests/coveragereport
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -138,6 +137,7 @@ _TeamCity*
 
 # DotCover is a Code Coverage Tool
 *.dotCover
+CoverageReports/*
 
 # AxoCover is a Code Coverage Tool
 .axoCover/*

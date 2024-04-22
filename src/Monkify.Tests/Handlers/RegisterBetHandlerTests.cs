@@ -33,7 +33,7 @@ namespace Monkify.Tests.Handlers
                 SessionBetsEndpoint = "endpoint/{0}",
             };
 
-            _hubContextMock = new Mock<IHubContext<ActiveSessionsHub>>();
+            _hubContextMock = new Mock<IHubContext<RecentBetsHub>>();
             var mockClients = new Mock<IHubClients>();
             var mockAllClientProxy = new Mock<IClientProxy>();
 
@@ -43,7 +43,7 @@ namespace Monkify.Tests.Handlers
 
         private readonly GeneralSettings _settings;
         private readonly Mock<ISolanaService> _solanaServiceMock;
-        private readonly Mock<IHubContext<ActiveSessionsHub>> _hubContextMock;
+        private readonly Mock<IHubContext<RecentBetsHub>> _hubContextMock;
 
         [Fact]
         public async Task RegisterBet_CorrectData_ShouldReturnSuccess()

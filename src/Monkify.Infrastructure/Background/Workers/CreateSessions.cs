@@ -55,7 +55,7 @@ namespace Monkify.Infrastructure.Background.Workers
 
             var innerContext = innerScope.GetService<MonkifyDbContext>();
             var mediator = innerScope.GetService<IMediator>();
-            var openSessionsHub = innerScope.GetService<IHubContext<OpenSessionsHub>>();
+            var openSessionsHub = innerScope.GetService<IHubContext<ActiveSessionsHub>>();
 
             var session = new Session(parameters.Id);
 

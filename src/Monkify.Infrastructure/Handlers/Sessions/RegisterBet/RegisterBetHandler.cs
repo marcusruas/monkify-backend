@@ -22,16 +22,16 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         public RegisterBetHandler(
             MonkifyDbContext context, 
             IMessaging messaging, 
-            IHubContext<ActiveSessionsHub> activeSessionsHub, GeneralSettings settings,
+            IHubContext<RecentBetsHub> activeSessionsHub, GeneralSettings settings,
             ISolanaService solanaService
         ) : base(context, messaging)
         {
-            _activeSessionsHub = activeSessionsHub;
+            _recentBetsHub = activeSessionsHub;
             _settings = settings;
             _solanaService = solanaService;
         }
 
-        private readonly IHubContext<ActiveSessionsHub> _activeSessionsHub;
+        private readonly IHubContext<RecentBetsHub> _recentBetsHub;
         private readonly GeneralSettings _settings;
         private readonly ISolanaService _solanaService;
 
@@ -91,7 +91,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
             string sessionBetsEndpoint = string.Format(_settings.Sessions.SessionBetsEndpoint, _bet.SessionId.ToString());
 
             var sessionJson = new BetCreated(_bet.Wallet, _bet.PaymentSignature, _bet.Amount, _bet.Choice).AsJson();
-            await _activeSessionsHub.Clients.All.SendAsync(sessionBetsEndpoint, sessionJson);
+            await _recentBetsHub.Clients.All.SendAsync(sessionBetsEndpoint, sessionJson);
         }
     }
 }
