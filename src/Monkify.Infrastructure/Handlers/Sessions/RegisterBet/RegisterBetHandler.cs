@@ -66,7 +66,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
             var signatureHasBeenUsed = await Context.SessionBets.AnyAsync(x => x.PaymentSignature == request.Body.PaymentSignature);
 
             if (signatureHasBeenUsed)
-                Messaging.ReturnValidationFailureMessage(ErrorMessages.InvalidPaymentSignature);
+                Messaging.ReturnValidationFailureMessage(ErrorMessages.PaymentSignatureHasBeenUsed);
 
             var paymentResult = await _solanaService.ValidateBetPayment(_bet);
 
@@ -88,10 +88,10 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
         private async Task SendBet()
         {
-            string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionBetsEndpoint, _bet.SessionId.ToString());
+            string sessionBetsEndpoint = string.Format(_settings.Sessions.SessionBetsEndpoint, _bet.SessionId.ToString());
 
             var sessionJson = new BetCreated(_bet.Wallet, _bet.PaymentSignature, _bet.Amount, _bet.Choice).AsJson();
-            await _activeSessionsHub.Clients.All.SendAsync(sessionStatusEndpoint, sessionJson);
+            await _activeSessionsHub.Clients.All.SendAsync(sessionBetsEndpoint, sessionJson);
         }
     }
 }

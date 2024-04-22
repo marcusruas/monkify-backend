@@ -1,4 +1,9 @@
 ﻿using Bogus;
+using Microsoft.EntityFrameworkCore;
+using Monkify.Common.Exceptions;
+using Monkify.Common.Messaging;
+using Monkify.Infrastructure.Context;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +17,31 @@ namespace Monkify.Tests.Shared
         public UnitTestsClass()
         {
             CancellationToken = new CancellationToken();
-            Faker = new Faker("en-us");
-            Random = new Random();
+            Faker = new Faker();
+            Messaging = new Messaging();
+            ContextOptions = new DbContextOptionsBuilder<MonkifyDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()).Options;
         }
 
-        protected CancellationToken CancellationToken;
+        protected readonly IMessaging Messaging;
+        protected readonly DbContextOptions<MonkifyDbContext> ContextOptions;
         protected readonly Faker Faker;
-        protected Random Random;
+        protected CancellationToken CancellationToken;
+
+        protected async Task ShouldReturnValidationFailure(Task action, string expectedErrorMessage)
+        {
+            await Should.ThrowAsync<ValidationFailureException>(action);
+
+            Messaging.HasValidationFailures().ShouldBeTrue();
+            Messaging.Messages.Any(x => x.Type == MessageType.ValidationFailure && x.Value == expectedErrorMessage).ShouldBeTrue();
+        }
+
+        protected async Task ShouldReturnError(Task action, string expectedErrorMessage)
+        {
+            await Should.ThrowAsync<InternalErrorException>(action);
+
+            Messaging.HasErrors().ShouldBeTrue();
+            Messaging.Messages.Any(x => x.Type == MessageType.Error && x.Value == expectedErrorMessage).ShouldBeTrue();
+        }
     }
 }

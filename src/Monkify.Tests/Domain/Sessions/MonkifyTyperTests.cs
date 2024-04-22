@@ -55,7 +55,7 @@ namespace Monkify.Tests.Domain.Sessions
             string choiceA = "abcd";
             string choiceB = "defg";
 
-            var presetChoices = new List<PresetChoice>() { new PresetChoice() { Choice = choiceA }, new PresetChoice() { Choice = choiceB } };
+            var presetChoices = new List<PresetChoice>() { new PresetChoice(choiceA), new PresetChoice(choiceB) };
             var session = new Session();
             session.Parameters = new SessionParameters() { SessionCharacterType = SessionCharacterType.LowerCaseLetter, PresetChoices = presetChoices };
             session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceA });
