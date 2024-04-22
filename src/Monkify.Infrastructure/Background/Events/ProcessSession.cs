@@ -18,7 +18,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using static Monkify.Domain.Sessions.ValueObjects.SessionStatus;
 
-namespace Monkify.Infrastructure.Handlers.Sessions.Events
+namespace Monkify.Infrastructure.Background.Events
 {
     public class ProcessSession : BaseNotificationHandler<SessionForProcessing>
     {

@@ -7,12 +7,14 @@ using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Handlers
 {
+    [ExcludeFromCodeCoverage]
     public abstract class BaseRequestHandler<TRequest, TResponse> : IRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
     {
         public BaseRequestHandler(MonkifyDbContext context, IMessaging messaging)

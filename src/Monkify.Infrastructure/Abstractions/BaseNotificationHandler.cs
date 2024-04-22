@@ -11,12 +11,14 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Abstractions
 {
+    [ExcludeFromCodeCoverage]
     public abstract class BaseNotificationHandler<TNotification> : INotificationHandler<TNotification> where TNotification : INotification
     {
         public async Task Handle(TNotification notification, CancellationToken cancellationToken)

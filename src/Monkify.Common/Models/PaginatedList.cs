@@ -17,6 +17,9 @@ namespace Monkify.Common.Models
             CurrentPage = currentPage;
             TotalNumberOfRecords = totalNumberOfRecords;
             TotalNumberOfPages = (int)Math.Ceiling(totalNumberOfRecords / (double)requestedAmountOfRecords);
+
+            if (TotalNumberOfPages == 0)
+                TotalNumberOfPages = 1;
         }
 
         public IEnumerable<T> Items { get; private set; }    
@@ -39,6 +42,9 @@ namespace Monkify.Common.Models
             result.CurrentPage = paginatedList.CurrentPage;
             result.TotalNumberOfRecords = paginatedList.TotalNumberOfRecords;
             result.TotalNumberOfPages = paginatedList.TotalNumberOfPages;
+
+            if (result.TotalNumberOfPages == 0)
+                result.TotalNumberOfPages = 1;
 
             return result;
         }

@@ -6,12 +6,6 @@ namespace Monkify.Common.Messaging
 {
     public class Message
     {
-        public Message(string value)
-        {
-            Type = MessageType.Informational;
-            Value = value;
-        }
-
         public Message(MessageType type, string value)
         {
             Type = type;

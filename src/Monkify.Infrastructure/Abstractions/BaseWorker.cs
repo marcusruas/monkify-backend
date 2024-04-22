@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Serilog;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Monkify.Infrastructure.Abstractions
 {
+    [ExcludeFromCodeCoverage]
     public abstract class BaseWorker : BackgroundService
     {
         public BaseWorker(IServiceProvider services)

@@ -209,6 +209,19 @@ namespace Monkify.Tests.Domain.Sessions
         }
 
         [Fact]
+        public void CalculateRefundForBet_BetOutOfStatus_ShouldReturnError()
+        {
+            var bet = new Bet() { Status = BetStatus.Rewarded, Amount = 6 };
+
+            var settings = new TokenSettings();
+            settings.CommisionPercentage = 0.1m;
+            settings.Decimals = 5;
+
+            var refund = BetDomainService.CalculateRefundForBet(settings, bet);
+            refund.ErrorMessage.ShouldBe(ErrorMessages.BetCannotReceiveRefund);
+        }
+
+        [Fact]
         public void CalculateRefundForBet_BetWithCredits_ShouldCalculateCorrectly()
         {
             var log = new TransactionLog() { Amount = 4 };

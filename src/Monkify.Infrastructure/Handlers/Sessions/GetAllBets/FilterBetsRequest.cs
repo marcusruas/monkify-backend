@@ -12,6 +12,12 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetAllBets
 {
     public class FilterBetsRequest : IRequest<PaginatedList<BetDto>>
     {
+        public FilterBetsRequest(int? pageNumber, int? pageSize)
+        {
+            PageNumber = pageNumber;
+            PageSize = pageSize;
+        }
+
         [Required(ErrorMessage = "Page number is required")]
         [Range(1, int.MaxValue, ErrorMessage = "Page number must be bigger than 1")]
         public int? PageNumber { get; set; }

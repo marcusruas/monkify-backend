@@ -14,9 +14,11 @@ using Monkify.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Monkify.Infrastructure.Services.Sessions;
 using Monkify.Infrastructure.Services.Solana;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Monkify.Infrastructure
 {
+    [ExcludeFromCodeCoverage]
     public static class DependencyInjection
     {
         public static void AddDefaultServices(this IServiceCollection services, IConfiguration configuration)

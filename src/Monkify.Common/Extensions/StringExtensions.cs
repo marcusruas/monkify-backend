@@ -38,7 +38,7 @@ public static class StringExtensions
     /// </summary>
     public static bool HasWhitespaces(this string text)
     {
-        if (string.IsNullOrWhiteSpace(text))
+        if (string.IsNullOrEmpty(text))
             return false;
 
         foreach (var character in text)
@@ -63,7 +63,7 @@ public static class StringExtensions
             return false;
 
         var formattedText = text.Trim().ToUpper();
-        var normalizedText = text.RemoveAccents();
+        var normalizedText = text.RemoveAccents().Trim().ToUpper();
 
         return normalizedText != formattedText;
     }

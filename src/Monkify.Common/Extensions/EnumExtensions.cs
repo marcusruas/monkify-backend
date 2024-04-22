@@ -11,18 +11,6 @@ namespace Monkify.Common.Extensions
     public static class EnumExtensions
     {
         /// <summary>
-        /// Retrieves the attribute from the specified enum
-        /// </summary>
-        /// <param name="value">The enum to get the attribute from.</param>
-        /// <returns>The attribute object specified in the type.</returns>
-        /// <returns>null if the specified Enum does not have the attribute of the specified type.</returns>
-        public static T GetAttribute<T>(this Enum value) where T : Attribute
-        {
-            FieldInfo campo = value.GetType().GetField(value.ToString());
-            return (T)campo.GetCustomAttribute(typeof(T), true);
-        }
-
-        /// <summary>
         /// Retrieves the value of the first attribute of type <see cref="DescriptionAttribute" />
         /// </summary>
         /// <param name="value">The enum to get the description from.</param>
@@ -43,11 +31,5 @@ namespace Monkify.Common.Extensions
             var field = value.GetType().GetField(value.ToString());
             return field.IsDefined(typeof(T), false);
         }
-
-        /// <summary>
-        /// Retrieves a list with all items of an enumerator
-        /// </summary>
-        public static IEnumerable<T> ListFrom<T>() where T : Enum
-            => Enum.GetValues(typeof(T)).Cast<T>();
     }
 }
