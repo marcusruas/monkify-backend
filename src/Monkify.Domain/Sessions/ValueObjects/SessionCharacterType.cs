@@ -19,5 +19,6 @@ namespace Monkify.Domain.Sessions.ValueObjects
         PresetLowercaseWords,
         [Description("ABCDEFGHIJKLMNOPQRSTUVWXYZ")]
         PresetUppercaseWords,
+        PresetByPlayerChoices,
     }
 }

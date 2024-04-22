@@ -63,15 +63,31 @@ namespace Monkify.Infrastructure.Services.Sessions
 
         public async Task UpdateBetStatus(IEnumerable<Bet> bets, BetStatus status)
         {
-            foreach(var bet in bets)
+            foreach (var bet in bets)
                 await UpdateBetStatusWithoutSaving(bet, status);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to change status multiple bets. Attemp on bets: {0}. New Status: {1}", bets.AsJson(), status);
+            }
         }
 
         public async Task UpdateBetStatus(Bet bet, BetStatus status)
         {
             await UpdateBetStatusWithoutSaving(bet, status);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, "Failed to change status for bet {0}. CurrentStatus: {1}, New status {2}.", bet.Id, bet.Status, status);
+            }
         }
 
         private async Task UpdateBetStatusWithoutSaving(Bet bet, BetStatus status)

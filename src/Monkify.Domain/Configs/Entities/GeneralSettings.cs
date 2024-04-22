@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Configs.Entities
 {
+    [ExcludeFromCodeCoverage]
     public class GeneralSettings
     {
         public SessionSettings Sessions { get; set; }

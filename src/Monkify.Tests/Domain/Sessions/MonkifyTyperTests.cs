@@ -101,6 +101,31 @@ namespace Monkify.Tests.Domain.Sessions
         }
 
         [Fact]
+        public void Constructor_TyperSetByPlayerChoices_ShouldSetBetsProperly()
+        {
+            string choiceA = "abcd";
+            string choiceB = "defg";
+
+            var session = new Session();
+            session.Parameters = new SessionParameters() { SessionCharacterType = SessionCharacterType.PresetByPlayerChoices };
+            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceA });
+            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceA });
+            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceB });
+            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceB });
+
+            MonkifyTyper? typer = new MonkifyTyper(session);
+
+            typer.HasWinners.ShouldBeFalse();
+            typer.NumberOfWinners.ShouldBe(0);
+            typer.FirstChoiceTyped.ShouldBeNull();
+            typer.Bets.Count.ShouldBe(2);
+            typer.Bets.All(x => x.Value == 2).ShouldBeTrue();
+            typer.QueueLength.ShouldBe(4);
+            typer.CharactersOnTyper.Length.ShouldBe(7);
+            typer.CharactersOnTyper.SequenceEqual(new char[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g' }).ShouldBeTrue();
+        }
+
+        [Fact]
         public void Constructor_GenerateNextCharacter_ShouldEventuallyGenerateFirstAndFinalCharacter()
         {
             var watch = new Stopwatch();
