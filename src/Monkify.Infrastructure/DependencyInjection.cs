@@ -36,7 +36,7 @@ namespace Monkify.Infrastructure
 
         public static void AddLogs(this IHostApplicationBuilder builder, string tableName)
         {
-            var logsConnectionString = builder.Configuration.GetConnectionString("Monkify");
+            var logsConnectionString = builder.Configuration.GetConnectionString("Logs");
 
             MSSqlServerSinkOptions logOptions = new();
             {

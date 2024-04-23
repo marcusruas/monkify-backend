@@ -16,16 +16,8 @@ using Microsoft.Extensions.Hosting;
 using static Monkify.Infrastructure.DependencyInjection;
 using System.Configuration;
 using AspNetCoreRateLimit;
-using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Configuration.AddAzureKeyVault(new Uri(builder.Configuration["AzureKeyVaultUrl"]), new DefaultAzureCredential());
-
-var settings = new GeneralSettings();
-builder.Configuration.Bind(nameof(GeneralSettings), settings);
-builder.Services.AddSingleton(settings);
-builder.Services.AddSingleton(provider => ClientFactory.GetClient(settings.Token.ClusterUrl));
 
 builder.Services.AddOptions();
 builder.Services.AddMemoryCache();
@@ -49,6 +41,11 @@ builder.Services.AddSwaggerGen(configs =>
 
 builder.AddLogs("MonkifyApiLogs");
 builder.Services.AddDefaultServices(builder.Configuration);
+
+var settings = new GeneralSettings();
+builder.Configuration.Bind(nameof(GeneralSettings), settings);
+builder.Services.AddSingleton(settings);
+builder.Services.AddSingleton(provider => ClientFactory.GetClient(settings.Token.ClusterUrl));
 
 builder.Services.AddHostedService<CreateSessions>();
 builder.Services.AddHostedService<RefundBets>();
