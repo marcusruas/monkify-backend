@@ -11,9 +11,6 @@ echo Creating databases...
 docker exec %CONTAINER_ID% /opt/mssql-tools/bin/sqlcmd -S %SQL_SERVER% -U %SQL_USER% -P "%SQL_PASSWORD%" -Q "
     CREATE DATABASE MONKIFY
     GO
-
-    CREATE DATABASE LOGS
-    GO
 "
 
 echo Databases created.
