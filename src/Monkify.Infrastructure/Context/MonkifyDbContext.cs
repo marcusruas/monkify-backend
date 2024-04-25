@@ -29,6 +29,7 @@ namespace Monkify.Infrastructure.Context
             modelBuilder.Entity<SessionParameters>(builder =>
             {
                 builder.HasKey(x => x.Id);
+                builder.Property(x => x.Name).HasMaxLength(100).IsRequired();
                 builder.Property(x => x.RequiredAmount).HasPrecision(18, 9).IsRequired();
                 builder.Property(x => x.MinimumNumberOfPlayers).IsRequired().HasDefaultValue(1);
                 builder.Property(x => x.ChoiceRequiredLength).HasDefaultValue(1);
@@ -62,6 +63,7 @@ namespace Monkify.Infrastructure.Context
             modelBuilder.Entity<Bet>(builder =>
             {
                 builder.HasKey(x => x.Id);
+                builder.Property(x => x.Seed).IsRequired().HasMaxLength(40);
                 builder.Property(x => x.PaymentSignature).IsRequired().HasMaxLength(100);
                 builder.Property(x => x.Choice).IsRequired().HasMaxLength(20);
                 builder.Property(x => x.Wallet).IsRequired().HasMaxLength(50);

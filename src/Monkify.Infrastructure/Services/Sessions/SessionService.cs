@@ -37,17 +37,25 @@ namespace Monkify.Infrastructure.Services.Sessions
             {
                 SessionResult? result = null;
 
-                if (status == SessionStatus.Ended && monkey != null)
+                if (Session.SessionEndedStatus.Contains(status))
                 {
-                    result = new SessionResult(monkey.NumberOfWinners, monkey.FirstChoiceTyped);
+                    session.EndDate = DateTime.UtcNow;
+                    session.Seed = monkey.SessionSeed;
+                    session.WinningChoice = monkey.FirstChoiceTyped;
+
+                    _context.Entry(session).Property(x => x.EndDate).IsModified = true;
+                    _context.Entry(session).Property(x => x.Seed).IsModified = true;
                     _context.Entry(session).Property(x => x.WinningChoice).IsModified = true;
+
+                    result = new SessionResult(monkey.NumberOfWinners, monkey.FirstChoiceTyped);
                 }
 
                 await _context.SessionStatusLogs.AddAsync(new SessionStatusLog(session.Id, session.Status, status));
 
-                session.UpdateStatus(status, monkey?.FirstChoiceTyped);
+                session.Status = status;
+
                 _context.Entry(session).Property(x => x.Status).IsModified = true;
-                _context.Entry(session).Property(x => x.EndDate).IsModified = true;
+                
                 
                 await _context.SaveChangesAsync();
 

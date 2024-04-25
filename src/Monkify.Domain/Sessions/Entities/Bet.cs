@@ -13,9 +13,10 @@ namespace Monkify.Domain.Sessions.Entities
             Amount = amount;
         }
 
-        public Bet(Guid sessionId, string paymentSignature, string wallet, string choice, decimal amount)
+        public Bet(Guid sessionId, string seed, string paymentSignature, string wallet, string choice, decimal amount)
         {
             SessionId = sessionId;
+            Seed = seed;
             PaymentSignature = paymentSignature;
             Wallet = wallet;
             Choice = choice;
@@ -25,6 +26,7 @@ namespace Monkify.Domain.Sessions.Entities
 
         public Session Session { get; set; }
         public Guid SessionId { get; set; }
+        public string Seed { get; set; }
         public string PaymentSignature { get; set; }
         public string Wallet { get; set; }
         public string Choice { get; set; }

@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Monkify.Infrastructure.Migrations
 {
-    [ExcludeFromCodeCoverage]
     /// <inheritdoc />
     public partial class FirstMigration : Migration
     {
@@ -19,6 +17,7 @@ namespace Monkify.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SessionCharacterType = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     RequiredAmount = table.Column<decimal>(type: "decimal(18,9)", precision: 18, scale: 9, nullable: false),
                     MinimumNumberOfPlayers = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
                     ChoiceRequiredLength = table.Column<int>(type: "int", nullable: true, defaultValue: 1),
@@ -62,6 +61,7 @@ namespace Monkify.Infrastructure.Migrations
                     Status = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     WinningChoice = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Seed = table.Column<int>(type: "int", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -82,6 +82,7 @@ namespace Monkify.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Seed = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
                     PaymentSignature = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Wallet = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Choice = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),

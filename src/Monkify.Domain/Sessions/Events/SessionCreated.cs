@@ -15,6 +15,7 @@ namespace Monkify.Domain.Sessions.Events
         public SessionCreated(Guid sessionId, SessionParameters parameters)
         {
             SessionId = sessionId;
+            Name = parameters.Name;
             CharacterType = parameters.SessionCharacterType;
             MinimumNumberOfPlayers = parameters.MinimumNumberOfPlayers;
             ChoiceRequiredLength = parameters.ChoiceRequiredLength;
@@ -24,6 +25,7 @@ namespace Monkify.Domain.Sessions.Events
         }
 
         public Guid SessionId { get; set; }
+        public string Name { get; set; }
         public SessionCharacterType CharacterType { get; set; }
         public int MinimumNumberOfPlayers { get; set; }
         public int? ChoiceRequiredLength { get; set; }

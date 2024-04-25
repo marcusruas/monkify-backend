@@ -50,7 +50,7 @@ namespace Monkify.Tests.Services
         {
             var session = new Session();
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
 
             using (var context = new MonkifyDbContext(ContextOptions))
             {
@@ -73,14 +73,14 @@ namespace Monkify.Tests.Services
         {
             var session = new Session();
             session.Status = SessionStatus.Started;
-            session.Parameters = new SessionParameters() { AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
             session.Bets = new List<Bet>()
             {
-                new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
-                new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "amor", 2),
-                new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "baco", 2),
-                new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "tres", 2),
-                new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "atos", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "amor", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "baco", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "tres", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "atos", 2),
             };
             var typer = new MonkifyTyper(session);
 
@@ -100,6 +100,8 @@ namespace Monkify.Tests.Services
                 updatedSession.ShouldNotBeNull();
                 updatedSession.WinningChoice = typer.FirstChoiceTyped;
                 updatedSession.Status.ShouldBe(SessionStatus.Ended);
+                updatedSession.Seed.ShouldNotBeNull();
+                updatedSession.Seed.Value.ShouldNotBe(0);
                 updatedSession.StatusLogs.Any(x => x.PreviousStatus == SessionStatus.Started && x.NewStatus == SessionStatus.Ended).ShouldBeTrue();
             }
         }
@@ -127,14 +129,14 @@ namespace Monkify.Tests.Services
         {
             var session = new Session();
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
             session.Bets = new List<Bet>()
             {
-                new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
-                new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "amor", 2),
-                new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "baco", 2),
-                new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "tres", 2),
-                new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "atos", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "amor", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "baco", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "tres", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "atos", 2),
             };
 
             using (var context = new MonkifyDbContext(ContextOptions))
@@ -160,11 +162,11 @@ namespace Monkify.Tests.Services
         {
             var bets = new List<Bet>()
             {
-                new (Guid.NewGuid(), Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
-                new (Guid.NewGuid(), Faker.Random.String2(88), Faker.Random.String2(44), "amor", 2),
-                new (Guid.NewGuid(), Faker.Random.String2(88), Faker.Random.String2(44), "baco", 2),
-                new (Guid.NewGuid(), Faker.Random.String2(88), Faker.Random.String2(44), "tres", 2),
-                new (Guid.NewGuid(), Faker.Random.String2(88), Faker.Random.String2(44), "atos", 2),
+                new (Guid.NewGuid(), Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
+                new (Guid.NewGuid(), Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "amor", 2),
+                new (Guid.NewGuid(), Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "baco", 2),
+                new (Guid.NewGuid(), Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "tres", 2),
+                new (Guid.NewGuid(), Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "atos", 2),
             };
 
             using (var context = new MonkifyDbContext(ContextOptions))
@@ -182,14 +184,14 @@ namespace Monkify.Tests.Services
         {
             var session = new Session();
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
             session.Bets = new List<Bet>()
                 {
-                    new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
-                    new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "amor", 2),
-                    new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "baco", 2),
-                    new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "tres", 2),
-                    new (session.Id, Faker.Random.String2(88), Faker.Random.String2(44), "atos", 2),
+                    new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
+                    new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "amor", 2),
+                    new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "baco", 2),
+                    new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "tres", 2),
+                    new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "atos", 2),
                 };
 
             using (var context = new MonkifyDbContext(ContextOptions))
@@ -212,7 +214,7 @@ namespace Monkify.Tests.Services
         [Fact]
         public async Task UpdateBetStatus_NonExistingBet_ShouldReturnSuccess()
         {
-            Bet bet = new(Guid.NewGuid(), Faker.Random.String2(88), Faker.Random.String2(44), "love", 2);
+            Bet bet = new(Guid.NewGuid(), Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "love", 2);
 
             using (var context = new MonkifyDbContext(ContextOptions))
             {

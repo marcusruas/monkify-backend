@@ -12,7 +12,7 @@ using Monkify.Infrastructure.Context;
 namespace Monkify.Infrastructure.Migrations
 {
     [DbContext(typeof(MonkifyDbContext))]
-    [Migration("20240418172616_FirstMigration")]
+    [Migration("20240425025913_FirstMigration")]
     partial class FirstMigration
     {
         /// <inheritdoc />
@@ -47,6 +47,11 @@ namespace Monkify.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Seed")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
 
                     b.Property<Guid>("SessionId")
                         .HasColumnType("uniqueidentifier");
@@ -143,6 +148,9 @@ namespace Monkify.Infrastructure.Migrations
                     b.Property<Guid>("ParametersId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int?>("Seed")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -190,6 +198,11 @@ namespace Monkify.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(1);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("RequiredAmount")
                         .HasPrecision(18, 9)

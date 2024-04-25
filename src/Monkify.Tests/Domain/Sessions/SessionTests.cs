@@ -31,32 +31,5 @@ namespace Monkify.Tests.Domain.Sessions
 
             session.ParametersId.ShouldBe(parametersId);
         }
-
-        [Fact]
-        public void UpdateStatus_ToInProgress_ShouldUpdateStatus()
-        {
-            var session = new Session();
-            var newStatus = SessionStatus.Started;
-
-            session.UpdateStatus(newStatus);
-
-            session.Status.ShouldBe(newStatus);
-            session.EndDate.ShouldBeNull();
-            session.WinningChoice.ShouldBeNull();
-        }
-
-        [Fact]
-        public void UpdateStatus_ToEnded_ShouldSetEndDateAndWinningChoice()
-        {
-            var session = new Session();
-            var endStatus = SessionStatus.Ended;
-            var winningChoice = "Option1";
-
-            session.UpdateStatus(endStatus, winningChoice);
-
-            session.Status.ShouldBe(endStatus);
-            session.EndDate.ShouldNotBeNull();
-            session.WinningChoice.ShouldBe(winningChoice);
-        }
     }
 }

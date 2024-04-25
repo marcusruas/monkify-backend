@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Bogus.DataSets;
+using Microsoft.IdentityModel.Tokens;
 using Monkify.Common.Extensions;
 using Monkify.Common.Resources;
 using Monkify.Domain.Sessions.Entities;
@@ -7,6 +8,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Monkify.Domain.Sessions.Services
 {
@@ -17,13 +20,14 @@ namespace Monkify.Domain.Sessions.Services
             if (session.Bets.IsNullOrEmpty())
                 throw new ArgumentException(ErrorMessages.TyperStartedWithoutBets);
 
-            GenerateRandom();
+            GenerateSessionSeed(session);
             SetBets(session);
             SetCharactersOnTyper(session);            
         }
 
         public bool HasWinners { get; private set; }
         public int NumberOfWinners { get; private set; }
+        public int SessionSeed { get; private set; }
         public string FirstChoiceTyped { get; private set; }
 
         public Random _random { get; private set; }
@@ -52,8 +56,8 @@ namespace Monkify.Domain.Sessions.Services
                 if (bet.Choice.Length > QueueLength)
                     QueueLength = bet.Choice.Length;
 
-                if (Bets.ContainsKey(bet.Choice))
-                    Bets[bet.Choice]++;
+                if (Bets.TryGetValue(bet.Choice, out int value))
+                    Bets[bet.Choice] = ++value;
                 else
                     Bets.Add(bet.Choice, 1);
             }
@@ -109,12 +113,18 @@ namespace Monkify.Domain.Sessions.Services
             }
         }
 
-        private void GenerateRandom()
+        private void GenerateSessionSeed(Session session)
         {
-            var seedInBytes = RandomNumberGenerator.GetBytes(4);
-            var seed = BitConverter.ToInt32(seedInBytes, 0);
+            var bytes = new byte[32];
+            RandomNumberGenerator.Fill(bytes);
+            var concatenatedSeed = new StringBuilder(Convert.ToBase64String(bytes));
 
-            _random = new Random(seed);
+            foreach(var bet in session.Bets)
+                concatenatedSeed.Append(bet.Seed);
+
+            var seedInBytes = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(concatenatedSeed.ToString()));
+            SessionSeed = BitConverter.ToInt32(seedInBytes, 0);
+            _random = new Random(SessionSeed);
         }
     }
 }

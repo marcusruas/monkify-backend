@@ -16,6 +16,10 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         [Required(ErrorMessage = "Bet amount in number of tokens is required.")]
         public decimal? Amount { get; set; }
         [Required(ErrorMessage = "Bet choice is required.")]
+        [MaxLength(20, ErrorMessage = "Choice's length is 20 characters")]
         public string? Choice { get; set; }
+        [Required(ErrorMessage = "Seed is required.")]
+        [MaxLength(40, ErrorMessage = "Seed's max length is 40 characters")]
+        public string? Seed { get; set; }
     }
 }

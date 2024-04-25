@@ -21,8 +21,8 @@ namespace Monkify.Tests.Handlers
             var presetChoices = new List<PresetChoice>() { new PresetChoice(Faker.Random.String2(4)), new PresetChoice(Faker.Random.String2(4)) };
             var session = new Session();
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter, PresetChoices = presetChoices };
-            session.Bets = new List<Bet>() { new(session.Id, Faker.Random.String2(80), Faker.Random.String2(44), Faker.Random.String2(4), 2) };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter, PresetChoices = presetChoices };
+            session.Bets = new List<Bet>() { new(session.Id, Faker.Random.String2(40), Faker.Random.String2(80), Faker.Random.String2(44), Faker.Random.String2(4), 2) };
 
             using (var context = new MonkifyDbContext(ContextOptions))
             {
