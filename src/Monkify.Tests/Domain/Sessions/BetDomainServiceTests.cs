@@ -31,9 +31,9 @@ namespace Monkify.Tests.Domain.Sessions
             var session = new Session();
             session.Bets = new List<Bet>()
             {
-                new (BetStatus.NotApplicable, 4),
-                new (BetStatus.NotApplicable, 4),
-                new (BetStatus.NotApplicable, 4),
+                new (BetStatus.Made, 4),
+                new (BetStatus.Made, 4),
+                new (BetStatus.Made, 4),
             };
             var settings = new TokenSettings();
 
@@ -48,8 +48,8 @@ namespace Monkify.Tests.Domain.Sessions
             session.Bets = new List<Bet>()
             {
                 new (BetStatus.NeedsRewarding, 4),
-                new (BetStatus.NotApplicable, 4),
-                new (BetStatus.NotApplicable, 4),
+                new (BetStatus.Made, 4),
+                new (BetStatus.Made, 4),
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.5m;
@@ -67,8 +67,8 @@ namespace Monkify.Tests.Domain.Sessions
             session.Bets = new List<Bet>()
             {
                 winnerBet,
-                new (BetStatus.NotApplicable, 4),
-                new (BetStatus.NotApplicable, 4),
+                new (BetStatus.Made, 4),
+                new (BetStatus.Made, 4),
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
@@ -90,8 +90,8 @@ namespace Monkify.Tests.Domain.Sessions
             session.Bets = new List<Bet>()
             {
                 winnerBet,
-                new (BetStatus.NotApplicable, 4),
-                new (BetStatus.NotApplicable, 4),
+                new (BetStatus.Made, 4),
+                new (BetStatus.Made, 4),
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
@@ -114,9 +114,9 @@ namespace Monkify.Tests.Domain.Sessions
                 winnerBet,
                 new (BetStatus.NeedsRewarding, 7.33654m),
                 new (BetStatus.NeedsRewarding, 7.33654m),
-                new (BetStatus.NotApplicable, 7.33654m),
-                new (BetStatus.NotApplicable, 7.33654m),
-                new (BetStatus.NotApplicable, 7.33654m),
+                new (BetStatus.Made, 7.33654m),
+                new (BetStatus.Made, 7.33654m),
+                new (BetStatus.Made, 7.33654m),
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
@@ -131,12 +131,12 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_NonWinnerBet_ShouldThrowException()
         {
-            var loserBet = new Bet(BetStatus.NotApplicable, 4);
+            var loserBet = new Bet(BetStatus.Made, 4);
             var session = new Session();
             session.Bets = new List<Bet>()
             {
                 new (BetStatus.NeedsRewarding, 4),
-                new (BetStatus.NotApplicable, 4),
+                new (BetStatus.Made, 4),
                 loserBet,
             };
             var settings = new TokenSettings();
@@ -157,8 +157,8 @@ namespace Monkify.Tests.Domain.Sessions
             session.Bets = new List<Bet>()
             {
                 new (BetStatus.NeedsRewarding, 4),
-                new (BetStatus.NotApplicable, 4),
-                new (BetStatus.NotApplicable, 4),
+                new (BetStatus.Made, 4),
+                new (BetStatus.Made, 4),
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;
@@ -181,8 +181,8 @@ namespace Monkify.Tests.Domain.Sessions
             session.Bets = new List<Bet>()
             {
                 winnerBet,
-                new (BetStatus.NotApplicable, 4),
-                new (BetStatus.NotApplicable, 4),
+                new (BetStatus.Made, 4),
+                new (BetStatus.Made, 4),
             };
             var settings = new TokenSettings();
             settings.CommisionPercentage = 0.1m;

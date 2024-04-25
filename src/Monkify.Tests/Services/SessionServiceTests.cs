@@ -152,7 +152,7 @@ namespace Monkify.Tests.Services
                 foreach (var bet in session.Bets)
                 {
                     bet.Status.ShouldBe(BetStatus.Refunded);
-                    bet.StatusLogs.Any(x => x.PreviousStatus == BetStatus.NotApplicable && x.NewStatus == BetStatus.Refunded).ShouldBeTrue();
+                    bet.StatusLogs.Any(x => x.PreviousStatus == BetStatus.Made && x.NewStatus == BetStatus.Refunded).ShouldBeTrue();
                 }
             }
         }
@@ -207,7 +207,7 @@ namespace Monkify.Tests.Services
                 var updatedBet = context.SessionBets.Include(x => x.StatusLogs).FirstOrDefault(x => x.Id == selectedBet.Id);
 
                 updatedBet.Status.ShouldBe(BetStatus.Refunded);
-                updatedBet.StatusLogs.Any(x => x.PreviousStatus == BetStatus.NotApplicable && x.NewStatus == BetStatus.Refunded).ShouldBeTrue();
+                updatedBet.StatusLogs.Any(x => x.PreviousStatus == BetStatus.Made && x.NewStatus == BetStatus.Refunded).ShouldBeTrue();
             }
         }
 

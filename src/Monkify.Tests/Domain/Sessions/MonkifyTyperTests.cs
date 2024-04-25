@@ -31,10 +31,10 @@ namespace Monkify.Tests.Domain.Sessions
         {
             var session = new Session();
             session.Parameters = new SessionParameters() { SessionCharacterType = SessionCharacterType.LowerCaseLetter };
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = Faker.Random.String2(4) });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = Faker.Random.String2(4) });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = Faker.Random.String2(4) });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = Faker.Random.String2(4) });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = Faker.Random.String2(4) });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = Faker.Random.String2(4) });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = Faker.Random.String2(4) });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = Faker.Random.String2(4) });
 
             MonkifyTyper? typer = null; 
             
@@ -58,10 +58,10 @@ namespace Monkify.Tests.Domain.Sessions
             var presetChoices = new List<PresetChoice>() { new PresetChoice(choiceA), new PresetChoice(choiceB) };
             var session = new Session();
             session.Parameters = new SessionParameters() { SessionCharacterType = SessionCharacterType.LowerCaseLetter, PresetChoices = presetChoices };
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceA });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceA });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceB });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceB });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choiceA });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choiceA });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choiceB });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choiceB });
 
             MonkifyTyper? typer = null;
 
@@ -84,10 +84,10 @@ namespace Monkify.Tests.Domain.Sessions
 
             var session = new Session();
             session.Parameters = new SessionParameters() { SessionCharacterType = SessionCharacterType.LowerCaseLetter };
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceA });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceA });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceB });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceB });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choiceA });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choiceA });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choiceB });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choiceB });
 
             MonkifyTyper? typer = new MonkifyTyper(session);
 
@@ -108,10 +108,10 @@ namespace Monkify.Tests.Domain.Sessions
 
             var session = new Session();
             session.Parameters = new SessionParameters() { SessionCharacterType = SessionCharacterType.PresetByPlayerChoices };
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceA });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceA });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceB });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choiceB });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choiceA });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choiceA });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choiceB });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choiceB });
 
             MonkifyTyper? typer = new MonkifyTyper(session);
 
@@ -131,10 +131,10 @@ namespace Monkify.Tests.Domain.Sessions
             var watch = new Stopwatch();
             var session = new Session();
             session.Parameters = new SessionParameters() { SessionCharacterType = SessionCharacterType.LowerCaseLetter };
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = Faker.Random.String2(4) });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = Faker.Random.String2(4) });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = Faker.Random.String2(4) });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = Faker.Random.String2(4) });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = Faker.Random.String2(4) });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = Faker.Random.String2(4) });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = Faker.Random.String2(4) });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = Faker.Random.String2(4) });
 
             var typer = new MonkifyTyper(session);
 
@@ -168,10 +168,10 @@ namespace Monkify.Tests.Domain.Sessions
             var watch = new Stopwatch();
             var session = new Session();
             session.Parameters = new SessionParameters() { SessionCharacterType = SessionCharacterType.LowerCaseLetter };
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choices[0] });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choices[1] });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choices[2] });
-            session.Bets.Add(new Bet(BetStatus.NotApplicable, 10) { Choice = choices[3] });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[0] });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[1] });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[2] });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[3] });
 
             var typer = new MonkifyTyper(session);
 

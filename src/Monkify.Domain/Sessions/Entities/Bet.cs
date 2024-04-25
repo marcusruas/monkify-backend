@@ -21,7 +21,7 @@ namespace Monkify.Domain.Sessions.Entities
             Wallet = wallet;
             Choice = choice;
             Amount = amount;
-            StatusLogs = new List<BetStatusLog>() { new (Id, null, BetStatus.NotApplicable) };
+            StatusLogs = new List<BetStatusLog>() { new (Id, null, BetStatus.Made) };
         }
 
         public Session Session { get; set; }
@@ -34,5 +34,7 @@ namespace Monkify.Domain.Sessions.Entities
         public BetStatus Status { get; set; }
         public ICollection<BetStatusLog> StatusLogs { get; set; }
         public ICollection<TransactionLog> TransactionLogs { get; set; }
+
+        public static BetStatus[] PublicBetStatus = [BetStatus.Made, BetStatus.Rewarded];
     }
 }

@@ -8,7 +8,7 @@ namespace Monkify.Domain.Sessions.ValueObjects
 {
     public enum BetStatus
     {
-        NotApplicable,
+        Made,
         NeedsRewarding,
         Rewarded,
         NeedsRefunding,

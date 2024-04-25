@@ -7,6 +7,7 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+	<NoWarn>CS8600;CS8602;CS8604;CS8625</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
