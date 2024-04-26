@@ -21,7 +21,7 @@ namespace Monkify.Infrastructure.Background.Workers
     {
         public CreateSessions(IServiceProvider services) : base(services) { }
 
-        protected override async Task ExecuteProcess(CancellationToken cancellationToken)
+        public override async Task ExecuteProcess(CancellationToken cancellationToken)
         {
             using (var upperScope = Services.CreateScope())
             {

@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Monkify.Infrastructure.Migrations
 {
-    [ExcludeFromCodeCoverage]
     /// <inheritdoc />
     public partial class FirstMigration : Migration
     {

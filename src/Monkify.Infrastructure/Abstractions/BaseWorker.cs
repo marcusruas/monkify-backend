@@ -40,6 +40,6 @@ namespace Monkify.Infrastructure.Abstractions
             }
         }
 
-        protected abstract Task ExecuteProcess(CancellationToken cancellationToken);
+        public abstract Task ExecuteProcess(CancellationToken cancellationToken);
     }
 }

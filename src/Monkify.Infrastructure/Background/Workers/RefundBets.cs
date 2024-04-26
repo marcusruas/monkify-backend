@@ -1,34 +1,15 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using Monkify.Common.Extensions;
 using Monkify.Common.Resources;
 using Monkify.Domain.Configs.Entities;
-using Monkify.Domain.Sessions.Entities;
-using Monkify.Domain.Sessions.Events;
 using Monkify.Domain.Sessions.Services;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
-using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Services.Sessions;
 using Monkify.Infrastructure.Services.Solana;
 using Serilog;
-using Solnet.Programs;
-using Solnet.Rpc;
-using Solnet.Rpc.Builders;
-using Solnet.Rpc.Core.Http;
-using Solnet.Wallet;
-using System;
-using System.Collections.Generic;
-using System.IO.IsolatedStorage;
-using System.IO.Pipelines;
-using System.Linq;
-using System.Runtime;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Background.Workers
 {
@@ -36,7 +17,7 @@ namespace Monkify.Infrastructure.Background.Workers
     {
         public RefundBets(IServiceProvider services) : base(services) { }
 
-        protected override async Task ExecuteProcess(CancellationToken cancellationToken)
+        public override async Task ExecuteProcess(CancellationToken cancellationToken)
         {
             using var scope = Services.CreateScope();
 

@@ -11,8 +11,8 @@ using Monkify.Infrastructure.Context;
 
 namespace Monkify.Infrastructure.Migrations
 {
-    [ExcludeFromCodeCoverage]
     [DbContext(typeof(MonkifyDbContext))]
+    [ExcludeFromCodeCoverage]
     partial class MonkifyDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
