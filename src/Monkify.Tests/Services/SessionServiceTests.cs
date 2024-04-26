@@ -59,12 +59,12 @@ namespace Monkify.Tests.Services
 
                 var service = new SessionService(_settings, context, _hubContextMock.Object);
 
-                await service.UpdateSessionStatus(session, SessionStatus.Started);
+                await service.UpdateSessionStatus(session, SessionStatus.InProgress);
                 var updatedSession = context.Sessions.Include(x => x.StatusLogs).FirstOrDefault(x => x.Id == session.Id);
 
                 updatedSession.ShouldNotBeNull();
-                updatedSession.Status.ShouldBe(SessionStatus.Started);
-                updatedSession.StatusLogs.Any(x => x.PreviousStatus == SessionStatus.WaitingBets && x.NewStatus == SessionStatus.Started).ShouldBeTrue();
+                updatedSession.Status.ShouldBe(SessionStatus.InProgress);
+                updatedSession.StatusLogs.Any(x => x.PreviousStatus == SessionStatus.WaitingBets && x.NewStatus == SessionStatus.InProgress).ShouldBeTrue();
             }
         }
 
@@ -72,7 +72,7 @@ namespace Monkify.Tests.Services
         public async Task UpdateSessionStatus_UpdateSessionToEnded_ShouldReturnSuccess()
         {
             var session = new Session();
-            session.Status = SessionStatus.Started;
+            session.Status = SessionStatus.InProgress;
             session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
             session.Bets = new List<Bet>()
             {
@@ -102,7 +102,7 @@ namespace Monkify.Tests.Services
                 updatedSession.Status.ShouldBe(SessionStatus.Ended);
                 updatedSession.Seed.ShouldNotBeNull();
                 updatedSession.Seed.Value.ShouldNotBe(0);
-                updatedSession.StatusLogs.Any(x => x.PreviousStatus == SessionStatus.Started && x.NewStatus == SessionStatus.Ended).ShouldBeTrue();
+                updatedSession.StatusLogs.Any(x => x.PreviousStatus == SessionStatus.InProgress && x.NewStatus == SessionStatus.Ended).ShouldBeTrue();
             }
         }
 
@@ -117,7 +117,7 @@ namespace Monkify.Tests.Services
             {
                 var service = new SessionService(_settings, context, _hubContextMock.Object);
 
-                await service.UpdateSessionStatus(session, SessionStatus.Started);
+                await service.UpdateSessionStatus(session, SessionStatus.InProgress);
                 var updatedSession = context.Sessions.Include(x => x.StatusLogs).FirstOrDefault(x => x.Id == session.Id);
 
                 updatedSession.ShouldBeNull();

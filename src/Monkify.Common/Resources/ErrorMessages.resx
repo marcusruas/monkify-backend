@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AdviceOnDifferentSignatureBetAmount" xml:space="preserve">
-    <value>If you requested a transaction and it has a different amount than you desired. You can request a refund for the transaction sending an email with the signature to marcusruas.andrade@gmail.com</value>
+    <value>If you requested a transaction and it has a different amount than you desired. You can request a refund for the transaction sending an email with your wallet and signature to marcusruas.andrade@gmail.com</value>
   </data>
   <data name="BetCannotReceiveRefund" xml:space="preserve">
     <value>Bet is not in the status to receive refund.</value>
@@ -140,6 +140,12 @@
   </data>
   <data name="InvalidPaymentSignature" xml:space="preserve">
     <value>The requested payment signature is not valid. Please check the data and try again.</value>
+  </data>
+  <data name="ParameterHasNoActiveSessions" xml:space="preserve">
+    <value>The requested session type has no active sessions. Please refresh your browser and try again.</value>
+  </data>
+  <data name="ParameterNotFound" xml:space="preserve">
+    <value>The requested session type was not found. Please check the request and try again.</value>
   </data>
   <data name="PaymentSignatureHasBeenUsed" xml:space="preserve">
     <value>The requested payment signature has already been used. Make another transaction with the appropriate amount.</value>

@@ -61,7 +61,7 @@ namespace Monkify.Common.Resources {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a If you requested a transaction and it has a different amount than you desired. You can request a refund for the transaction sending an email with the signature to marcusruas.andrade@gmail.com.
+        ///   Consulta uma cadeia de caracteres localizada semelhante a If you requested a transaction and it has a different amount than you desired. You can request a refund for the transaction sending an email with your wallet and signature to marcusruas.andrade@gmail.com.
         /// </summary>
         public static string AdviceOnDifferentSignatureBetAmount {
             get {
@@ -129,6 +129,24 @@ namespace Monkify.Common.Resources {
         public static string InvalidPaymentSignature {
             get {
                 return ResourceManager.GetString("InvalidPaymentSignature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The requested session type has no active sessions. Please refresh your browser and try again..
+        /// </summary>
+        public static string ParameterHasNoActiveSessions {
+            get {
+                return ResourceManager.GetString("ParameterHasNoActiveSessions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The requested session type was not found. Please check the request and try again..
+        /// </summary>
+        public static string ParameterNotFound {
+            get {
+                return ResourceManager.GetString("ParameterNotFound", resourceCulture);
             }
         }
         

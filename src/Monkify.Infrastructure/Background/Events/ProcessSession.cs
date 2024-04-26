@@ -59,7 +59,7 @@ namespace Monkify.Infrastructure.Background.Events
 
             _monkey = new MonkifyTyper(_session);
 
-            await _sessionService.UpdateSessionStatus(_session, Started);
+            await _sessionService.UpdateSessionStatus(_session, InProgress);
             await SendTerminalCharacters();
             await _sessionService.UpdateSessionStatus(_session, Ended, _monkey);
             await DeclareWinners();

@@ -19,7 +19,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetAllBets
 
         public override async Task<PaginatedList<BetDto>> HandleRequest(FilterBetsRequest request, CancellationToken cancellationToken)
         {
-            var query = Context.SessionBets.Where(x => Bet.PublicBetStatus.Contains(x.Status));
+            var query = Context.SessionBets.Where(x => Bet.PublicBetStatus.Contains(x.Status)).OrderByDescending(x => x.CreatedDate);
 
             var result = await PaginatedList<Bet>.CreateAsync(query, request.PageNumber.Value, request.PageSize.Value);
             return PaginatedList<BetDto>.CreateFromPaginatedList(result.Items.Select(x => new BetDto(x)), result);

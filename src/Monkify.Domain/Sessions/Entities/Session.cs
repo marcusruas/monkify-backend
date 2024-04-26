@@ -17,7 +17,7 @@ namespace Monkify.Domain.Sessions.Entities
         public Session()
         {
             Status = WaitingBets;
-            StatusLogs = new Collection<SessionStatusLog>() { new SessionStatusLog(Id, null, SessionStatus.WaitingBets) };
+            StatusLogs = new Collection<SessionStatusLog>() { new SessionStatusLog(Id, null, WaitingBets) };
             Bets = new Collection<Bet>();
         }
 
@@ -35,7 +35,8 @@ namespace Monkify.Domain.Sessions.Entities
         public ICollection<Bet> Bets { get; set; }
         public ICollection<SessionStatusLog> StatusLogs { get; set; }
 
-        public static SessionStatus[] SessionInProgressStatus = [WaitingBets, Started];
+        public static SessionStatus[] SessionInProgressStatus = [WaitingBets, InProgress];
+        public static SessionStatus[] SessionDisplayStatus = [WaitingBets, InProgress, Ended, RewardForWinnersInProgress];
         public static SessionStatus[] SessionEndedStatus = [NotEnoughPlayersToStart, Ended];
     }
 }
