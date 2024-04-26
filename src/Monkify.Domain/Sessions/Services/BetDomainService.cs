@@ -91,7 +91,7 @@ namespace Monkify.Domain.Sessions.Services
             refundValue -= credits;
 
             if (refundValue <= 0)
-                return new BetTransactionAmountResult(refundValue, ulong.MinValue);
+                return new BetTransactionAmountResult(ErrorMessages.BetHasAlreadyBeenRefunded);
 
             var refundInTokens = (ulong)(refundValue * (decimal)Math.Pow(10, settings.Decimals));
 

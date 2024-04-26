@@ -247,8 +247,9 @@ namespace Monkify.Tests.Domain.Sessions
             settings.Decimals = 5;
 
             var refund = BetDomainService.CalculateRefundForBet(settings, bet);
-            refund.Value.ShouldBe(value);
+            refund.Value.ShouldBe(0);
             refund.ValueInTokens.ShouldBe(ulong.MinValue);
+            refund.ErrorMessage.ShouldBe(ErrorMessages.BetHasAlreadyBeenRefunded);
         }
 
         [Theory]
