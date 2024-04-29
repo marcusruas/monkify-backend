@@ -159,6 +159,9 @@
   <data name="SessionWithoutWinners" xml:space="preserve">
     <value>There are no winners in this session. Transfers cannot be made.</value>
   </data>
+  <data name="SignatureForInvalidToken" xml:space="preserve">
+    <value>The requested payment signature was not sent for the appropriate token. Please try sending a valid transaction.</value>
+  </data>
   <data name="SignaturePaidLessThanBetAmount" xml:space="preserve">
     <value>The requested payment signature has sent less tokens than informed in the request. </value>
   </data>

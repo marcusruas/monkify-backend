@@ -1,10 +1,12 @@
-﻿using Monkify.Domain.Configs.Entities;
+﻿using Monkify.Common.Resources;
+using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Services.Solana;
 using Monkify.Tests.Shared;
 using Moq;
+using Newtonsoft.Json;
 using Shouldly;
 using Solnet.Rpc;
 using Solnet.Rpc.Core.Http;
@@ -16,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit.Sdk;
 
 namespace Monkify.Tests.Services
 {
@@ -28,14 +31,16 @@ namespace Monkify.Tests.Services
             {
                 Polly = new()
                 { 
-                    GetTransactionRetryCount = 1,
+                    GetTransactionRetryCount = 3,
                     LatestBlockshashRetryCount = 3
                 },
                 Token = new()
                 {
                     SenderAccount = "HJ5z5cmD76tAN1kxSWuvuAxwmtpaXxGvHxEbF2FBAinY",
                     TokenOwnerPublicKey = "GHxPmQcC4s6iGi9bAFtsw75wB2RprqXGXbEewTcN7EyN",
-                    TokenOwnerPrivateKey = "2t4t5zEMppzldKqDyk7N8N341eRDbE0qs8O2evkNXlrjNzq21fXcIHmnBviqn4YeNp8kbO9q/Iy6kT/9Kb8UOQ=="
+                    TokenOwnerPrivateKey = "2t4t5zEMppzldKqDyk7N8N341eRDbE0qs8O2evkNXlrjNzq21fXcIHmnBviqn4YeNp8kbO9q/Iy6kT/9Kb8UOQ==",
+                    MintAddress = "FYU5Uxh5mZn8VPLvUq24khhSWK1BN9gXUMG1Gx7RDa1H",
+                    Decimals = 9,
                 }
             };
         }
@@ -51,6 +56,7 @@ namespace Monkify.Tests.Services
             var result = new RequestResult<ResponseValue<LatestBlockHash>>()
             {
                 WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
                 Result = new()
                 {
                     Value = new()
@@ -78,6 +84,7 @@ namespace Monkify.Tests.Services
             var result = new RequestResult<ResponseValue<LatestBlockHash>>()
             {
                 WasHttpRequestSuccessful = false,
+                WasRequestSuccessfullyHandled = false,
                 Result = new()
                 {
                     Value = new()
@@ -105,6 +112,7 @@ namespace Monkify.Tests.Services
             var result = new RequestResult<ResponseValue<LatestBlockHash>>()
             {
                 WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
                 Result = new()
                 {
                     Value = new()
@@ -132,6 +140,7 @@ namespace Monkify.Tests.Services
             var blockhash = new RequestResult<ResponseValue<LatestBlockHash>>()
             {
                 WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
                 Result = new()
                 {
                     Value = new()
@@ -216,6 +225,7 @@ namespace Monkify.Tests.Services
             var blockhash = new RequestResult<ResponseValue<LatestBlockHash>>()
             {
                 WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
                 Result = new()
                 {
                     Value = new()
@@ -227,7 +237,7 @@ namespace Monkify.Tests.Services
             var result = new RequestResult<string>()
             {
                 WasHttpRequestSuccessful = false,
-                WasRequestSuccessfullyHandled = true,
+                WasRequestSuccessfullyHandled = false,
                 Result = Faker.Random.String2(88)
             };
             _rpcClientMock.Setup(x => x.GetLatestBlockHashAsync(It.IsAny<Commitment>())).Returns(Task.FromResult(blockhash));
@@ -254,6 +264,7 @@ namespace Monkify.Tests.Services
             var blockhash = new RequestResult<ResponseValue<LatestBlockHash>>()
             {
                 WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
                 Result = new()
                 {
                     Value = new()
@@ -278,6 +289,271 @@ namespace Monkify.Tests.Services
                 context.TransactionLogs.Any(x => x.BetId == bet.Id).ShouldBeFalse();
                 _rpcClientMock.Verify(x => x.SendTransactionAsync(It.IsAny<byte[]>(), It.IsAny<bool>(), It.IsAny<Commitment>()), Times.Exactly(1));
             }
+        }
+
+        [Fact]
+        public async Task ValidateBetPayment_ValidBet_ShouldReturnValid()
+        {
+            var transaction = new RequestResult<TransactionMetaSlotInfo>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = MockGetTransactionResult()
+            };
+
+            _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
+            var session = new Session();
+            session.Status = SessionStatus.RewardForWinnersInProgress;
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), WALLET_FOR_TESTS, "abcd", 10);
+            session.Bets.Add(bet);
+
+            using (var context = new MonkifyDbContext(ContextOptions))
+            {
+                context.Add(session);
+                context.SaveChanges();
+
+                var service = new SolanaService(context, _rpcClientMock.Object, _settings);
+
+                var validationResult = await service.ValidateBetPayment(bet);
+
+                _rpcClientMock.Verify(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>()), Times.Once());
+                validationResult.IsValid.ShouldBeTrue();
+                validationResult.ErrorMessage.ShouldBeNull();
+            }
+        }
+
+        [Fact]
+        public async Task ValidateBetPayment_ZeroAmountBet_ShouldReturnValid()
+        {
+            var transaction = new RequestResult<TransactionMetaSlotInfo>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = MockGetTransactionResult()
+            };
+
+            _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
+            var session = new Session();
+            session.Status = SessionStatus.RewardForWinnersInProgress;
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), WALLET_FOR_TESTS, "abcd", 0);
+            session.Bets.Add(bet);
+
+            using (var context = new MonkifyDbContext(ContextOptions))
+            {
+                context.Add(session);
+                context.SaveChanges();
+
+                var service = new SolanaService(context, _rpcClientMock.Object, _settings);
+
+                var validationResult = await service.ValidateBetPayment(bet);
+
+                _rpcClientMock.Verify(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>()), Times.Never());
+                validationResult.IsValid.ShouldBeTrue();
+                validationResult.ErrorMessage.ShouldBeNull();
+            }
+        }
+
+        [Fact]
+        public async Task ValidateBetPayment_FailedToGetTransaction_ShouldReturnError()
+        {
+            var transaction = new RequestResult<TransactionMetaSlotInfo>()
+            {
+                WasHttpRequestSuccessful = true,
+                Result = null
+            };
+
+            _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
+            var session = new Session();
+            session.Status = SessionStatus.RewardForWinnersInProgress;
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), WALLET_FOR_TESTS, "abcd", 10);
+            session.Bets.Add(bet);
+
+            using (var context = new MonkifyDbContext(ContextOptions))
+            {
+                context.Add(session);
+                context.SaveChanges();
+
+                var service = new SolanaService(context, _rpcClientMock.Object, _settings);
+
+                var validationResult = await service.ValidateBetPayment(bet);
+
+                _rpcClientMock.Verify(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>()), Times.Exactly(4));
+                validationResult.IsValid.ShouldBeFalse();
+                validationResult.ErrorMessage.ShouldBe(ErrorMessages.InvalidPaymentSignature);
+            }
+        }
+
+        [Fact]
+        public async Task ValidateBetPayment_InvalidSenderOnPayment_ShouldReturnInValid()
+        {
+            var transaction = new RequestResult<TransactionMetaSlotInfo>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = MockGetTransactionResult()
+            };
+
+            _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
+            var session = new Session();
+            session.Status = SessionStatus.RewardForWinnersInProgress;
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), "abcd", 10);
+            session.Bets.Add(bet);
+
+            using (var context = new MonkifyDbContext(ContextOptions))
+            {
+                context.Add(session);
+                context.SaveChanges();
+
+                var service = new SolanaService(context, _rpcClientMock.Object, _settings);
+
+                var validationResult = await service.ValidateBetPayment(bet);
+
+                _rpcClientMock.Verify(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>()), Times.Once());
+                validationResult.IsValid.ShouldBeFalse();
+                validationResult.ErrorMessage.ShouldBe(ErrorMessages.SignatureWithoutBetAccount);
+            }
+        }
+
+        [Fact]
+        public async Task ValidateBetPayment_InvalidRecipientOnPayment_ShouldReturnInValid()
+        {
+            _settings.Token.SenderAccount = "3yZe7d9L4jXVBcX3ZqiJR5WgXp9SdhE9uWU9sVfjMDKf";
+            var transaction = new RequestResult<TransactionMetaSlotInfo>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = MockGetTransactionResult()
+            };
+
+            _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
+            var session = new Session();
+            session.Status = SessionStatus.RewardForWinnersInProgress;
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), "abcd", 10);
+            session.Bets.Add(bet);
+
+            using (var context = new MonkifyDbContext(ContextOptions))
+            {
+                context.Add(session);
+                context.SaveChanges();
+
+                var service = new SolanaService(context, _rpcClientMock.Object, _settings);
+
+                var validationResult = await service.ValidateBetPayment(bet);
+
+                _rpcClientMock.Verify(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>()), Times.Once());
+                validationResult.IsValid.ShouldBeFalse();
+                validationResult.ErrorMessage.ShouldBe(ErrorMessages.SignatureWithoutOwnerAccount);
+            }
+        }
+
+        [Fact]
+        public async Task ValidateBetPayment_InvalidMintAddress_ShouldReturnInValid()
+        {
+            _settings.Token.MintAddress = "FYU5Uxh5mZn8VPLvUq24khhSWK1BN9gXUMG1Gx7RDa2H";
+            var transaction = new RequestResult<TransactionMetaSlotInfo>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = MockGetTransactionResult()
+            };
+
+            _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
+            var session = new Session();
+            session.Status = SessionStatus.RewardForWinnersInProgress;
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), "abcd", 10);
+            session.Bets.Add(bet);
+
+            using (var context = new MonkifyDbContext(ContextOptions))
+            {
+                context.Add(session);
+                context.SaveChanges();
+
+                var service = new SolanaService(context, _rpcClientMock.Object, _settings);
+
+                var validationResult = await service.ValidateBetPayment(bet);
+
+                _rpcClientMock.Verify(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>()), Times.Once());
+                validationResult.IsValid.ShouldBeFalse();
+                validationResult.ErrorMessage.ShouldBe(ErrorMessages.SignatureForInvalidToken);
+            }
+        }
+
+        [Fact]
+        public async Task ValidateBetPayment_PaymentBiggerThanBet_ShouldReturnInValid()
+        {
+            var transaction = new RequestResult<TransactionMetaSlotInfo>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = MockGetTransactionResult()
+            };
+
+            _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
+            var session = new Session();
+            session.Status = SessionStatus.RewardForWinnersInProgress;
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), "abcd", 9);
+            session.Bets.Add(bet);
+
+            using (var context = new MonkifyDbContext(ContextOptions))
+            {
+                context.Add(session);
+                context.SaveChanges();
+
+                var service = new SolanaService(context, _rpcClientMock.Object, _settings);
+
+                var validationResult = await service.ValidateBetPayment(bet);
+
+                _rpcClientMock.Verify(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>()), Times.Once());
+                validationResult.IsValid.ShouldBeFalse();
+                validationResult.ErrorMessage.ShouldStartWith(ErrorMessages.SignaturePaidMoreThanBetAmount);
+            }
+        }
+
+        [Fact]
+        public async Task ValidateBetPayment_PaymentLesserThanBet_ShouldReturnInValid()
+        {
+            var transaction = new RequestResult<TransactionMetaSlotInfo>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = MockGetTransactionResult()
+            };
+
+            _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
+            var session = new Session();
+            session.Status = SessionStatus.RewardForWinnersInProgress;
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), "abcd", 12);
+            session.Bets.Add(bet);
+
+            using (var context = new MonkifyDbContext(ContextOptions))
+            {
+                context.Add(session);
+                context.SaveChanges();
+
+                var service = new SolanaService(context, _rpcClientMock.Object, _settings);
+
+                var validationResult = await service.ValidateBetPayment(bet);
+
+                _rpcClientMock.Verify(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>()), Times.Once());
+                validationResult.IsValid.ShouldBeFalse();
+                validationResult.ErrorMessage.ShouldStartWith(ErrorMessages.SignaturePaidLessThanBetAmount);
+            }
+        }
+
+        private TransactionMetaSlotInfo MockGetTransactionResult()
+        {
+            var jsonResult = "{\"jsonrpc\":\"2.0\",\"result\":{\"blockTime\":1712363738,\"meta\":{\"computeUnitsConsumed\":6173,\"err\":null,\"fee\":5000,\"innerInstructions\":[],\"loadedAddresses\":{\"readonly\":[],\"writable\":[]},\"logMessages\":[\"Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [1]\",\"Program log: Instruction: TransferChecked\",\"Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 6173 of 200000 compute units\",\"Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success\"],\"postBalances\":[997945720,2039280,2039280,929020800,1461600],\"postTokenBalances\":[{\"accountIndex\":1,\"mint\":\"FYU5Uxh5mZn8VPLvUq24khhSWK1BN9gXUMG1Gx7RDa1H\",\"owner\":\"FkdZH693o3s77CVr72hgyaP4LURXqLVnYF69kMB3sFX2\",\"programId\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"uiTokenAmount\":{\"amount\":\"244803289765\",\"decimals\":9,\"uiAmount\":244.803289765,\"uiAmountString\":\"244.803289765\"}},{\"accountIndex\":2,\"mint\":\"FYU5Uxh5mZn8VPLvUq24khhSWK1BN9gXUMG1Gx7RDa1H\",\"owner\":\"GHxPmQcC4s6iGi9bAFtsw75wB2RprqXGXbEewTcN7EyN\",\"programId\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"uiTokenAmount\":{\"amount\":\"855196710235\",\"decimals\":9,\"uiAmount\":855.196710235,\"uiAmountString\":\"855.196710235\"}}],\"preBalances\":[997950720,2039280,2039280,929020800,1461600],\"preTokenBalances\":[{\"accountIndex\":1,\"mint\":\"FYU5Uxh5mZn8VPLvUq24khhSWK1BN9gXUMG1Gx7RDa1H\",\"owner\":\"FkdZH693o3s77CVr72hgyaP4LURXqLVnYF69kMB3sFX2\",\"programId\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"uiTokenAmount\":{\"amount\":\"254803289765\",\"decimals\":9,\"uiAmount\":254.803289765,\"uiAmountString\":\"254.803289765\"}},{\"accountIndex\":2,\"mint\":\"FYU5Uxh5mZn8VPLvUq24khhSWK1BN9gXUMG1Gx7RDa1H\",\"owner\":\"GHxPmQcC4s6iGi9bAFtsw75wB2RprqXGXbEewTcN7EyN\",\"programId\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"uiTokenAmount\":{\"amount\":\"845196710235\",\"decimals\":9,\"uiAmount\":845.196710235,\"uiAmountString\":\"845.196710235\"}}],\"rewards\":[],\"status\":{\"Ok\":null}},\"slot\":81965,\"transaction\":{\"message\":{\"accountKeys\":[\"FkdZH693o3s77CVr72hgyaP4LURXqLVnYF69kMB3sFX2\",\"5sQvEQfJGZgfoRoGdqaHS1bEudiAYToaUjxdb4dHLaym\",\"HJ5z5cmD76tAN1kxSWuvuAxwmtpaXxGvHxEbF2FBAinY\",\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"FYU5Uxh5mZn8VPLvUq24khhSWK1BN9gXUMG1Gx7RDa1H\"],\"header\":{\"numReadonlySignedAccounts\":0,\"numReadonlyUnsignedAccounts\":2,\"numRequiredSignatures\":1},\"instructions\":[{\"accounts\":[1,4,2,0],\"data\":\"g7c6qhYoikLGp\",\"programIdIndex\":3,\"stackHeight\":null}],\"recentBlockhash\":\"BmV8JtjyeE556qhKPLfcieqAXP3VvjmrB4soCuwmM2Cq\"},\"signatures\":[\"3YJbniPs66oJN5yGDLkhyGRdQiVk7p5TgtZzc7j5e2T8ypkcfhbH5qowCraUKrj7X7n4QD6gGPkJLGX5WCoN6KZZ\"]}},\"id\":1}\r\n";
+            var transactionBody = JsonConvert.DeserializeObject<RequestResult<TransactionMetaSlotInfo>>(jsonResult);
+
+            return transactionBody.Result;
         }
     }
 }

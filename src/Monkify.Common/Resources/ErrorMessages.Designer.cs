@@ -187,6 +187,15 @@ namespace Monkify.Common.Resources {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The requested payment signature was not sent for the appropriate token. Please try sending a valid transaction..
+        /// </summary>
+        public static string SignatureForInvalidToken {
+            get {
+                return ResourceManager.GetString("SignatureForInvalidToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a The requested payment signature has sent less tokens than informed in the request. .
         /// </summary>
         public static string SignaturePaidLessThanBetAmount {
