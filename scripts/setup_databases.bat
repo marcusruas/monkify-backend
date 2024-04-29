@@ -21,7 +21,7 @@ docker exec %CONTAINER_ID% /opt/mssql-tools/bin/sqlcmd -S %SQL_SERVER% -U %SQL_U
     GO
 
     INSERT INTO SESSIONPARAMETERS VALUES
-    (NEWID(), 2, 2, 1, 4, 1, 1, GETDATE(), NULL)
+	(NEWID(), 2, 'Test parameter - 4 letter', 10, 2, 4, 1, 1, GETDATE(), NULL)
 "
 
 echo Session parameter inserted.
