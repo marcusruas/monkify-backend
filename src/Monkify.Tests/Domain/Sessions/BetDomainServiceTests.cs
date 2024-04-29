@@ -236,9 +236,9 @@ namespace Monkify.Tests.Domain.Sessions
         }
 
         [Theory]
-        [InlineData(6, 0)]
-        [InlineData(7, -1)]
-        public void CalculateRefundForBet_RefundedBet_ShouldCalculateCorrectly(int amount, decimal value)
+        [InlineData(6)]
+        [InlineData(7)]
+        public void CalculateRefundForBet_RefundedBet_ShouldCalculateCorrectly(int amount)
         {
             var log = new TransactionLog() { Amount = amount };
             var bet = new Bet() { Status = BetStatus.NeedsRefunding, Amount = 6, TransactionLogs = new List<TransactionLog>() { log } };
