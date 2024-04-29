@@ -12,6 +12,8 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetAllBets
 {
     public class FilterBetsRequest : IRequest<PaginatedList<BetDto>>
     {
+        public FilterBetsRequest() { }
+
         public FilterBetsRequest(int? pageNumber, int? pageSize)
         {
             PageNumber = pageNumber;
