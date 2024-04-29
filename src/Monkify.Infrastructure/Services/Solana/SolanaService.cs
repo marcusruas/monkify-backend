@@ -27,15 +27,16 @@ namespace Monkify.Infrastructure.Services.Solana
             _ownerAccount ??= new Account(Convert.FromBase64String(_settings.Token.TokenOwnerPrivateKey), new PublicKey(_settings.Token.TokenOwnerPublicKey).KeyBytes);
 
             _blockhashPolicy = Policy
-                .HandleResult<RequestResult<ResponseValue<LatestBlockHash>>>(x => !x.WasSuccessful || string.IsNullOrWhiteSpace(x.Result?.Value?.Blockhash))
+                .HandleResult<RequestResult<ResponseValue<LatestBlockHash>>>(x => !x.WasHttpRequestSuccessful || string.IsNullOrWhiteSpace(x.Result?.Value?.Blockhash))
                 .RetryAsync(_settings.Polly.LatestBlockshashRetryCount, onRetry: (response, retryCount) =>
                 {
                     var result = response.Result;
+                    var test = retryCount;
                     Serilog.Log.Error("Attempt {0}: Failed to get latest blockhash from solana client. Reason: {1}, Details: {2}", retryCount, result.Reason, result.RawRpcResponse);
                 });
 
             _getTransactionPolicy = Policy
-                .HandleResult<RequestResult<TransactionMetaSlotInfo>>(x => !x.WasSuccessful)
+                .HandleResult<RequestResult<TransactionMetaSlotInfo>>(x => !x.WasHttpRequestSuccessful || !x.WasRequestSuccessfullyHandled)
                 .RetryAsync(_settings.Polly.GetTransactionRetryCount, onRetry: (response, retryCount) =>
                 {
                     var result = response.Result;
@@ -56,7 +57,7 @@ namespace Monkify.Infrastructure.Services.Solana
         public async Task<bool> SetLatestBlockhashForTokenTransfer()
         {
             var latestBlockHash = await _blockhashPolicy.ExecuteAsync(async () => await _rpcClient.GetLatestBlockHashAsync());
-            bool blockhhashObtained = latestBlockHash.WasSuccessful && string.IsNullOrWhiteSpace(latestBlockHash.Result?.Value?.Blockhash);
+            bool blockhhashObtained = latestBlockHash.WasHttpRequestSuccessful && !string.IsNullOrWhiteSpace(latestBlockHash.Result?.Value?.Blockhash);
 
             if (blockhhashObtained)
                 _latestBlockhashAddress = latestBlockHash.Result.Value.Blockhash;
@@ -66,7 +67,7 @@ namespace Monkify.Infrastructure.Services.Solana
 
         public async Task<bool> TransferTokensForBet(Bet bet, BetTransactionAmountResult amount)
         {
-            if (amount.ValueInTokens == 0)
+             if (amount.ValueInTokens == 0)
             {
                 Serilog.Log.Warning("An attempt to make a transaction with 0 tokens has been made. Bet: {0}, ErrorMessage: {1}", bet.Id, amount.ErrorMessage);
                 return true;
@@ -84,7 +85,7 @@ namespace Monkify.Infrastructure.Services.Solana
 
                 RequestResult<string> result = await _rpcClient.SendTransactionAsync(transaction);
 
-                if (!result.WasSuccessful)
+                if (!result.WasHttpRequestSuccessful || !result.WasRequestSuccessfullyHandled)
                 {
                     Serilog.Log.Error("Failed to transfer funds to the bet's wallet. Value: {1}. Details: {2} ", bet.Id, amount.AsJson(), result.RawRpcResponse);
                     return false;
