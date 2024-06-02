@@ -30,6 +30,7 @@ namespace Monkify.Tests.Domain.Sessions
             var session = new Session(parametersId);
 
             session.ParametersId.ShouldBe(parametersId);
+            session.Status.ShouldBe(SessionStatus.WaitingBets);
         }
     }
 }

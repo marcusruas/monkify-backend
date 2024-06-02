@@ -5,6 +5,7 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
 {
     public class BetDto(Bet bet)
     {
+        public string Wallet { get; set; } = bet.Wallet;
         public string PaymentSignature { get; set; } = bet.PaymentSignature;
         public string Choice { get; set; } = bet.Choice;
         public decimal Amount { get; set; } = bet.Amount;

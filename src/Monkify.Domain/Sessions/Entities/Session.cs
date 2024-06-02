@@ -24,6 +24,7 @@ namespace Monkify.Domain.Sessions.Entities
         public Session(Guid parametersId) : base()
         {
             ParametersId = parametersId;
+            Status = WaitingBets;
         }
 
         public SessionParameters Parameters { get; set; }
