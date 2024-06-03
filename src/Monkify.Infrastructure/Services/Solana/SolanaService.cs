@@ -24,7 +24,7 @@ namespace Monkify.Infrastructure.Services.Solana
             _rpcClient = rpcClient;
             _settings = settings;
 
-            _ownerAccount ??= new Account(Convert.FromBase64String(_settings.Token.TokenOwnerPrivateKey), new PublicKey(_settings.Token.TokenOwnerPublicKey).KeyBytes);
+            _ownerAccount ??= new Account(_settings.Token.TokenOwnerPrivateKey, _settings.Token.TokenOwnerPublicKey);
 
             _blockhashPolicy = Policy
                 .HandleResult<RequestResult<ResponseValue<LatestBlockHash>>>(x => !x.WasSuccessful || string.IsNullOrWhiteSpace(x.Result?.Value?.Blockhash))
