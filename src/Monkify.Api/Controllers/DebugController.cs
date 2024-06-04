@@ -46,6 +46,8 @@ namespace Monkify.Api.Controllers
             foreach (var item in _context.SessionParameters.ToList())
                 _context.Remove(item);
 
+            _context.SaveChanges();
+
             return Ok();
         }
     }
