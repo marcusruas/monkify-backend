@@ -37,13 +37,21 @@ namespace Monkify.Infrastructure.Background.Workers
                 return;
             }
 
+            var blockhash = await solanaService.GetLatestBlockhashForTokenTransfer();
+
+            if (string.IsNullOrWhiteSpace(blockhash))
+            {
+                await Task.Delay(settings.Workers.RefundBetsInterval * 1000, cancellationToken);
+                return;
+            }
+
             foreach (var bet in betsToBeRefunded)
             {
                 var refundResult = BetDomainService.CalculateRefundForBet(settings.Token, bet);
 
                 if (refundResult.Value > 0)
                 {
-                    bool betRefunded = await solanaService.TransferTokensForBet(bet, refundResult);
+                    bool betRefunded = await solanaService.TransferTokensForBet(bet, refundResult, blockhash);
 
                     if (betRefunded)
                         await sessionService.UpdateBetStatus(bet, BetStatus.Refunded);

@@ -47,9 +47,9 @@ namespace Monkify.Infrastructure.Background.Events
         {
             _betService = new(notification.Session, _settings.Token);
 
-            bool solanaIsUp = await _solanaService.SetLatestBlockhashForTokenTransfer();
+            var blockhash = await _solanaService.GetLatestBlockhashForTokenTransfer();
 
-            if (!solanaIsUp)
+            if (string.IsNullOrEmpty(blockhash))
             {
                 await _sessionService.UpdateSessionStatus(notification.Session, SessionStatus.ErrorWhenProcessingRewards);
                 return;
@@ -65,7 +65,7 @@ namespace Monkify.Infrastructure.Background.Events
 
                 if (string.IsNullOrWhiteSpace(rewardResult.ErrorMessage))
                 {
-                    bool currentBetRewarded = await _solanaService.TransferTokensForBet(winner, rewardResult);
+                    bool currentBetRewarded = await _solanaService.TransferTokensForBet(winner, rewardResult, blockhash);
 
                     if (currentBetRewarded)
                         await _sessionService.UpdateBetStatus(winner, BetStatus.Rewarded);

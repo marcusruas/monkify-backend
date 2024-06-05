@@ -54,10 +54,46 @@ namespace Monkify.Tests.Background
         private readonly Mock<ISessionService> _sessionServiceMock;
 
         [Fact]
+        public async Task RefundBets_FailedToGetBlockhash_ShouldReturnWithoutErrors()
+        {
+            _sessionServiceMock.Setup(x => x.UpdateBetStatus(It.IsAny<Bet>(), It.IsAny<BetStatus>())).Verifiable();
+            _solanaServiceMock.Setup(x => x.GetLatestBlockhashForTokenTransfer()).Returns(Task.FromResult((string)null));
+            _solanaServiceMock.Setup(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>(), It.IsAny<string>())).Returns(Task.FromResult(true));
+
+            var session = new Session();
+            session.Status = SessionStatus.Ended;
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Bets = new List<Bet>()
+            {
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), Faker.Random.String2(4), 2) { Status = BetStatus.NeedsRefunding },
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), Faker.Random.String2(4), 2) { Status = BetStatus.NeedsRefunding },
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), Faker.Random.String2(4), 2) { Status = BetStatus.NeedsRefunding },
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), Faker.Random.String2(4), 2) { Status = BetStatus.NeedsRefunding },
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), Faker.Random.String2(4), 2) { Status = BetStatus.NeedsRefunding },
+            };
+
+            using (var context = new MonkifyDbContext(ContextOptions))
+            {
+                context.Add(session);
+                context.SaveChanges();
+
+                _serviceProviderMock.Setup(x => x.GetService(typeof(MonkifyDbContext))).Returns(context);
+
+                var worker = new RefundBets(_serviceProviderMock.Object);
+
+                await worker.ExecuteProcess(CancellationToken);
+
+                _sessionServiceMock.Verify(x => x.UpdateBetStatus(It.IsAny<Bet>(), BetStatus.Refunded), Times.Never());
+                _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>(), It.IsAny<string>()), Times.Never());
+            }
+        }
+
+        [Fact]
         public async Task RefundBets_ShouldRefundAllBets()
         {
             _sessionServiceMock.Setup(x => x.UpdateBetStatus(It.IsAny<Bet>(), It.IsAny<BetStatus>())).Verifiable();
-            _solanaServiceMock.Setup(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>())).Returns(Task.FromResult(true));
+            _solanaServiceMock.Setup(x => x.GetLatestBlockhashForTokenTransfer()).Returns(Task.FromResult(Faker.Random.String2(40) ?? null));
+            _solanaServiceMock.Setup(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>(), It.IsAny<string>())).Returns(Task.FromResult(true));
 
             var session = new Session();
             session.Status = SessionStatus.Ended;
@@ -83,7 +119,7 @@ namespace Monkify.Tests.Background
                 await worker.ExecuteProcess(CancellationToken);
 
                 _sessionServiceMock.Verify(x => x.UpdateBetStatus(It.IsAny<Bet>(), BetStatus.Refunded), Times.Exactly(5));
-                _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>()), Times.Exactly(5));
+                _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>(), It.IsAny<string>()), Times.Exactly(5));
             }
         }
 
@@ -91,7 +127,7 @@ namespace Monkify.Tests.Background
         public async Task RefundBets_NoBets_ShouldNotRefundAny()
         {
             _sessionServiceMock.Setup(x => x.UpdateBetStatus(It.IsAny<Bet>(), It.IsAny<BetStatus>())).Verifiable();
-            _solanaServiceMock.Setup(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>())).Returns(Task.FromResult(true));
+            _solanaServiceMock.Setup(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>(), It.IsAny<string>())).Returns(Task.FromResult(true));
 
             var session = new Session();
             session.Status = SessionStatus.Ended;
@@ -117,7 +153,7 @@ namespace Monkify.Tests.Background
                 await worker.ExecuteProcess(CancellationToken);
 
                 _sessionServiceMock.Verify(x => x.UpdateBetStatus(It.IsAny<Bet>(), BetStatus.Refunded), Times.Never());
-                _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>()), Times.Never());
+                _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>(), It.IsAny<string>()), Times.Never());
             }
         }
 
@@ -125,7 +161,8 @@ namespace Monkify.Tests.Background
         public async Task RefundBets_FailToRefundBets_ShouldNotRefundBets()
         {
             _sessionServiceMock.Setup(x => x.UpdateBetStatus(It.IsAny<Bet>(), It.IsAny<BetStatus>())).Verifiable();
-            _solanaServiceMock.Setup(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>())).Returns(Task.FromResult(false));
+            _solanaServiceMock.Setup(x => x.GetLatestBlockhashForTokenTransfer()).Returns(Task.FromResult(Faker.Random.String2(40) ?? null));
+            _solanaServiceMock.Setup(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>(), It.IsAny<string>())).Returns(Task.FromResult(false));
 
             var session = new Session();
             session.Status = SessionStatus.Ended;
@@ -151,7 +188,7 @@ namespace Monkify.Tests.Background
                 await worker.ExecuteProcess(CancellationToken);
 
                 _sessionServiceMock.Verify(x => x.UpdateBetStatus(It.IsAny<Bet>(), BetStatus.Refunded), Times.Never());
-                _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>()), Times.Exactly(5));
+                _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>(), It.IsAny<string>()), Times.Exactly(5));
             }
         }
 
@@ -159,7 +196,8 @@ namespace Monkify.Tests.Background
         public async Task RefundBets_AlreadyRefundedBets_ShouldBeSetAsRefunded()
         {
             _sessionServiceMock.Setup(x => x.UpdateBetStatus(It.IsAny<Bet>(), It.IsAny<BetStatus>())).Verifiable();
-            _solanaServiceMock.Setup(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>())).Returns(Task.FromResult(true));
+            _solanaServiceMock.Setup(x => x.GetLatestBlockhashForTokenTransfer()).Returns(Task.FromResult(Faker.Random.String2(40) ?? null));
+            _solanaServiceMock.Setup(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>(), It.IsAny<string>())).Returns(Task.FromResult(true));
 
             var session = new Session();
             session.Status = SessionStatus.Ended;
@@ -191,7 +229,7 @@ namespace Monkify.Tests.Background
                 await worker.ExecuteProcess(CancellationToken);
 
                 _sessionServiceMock.Verify(x => x.UpdateBetStatus(It.IsAny<Bet>(), BetStatus.Refunded), Times.Exactly(5));
-                _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>()), Times.Never());
+                _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>(), It.IsAny<string>()), Times.Never());
             }
         }
     }

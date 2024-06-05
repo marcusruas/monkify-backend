@@ -1,9 +1,11 @@
-﻿using Monkify.Common.Resources;
+﻿using Bogus.Bson;
+using Monkify.Common.Resources;
 using Monkify.Common.Results;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Context;
+using Newtonsoft.Json.Linq;
 using Polly;
 using Polly.Retry;
 using Solnet.Programs;
@@ -28,19 +30,20 @@ namespace Monkify.Infrastructure.Services.Solana
 
             _blockhashPolicy = Policy
                 .HandleResult<RequestResult<ResponseValue<LatestBlockHash>>>(x => !x.WasSuccessful || string.IsNullOrWhiteSpace(x.Result?.Value?.Blockhash))
-                .RetryAsync(_settings.Polly.LatestBlockshashRetryCount, onRetry: (response, retryCount) =>
+                .RetryAsync(_settings.Polly.LatestBlockshashRetryCount, onRetry: async (response, retryCount) =>
                 {
                     var result = response.Result;
-                    var test = retryCount;
                     Serilog.Log.Error("Attempt {0}: Failed to get latest blockhash from solana client. Reason: {1}, Details: {2}", retryCount, result.Reason, result.RawRpcResponse);
+                    await Task.Delay(1000);
                 });
 
             _getTransactionPolicy = Policy
                 .HandleResult<RequestResult<TransactionMetaSlotInfo>>(x => !x.WasSuccessful)
-                .RetryAsync(_settings.Polly.GetTransactionRetryCount, onRetry: (response, retryCount) =>
+                .RetryAsync(_settings.Polly.GetTransactionRetryCount, onRetry: async (response, retryCount) =>
                 {
                     var result = response.Result;
                     Serilog.Log.Error("Attempt {0}: Failed to get data for the transaction. Reason: {1}, Details: {2}", retryCount, result.Reason, result.RawRpcResponse);
+                    await Task.Delay(1000);
                 });
         }
 
@@ -49,23 +52,31 @@ namespace Monkify.Infrastructure.Services.Solana
         private readonly GeneralSettings _settings;
 
         private readonly Account _ownerAccount;
-        private string _latestBlockhashAddress;
 
         private readonly AsyncRetryPolicy<RequestResult<ResponseValue<LatestBlockHash>>> _blockhashPolicy;
         private readonly AsyncRetryPolicy<RequestResult<TransactionMetaSlotInfo>> _getTransactionPolicy;
 
-        public async Task<bool> SetLatestBlockhashForTokenTransfer()
+        public async Task<string?> GetLatestBlockhashForTokenTransfer()
         {
-            var latestBlockHash = await _blockhashPolicy.ExecuteAsync(async () => await _rpcClient.GetLatestBlockHashAsync());
-            bool blockhhashObtained = latestBlockHash.WasSuccessful && !string.IsNullOrWhiteSpace(latestBlockHash.Result?.Value?.Blockhash);
+            try
+            {
+                var latestBlockHash = await _blockhashPolicy.ExecuteAsync(async () => await _rpcClient.GetLatestBlockHashAsync(Solnet.Rpc.Types.Commitment.Confirmed));
 
-            if (blockhhashObtained)
-                _latestBlockhashAddress = latestBlockHash.Result.Value.Blockhash;
+                if (latestBlockHash.WasSuccessful && !string.IsNullOrWhiteSpace(latestBlockHash.Result?.Value?.Blockhash))
+                    return latestBlockHash.Result.Value.Blockhash;
 
-            return blockhhashObtained;
+                Serilog.Log.Error("Failed to get the latest Solana Blockhash.");
+
+                return null;
+            }
+            catch(Exception ex)
+            {
+                Serilog.Log.Error(ex, "Failed to get the latest Solana Blockhash.");
+                return null;
+            }
         }
 
-        public async Task<bool> TransferTokensForBet(Bet bet, BetTransactionAmountResult amount)
+        public async Task<bool> TransferTokensForBet(Bet bet, BetTransactionAmountResult amount, string blockhashAddress)
         {
             if (amount.ValueInTokens == 0)
             {
@@ -78,7 +89,7 @@ namespace Monkify.Infrastructure.Services.Solana
                 var transferInstruction = TokenProgram.Transfer(new PublicKey(_settings.Token.SenderAccount), new PublicKey(bet.Wallet), amount.ValueInTokens, _ownerAccount.PublicKey);
 
                 var transaction = new TransactionBuilder()
-                        .SetRecentBlockHash(_latestBlockhashAddress)
+                        .SetRecentBlockHash(blockhashAddress)
                         .SetFeePayer(_ownerAccount)
                         .AddInstruction(transferInstruction)
                         .Build(new List<Account> { _ownerAccount });
@@ -118,14 +129,15 @@ namespace Monkify.Infrastructure.Services.Solana
                 return new ValidationResult(ErrorMessages.InvalidPaymentSignature);
             }
 
+            var balanceAccounts = GetAccountBalances(transactionResponse);
             var tokensBet = (ulong)(bet.Amount * (decimal)Math.Pow(10, _settings.Token.Decimals));
 
-            var recipientErrorMessage = ValidateTokenExchangeForOwnerAccount(bet, tokensBet, transactionResponse.Result);
+            var recipientErrorMessage = ValidateTokenExchangeForOwnerAccount(bet, tokensBet, balanceAccounts);
 
             if (!string.IsNullOrWhiteSpace(recipientErrorMessage))
                 return new ValidationResult(recipientErrorMessage);
 
-            var senderErrorMessage = ValidateTokenExchangeForSenderAccount(bet, tokensBet, transactionResponse.Result);
+            var senderErrorMessage = ValidateTokenExchangeForSenderAccount(bet, tokensBet, balanceAccounts);
 
             if (!string.IsNullOrWhiteSpace(senderErrorMessage))
                 return new ValidationResult(senderErrorMessage);
@@ -133,20 +145,26 @@ namespace Monkify.Infrastructure.Services.Solana
             return new ValidationResult();
         }
 
-        private string? ValidateTokenExchangeForOwnerAccount(Bet bet, ulong tokensBet, TransactionMetaSlotInfo transaction)
+        private TransactionMetaData GetAccountBalances(RequestResult<TransactionMetaSlotInfo> transactionData)
         {
-            var tokenOwnerIndex = Array.IndexOf(transaction.Transaction.Message.AccountKeys, _settings.Token.SenderAccount);
+            var jsonBody = JObject.Parse(transactionData.RawRpcResponse);
+            var metaData = jsonBody["result"]["meta"];
 
-            if (tokenOwnerIndex == -1)
-                return ErrorMessages.SignatureWithoutOwnerAccount;
+            var preBalances = metaData["preTokenBalances"].ToObject<List<AccountBalance>>();
+            var postBalances = metaData["postTokenBalances"].ToObject<List<AccountBalance>>();
 
-            var recipientPreBalanceAccount = transaction.Meta.PreTokenBalances.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.AccountIndex == tokenOwnerIndex);
-            var recipientPostBalanceAccount = transaction.Meta.PostTokenBalances.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.AccountIndex == tokenOwnerIndex);
+            return new TransactionMetaData(preBalances, postBalances);
+        }
+
+        private string? ValidateTokenExchangeForOwnerAccount(Bet bet, ulong tokensBet, TransactionMetaData transaction)
+        {
+            var recipientPreBalanceAccount = transaction.PreBalance.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.Owner == _settings.Token.TokenOwnerPublicKey);
+            var recipientPostBalanceAccount = transaction.PostBalance.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.Owner == _settings.Token.TokenOwnerPublicKey);
 
             if (recipientPreBalanceAccount is null || recipientPostBalanceAccount is null)
-                return ErrorMessages.SignatureForInvalidToken;
+                return ErrorMessages.SignatureWithoutOwnerAccount;
 
-            var tokensExchanged = recipientPostBalanceAccount.UiTokenAmount.AmountUlong - recipientPreBalanceAccount.UiTokenAmount.AmountUlong;
+            var tokensExchanged = recipientPostBalanceAccount.UiTokenAmount.Amount - recipientPreBalanceAccount.UiTokenAmount.Amount;
 
             if (tokensExchanged == tokensBet)
                 return null;
@@ -156,20 +174,15 @@ namespace Monkify.Infrastructure.Services.Solana
             return GenerateErrorMessageForTokenExchange(tokensExchanged, tokensBet);
         }
 
-        private string? ValidateTokenExchangeForSenderAccount(Bet bet, ulong tokensBet, TransactionMetaSlotInfo transaction)
+        private string? ValidateTokenExchangeForSenderAccount(Bet bet, ulong tokensBet, TransactionMetaData transaction)
         {
-            var senderIndex = Array.IndexOf(transaction.Transaction.Message.AccountKeys, bet.Wallet);
+            var recipientPreBalanceAccount = transaction.PreBalance.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.Owner == bet.Wallet);
+            var recipientPostBalanceAccount = transaction.PostBalance.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.Owner == bet.Wallet);
 
-            if (senderIndex == -1)
+            if (recipientPreBalanceAccount is null || recipientPostBalanceAccount is null)
                 return ErrorMessages.SignatureWithoutBetAccount;
 
-            var senderPreBalanceAccount = transaction.Meta.PreTokenBalances.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.AccountIndex == senderIndex);
-            var senderPostBalanceAccount = transaction.Meta.PostTokenBalances.FirstOrDefault(x => x.Mint == _settings.Token.MintAddress && x.AccountIndex == senderIndex);
-
-            if (senderPreBalanceAccount is null || senderPostBalanceAccount is null)
-                return ErrorMessages.SignatureForInvalidToken;
-
-            var tokensExchanged = senderPreBalanceAccount.UiTokenAmount.AmountUlong - senderPostBalanceAccount.UiTokenAmount.AmountUlong;
+            var tokensExchanged = recipientPreBalanceAccount.UiTokenAmount.Amount - recipientPostBalanceAccount.UiTokenAmount.Amount;
 
             if (tokensExchanged == tokensBet)
                 return null;
