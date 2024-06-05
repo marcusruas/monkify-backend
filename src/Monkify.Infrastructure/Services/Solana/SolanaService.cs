@@ -121,7 +121,7 @@ namespace Monkify.Infrastructure.Services.Solana
                 return new ValidationResult();
             }
 
-            var transactionResponse = await _getTransactionPolicy.ExecuteAsync(async () => await _rpcClient.GetTransactionAsync(bet.PaymentSignature));
+            var transactionResponse = await _getTransactionPolicy.ExecuteAsync(async () => await _rpcClient.GetTransactionAsync(bet.PaymentSignature, Solnet.Rpc.Types.Commitment.Confirmed));
 
             if (!transactionResponse.WasSuccessful)
             {
