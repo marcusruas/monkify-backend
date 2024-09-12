@@ -1,21 +1,29 @@
 version: '3.8'
 services:
+  app:
+    build: .
+    ports:
+      - "6001:6001"
+    environment:
+      - ASPNETCORE_HTTP_PORTS=6001
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Monkify=Server=sqlserver;Database=Monkify;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;
+      - ConnectionStrings__Logs=Server=sqlserver;Database=Logs;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;
+    depends_on:
+      - sqlserver
+    networks:
+      - monkify-network
+
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest
     environment:
-      SA_PASSWORD: "Monkify@123"
-      ACCEPT_EULA: "Y"
+      - SA_PASSWORD=Monkify@123
+      - ACCEPT_EULA=Y
     ports:
       - "1433:1433"
+    networks:
+      - monkify-network
 
-  monkify.api:
-    build: .
-    depends_on:
-      - sqlserver
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      ASPNETCORE_ENVIRONMENT: "Development"
-      ConnectionStrings__Monkify: "Server=sqlserver,1433;Database=Monkify;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;"
-      ConnectionStrings__Logs: "Server=sqlserver,1433;Database=Logs;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;"
+networks:
+  monkify-network:
+    driver: bridge
