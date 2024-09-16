@@ -47,6 +47,7 @@ namespace Monkify.Infrastructure.Background.Events
         {
             _betService = new(notification.Session, _settings.Token);
 
+            //Although this call is made inside the TransferTokensForBet method, we just wanna make sure the service can grab it before starting updating the session.
             var blockhash = await _solanaService.GetLatestBlockhashForTokenTransfer();
 
             if (string.IsNullOrEmpty(blockhash))
@@ -65,7 +66,7 @@ namespace Monkify.Infrastructure.Background.Events
 
                 if (string.IsNullOrWhiteSpace(rewardResult.ErrorMessage))
                 {
-                    bool currentBetRewarded = await _solanaService.TransferTokensForBet(winner, rewardResult, blockhash);
+                    bool currentBetRewarded = await _solanaService.TransferTokensForBet(winner, rewardResult);
 
                     if (currentBetRewarded)
                         await _sessionService.UpdateBetStatus(winner, BetStatus.Rewarded);

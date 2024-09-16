@@ -173,7 +173,7 @@ namespace Monkify.Tests.Services
                 var service = new SolanaService(context, _rpcClientMock.Object, _settings);
 
                 await service.GetLatestBlockhashForTokenTransfer();
-                var transactionSuccessful = await service.TransferTokensForBet(bet, transaction, LATEST_BLOCKHASH);
+                var transactionSuccessful = await service.TransferTokensForBet(bet, transaction);
 
                 transactionSuccessful.ShouldBeTrue();
                 context.TransactionLogs.Any(x => x.BetId == bet.Id).ShouldBeTrue();
@@ -211,7 +211,7 @@ namespace Monkify.Tests.Services
                 var service = new SolanaService(context, _rpcClientMock.Object, _settings);
 
                 await service.GetLatestBlockhashForTokenTransfer();
-                var transactionSuccessful = await service.TransferTokensForBet(bet, transaction, LATEST_BLOCKHASH);
+                var transactionSuccessful = await service.TransferTokensForBet(bet, transaction);
 
                 transactionSuccessful.ShouldBeTrue();
                 context.TransactionLogs.Any(x => x.BetId == bet.Id).ShouldBeFalse();
@@ -250,7 +250,7 @@ namespace Monkify.Tests.Services
                 var service = new SolanaService(context, _rpcClientMock.Object, _settings);
 
                 await service.GetLatestBlockhashForTokenTransfer();
-                var transactionSuccessful = await service.TransferTokensForBet(bet, transaction, LATEST_BLOCKHASH);
+                var transactionSuccessful = await service.TransferTokensForBet(bet, transaction);
 
                 transactionSuccessful.ShouldBeFalse();
                 context.TransactionLogs.Any(x => x.BetId == bet.Id).ShouldBeFalse();
@@ -283,7 +283,7 @@ namespace Monkify.Tests.Services
                 var service = new SolanaService(context, _rpcClientMock.Object, _settings);
 
                 await service.GetLatestBlockhashForTokenTransfer();
-                var transactionSuccessful = await service.TransferTokensForBet(bet, transaction, LATEST_BLOCKHASH);
+                var transactionSuccessful = await service.TransferTokensForBet(bet, transaction);
 
                 transactionSuccessful.ShouldBeFalse();
                 context.TransactionLogs.Any(x => x.BetId == bet.Id).ShouldBeFalse();

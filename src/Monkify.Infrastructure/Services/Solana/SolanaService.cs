@@ -65,7 +65,7 @@ namespace Monkify.Infrastructure.Services.Solana
                 if (latestBlockHash.WasSuccessful && !string.IsNullOrWhiteSpace(latestBlockHash.Result?.Value?.Blockhash))
                     return latestBlockHash.Result.Value.Blockhash;
 
-                Serilog.Log.Error("Failed to get the latest Solana Blockhash.");
+                Serilog.Log.Error("Failed to get the latest Solana Blockhash. Details: {0}", latestBlockHash.RawRpcResponse);
 
                 return null;
             }
@@ -76,7 +76,7 @@ namespace Monkify.Infrastructure.Services.Solana
             }
         }
 
-        public async Task<bool> TransferTokensForBet(Bet bet, BetTransactionAmountResult amount, string blockhashAddress)
+        public async Task<bool> TransferTokensForBet(Bet bet, BetTransactionAmountResult amount)
         {
             if (amount.ValueInTokens == 0)
             {
@@ -86,10 +86,15 @@ namespace Monkify.Infrastructure.Services.Solana
 
             try
             {
+                var latestBlockhash = await GetLatestBlockhashForTokenTransfer();
+
+                if (string.IsNullOrWhiteSpace(latestBlockhash))
+                    return false;
+
                 var transferInstruction = TokenProgram.Transfer(new PublicKey(_settings.Token.SenderAccount), new PublicKey(bet.Wallet), amount.ValueInTokens, _ownerAccount.PublicKey);
 
                 var transaction = new TransactionBuilder()
-                        .SetRecentBlockHash(blockhashAddress)
+                        .SetRecentBlockHash(latestBlockhash)
                         .SetFeePayer(_ownerAccount)
                         .AddInstruction(transferInstruction)
                         .Build(new List<Account> { _ownerAccount });

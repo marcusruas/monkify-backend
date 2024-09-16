@@ -51,7 +51,7 @@ namespace Monkify.Infrastructure.Background.Workers
 
                 if (refundResult.Value > 0)
                 {
-                    bool betRefunded = await solanaService.TransferTokensForBet(bet, refundResult, blockhash);
+                    bool betRefunded = await solanaService.TransferTokensForBet(bet, refundResult);
 
                     if (betRefunded)
                         await sessionService.UpdateBetStatus(bet, BetStatus.Refunded);
