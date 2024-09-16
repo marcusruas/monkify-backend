@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Monkify.Common.Messaging;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
@@ -49,6 +50,12 @@ namespace Monkify.Api.Controllers
             _context.SaveChanges();
 
             return Ok();
+        }
+
+        [HttpGet("buscar-todas-sessoes")]
+        public IActionResult BuscarTudo()
+        {
+            return Ok(_context.Sessions.AsNoTracking().ToList());
         }
     }
 
