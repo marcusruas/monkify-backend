@@ -63,7 +63,7 @@ namespace Monkify.Domain.Sessions.Services
             if (bet.Status != BetStatus.NeedsRewarding)
                 return new BetTransactionAmountResult(ErrorMessages.BetCannotReceiveReward);
 
-            decimal winnerReward = (PotAmount / Winners.Count()) - bet.Amount;
+            decimal winnerReward = PotAmount / Winners.Count();
 
             if (winnerReward <= 0)
                 return new BetTransactionAmountResult(ErrorMessages.BetRewardBiggerThanThePot);
