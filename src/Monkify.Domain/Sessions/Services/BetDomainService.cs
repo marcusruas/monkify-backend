@@ -65,7 +65,7 @@ namespace Monkify.Domain.Sessions.Services
 
             decimal winnerReward = PotAmount / Winners.Count();
 
-            if (winnerReward <= 0)
+            if (winnerReward < bet.Amount)
                 return new BetTransactionAmountResult(ErrorMessages.BetRewardBiggerThanThePot);
 
             decimal credits = CalculateCreditsForBet(bet);

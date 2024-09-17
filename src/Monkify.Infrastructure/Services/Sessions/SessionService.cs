@@ -47,7 +47,8 @@ namespace Monkify.Infrastructure.Services.Sessions
                     _context.Entry(session).Property(x => x.Seed).IsModified = true;
                     _context.Entry(session).Property(x => x.WinningChoice).IsModified = true;
 
-                    result = new SessionResult(monkey.NumberOfWinners, monkey.FirstChoiceTyped);
+                    var winners = session.Bets.Where(x => x.Choice == monkey.FirstChoiceTyped).Select(x => x.Wallet).Distinct();
+                    result = new SessionResult(winners, monkey.NumberOfWinners, monkey.FirstChoiceTyped);
                 }
 
                 await _context.SessionStatusLogs.AddAsync(new SessionStatusLog(session.Id, session.Status, status));
@@ -58,9 +59,6 @@ namespace Monkify.Infrastructure.Services.Sessions
                 
                 
                 await _context.SaveChangesAsync();
-
-                //Debug
-                await Task.Delay(1000);
 
                 var statusJson = new SessionStatusUpdated(status, result).AsJson();
                 string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionStatusEndpoint, session.Id.ToString());

@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace Monkify.Domain.Sessions.ValueObjects
 {
-    public record SessionResult(int NumberOfWinners, string FirstChoiceTyped);
+    public record SessionResult(IEnumerable<string> Winners, int NumberOfWinners, string FirstChoiceTyped);
 }

@@ -77,7 +77,7 @@ namespace Monkify.Tests.Domain.Sessions
             var validator = new BetDomainService(session, settings);
             var result = validator.CalculateRewardForBet(winnerBet);
 
-            result.Value.ShouldBe(6.8m);
+            result.Value.ShouldBe(10.8m);
         }
 
         [Fact]
@@ -100,7 +100,7 @@ namespace Monkify.Tests.Domain.Sessions
             var validator = new BetDomainService(session, settings);
             var result = validator.CalculateRewardForBet(winnerBet);
 
-            result.Value.ShouldBe(3.8m);
+            result.Value.ShouldBe(7.8m);
         }
 
         [Fact]
@@ -125,7 +125,7 @@ namespace Monkify.Tests.Domain.Sessions
             var validator = new BetDomainService(session, settings);
             var result = validator.CalculateRewardForBet(winnerBet);
 
-            result.Value.ShouldBe(8.20481M);
+            result.Value.ShouldBe(12.20481M);
         }
 
         [Fact]
@@ -175,7 +175,7 @@ namespace Monkify.Tests.Domain.Sessions
         public void CalculateRewardForBet_AlreadyRewardedBet_ShouldCalculateCorrectly()
         {
             Bet winnerBet = new (BetStatus.NeedsRewarding, 4);
-            winnerBet.TransactionLogs = new List<TransactionLog>() { new () { Amount = 6.8m } };
+            winnerBet.TransactionLogs = new List<TransactionLog>() { new () { Amount = 10.8m } };
             var session = new Session();
 
             session.Bets = new List<Bet>()
