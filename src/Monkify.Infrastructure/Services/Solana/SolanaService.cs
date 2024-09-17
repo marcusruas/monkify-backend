@@ -14,6 +14,7 @@ using Solnet.Rpc.Builders;
 using Solnet.Rpc.Core.Http;
 using Solnet.Rpc.Messages;
 using Solnet.Rpc.Models;
+using Solnet.Rpc.Types;
 using Solnet.Wallet;
 
 namespace Monkify.Infrastructure.Services.Solana
@@ -56,11 +57,15 @@ namespace Monkify.Infrastructure.Services.Solana
         private readonly AsyncRetryPolicy<RequestResult<ResponseValue<LatestBlockHash>>> _blockhashPolicy;
         private readonly AsyncRetryPolicy<RequestResult<TransactionMetaSlotInfo>> _getTransactionPolicy;
 
+
         public async Task<string?> GetLatestBlockhashForTokenTransfer()
+            => await GetLatestBlockhashForTokenTransfer(Commitment.Confirmed);
+
+        private async Task<string?> GetLatestBlockhashForTokenTransfer(Commitment commitment = Commitment.Confirmed)
         {
             try
             {
-                var latestBlockHash = await _blockhashPolicy.ExecuteAsync(async () => await _rpcClient.GetLatestBlockHashAsync(Solnet.Rpc.Types.Commitment.Confirmed));
+                var latestBlockHash = await _blockhashPolicy.ExecuteAsync(async () => await _rpcClient.GetLatestBlockHashAsync(commitment));
 
                 if (latestBlockHash.WasSuccessful && !string.IsNullOrWhiteSpace(latestBlockHash.Result?.Value?.Blockhash))
                     return latestBlockHash.Result.Value.Blockhash;
@@ -69,7 +74,7 @@ namespace Monkify.Infrastructure.Services.Solana
 
                 return null;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Serilog.Log.Error(ex, "Failed to get the latest Solana Blockhash.");
                 return null;
@@ -86,12 +91,20 @@ namespace Monkify.Infrastructure.Services.Solana
 
             try
             {
-                var latestBlockhash = await GetLatestBlockhashForTokenTransfer();
+                var latestBlockhash = await GetLatestBlockhashForTokenTransfer(Commitment.Finalized);
 
                 if (string.IsNullOrWhiteSpace(latestBlockhash))
                     return false;
 
-                var transferInstruction = TokenProgram.Transfer(new PublicKey(_settings.Token.SenderAccount), new PublicKey(bet.Wallet), amount.ValueInTokens, _ownerAccount.PublicKey);
+                var tokenAccount = await _rpcClient.GetTokenAccountsByOwnerAsync(bet.Wallet, _settings.Token.MintAddress);
+
+                if (!tokenAccount.WasSuccessful || tokenAccount.Result.Value == null || !tokenAccount.Result.Value.Any())
+                {
+                    Serilog.Log.Error("Failed to transfer funds to wallet {0} due to it not having a token account for the token {1}. Value: {2}. Details: {3}", bet.Wallet, _settings.Token.MintAddress, amount.AsJson(), tokenAccount.RawRpcResponse);
+                    return false;
+                }
+
+                var transferInstruction = TokenProgram.Transfer(new PublicKey(_settings.Token.SenderAccount), new PublicKey(tokenAccount.Result.Value.FirstOrDefault().PublicKey), amount.ValueInTokens, _ownerAccount.PublicKey);
 
                 var transaction = new TransactionBuilder()
                         .SetRecentBlockHash(latestBlockhash)

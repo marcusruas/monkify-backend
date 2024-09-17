@@ -13,6 +13,7 @@ using Solnet.Rpc.Core.Http;
 using Solnet.Rpc.Messages;
 using Solnet.Rpc.Models;
 using Solnet.Rpc.Types;
+using Solnet.Wallet;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -149,6 +150,18 @@ namespace Monkify.Tests.Services
                     }
                 }
             };
+            var account = new RequestResult<ResponseValue<List<TokenAccount>>>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = new()
+                {
+                    Value = new()
+                    {
+                        new TokenAccount() { PublicKey = "GHxPmQcC4s6iGi9bAFtsw75wB2RprqXGXbEewTcN7EyN" }
+                    }
+                }
+            };
             var result = new RequestResult<string>()
             {
                 WasHttpRequestSuccessful = true,
@@ -157,6 +170,7 @@ namespace Monkify.Tests.Services
             };
             _rpcClientMock.Setup(x => x.GetLatestBlockHashAsync(It.IsAny<Commitment>())).Returns(Task.FromResult(blockhash));
             _rpcClientMock.Setup(x => x.SendTransactionAsync(It.IsAny<byte[]>(), It.IsAny<bool>(), It.IsAny<Commitment>())).Returns(Task.FromResult(result));
+            _rpcClientMock.Setup(x => x.GetTokenAccountsByOwnerAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(account));
 
             var session = new Session();
             session.Status = SessionStatus.RewardForWinnersInProgress;
@@ -178,6 +192,63 @@ namespace Monkify.Tests.Services
                 transactionSuccessful.ShouldBeTrue();
                 context.TransactionLogs.Any(x => x.BetId == bet.Id).ShouldBeTrue();
                 _rpcClientMock.Verify(x => x.SendTransactionAsync(It.IsAny<byte[]>(), It.IsAny<bool>(), It.IsAny<Commitment>()), Times.Exactly(1));
+            }
+        }
+
+        [Fact]
+        public async Task TransferTokensForBet_NoTokenAccountInfo_ShouldReturnFalse()
+        {
+            var blockhash = new RequestResult<ResponseValue<LatestBlockHash>>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = new()
+                {
+                    Value = new()
+                    {
+                        Blockhash = LATEST_BLOCKHASH
+                    }
+                }
+            };
+            var account = new RequestResult<ResponseValue<List<TokenAccount>>>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = new()
+                {
+                    Value = new()
+                }
+            };
+            var result = new RequestResult<string>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = Faker.Random.String2(88)
+            };
+            _rpcClientMock.Setup(x => x.GetLatestBlockHashAsync(It.IsAny<Commitment>())).Returns(Task.FromResult(blockhash));
+            _rpcClientMock.Setup(x => x.SendTransactionAsync(It.IsAny<byte[]>(), It.IsAny<bool>(), It.IsAny<Commitment>())).Returns(Task.FromResult(result));
+            _rpcClientMock.Setup(x => x.GetTokenAccountsByOwnerAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(account));
+
+            var session = new Session();
+            session.Status = SessionStatus.RewardForWinnersInProgress;
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), Faker.Random.String2(4), 2) { Wallet = WALLET_FOR_TESTS };
+            session.Bets.Add(bet);
+            var transaction = new BetTransactionAmountResult(2, (ulong)(2 * Math.Pow(10, 5)));
+            using (var context = new MonkifyDbContext(ContextOptions))
+            {
+                context.Add(session);
+                context.Add(bet);
+                context.SaveChanges();
+
+                var service = new SolanaService(context, _rpcClientMock.Object, _settings);
+
+                await service.GetLatestBlockhashForTokenTransfer();
+                var transactionSuccessful = await service.TransferTokensForBet(bet, transaction);
+
+                transactionSuccessful.ShouldBeFalse();
+                context.TransactionLogs.Any(x => x.BetId == bet.Id).ShouldBeFalse();
+                _rpcClientMock.Verify(x => x.SendTransactionAsync(It.IsAny<byte[]>(), It.IsAny<bool>(), It.IsAny<Commitment>()), Times.Never);
             }
         }
 
@@ -234,6 +305,18 @@ namespace Monkify.Tests.Services
                     }
                 }
             };
+            var account = new RequestResult<ResponseValue<List<TokenAccount>>>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = new()
+                {
+                    Value = new()
+                    {
+                        new TokenAccount() { PublicKey = "GHxPmQcC4s6iGi9bAFtsw75wB2RprqXGXbEewTcN7EyN" }
+                    }
+                }
+            };
             var result = new RequestResult<string>()
             {
                 WasHttpRequestSuccessful = false,
@@ -242,6 +325,7 @@ namespace Monkify.Tests.Services
             };
             _rpcClientMock.Setup(x => x.GetLatestBlockHashAsync(It.IsAny<Commitment>())).Returns(Task.FromResult(blockhash));
             _rpcClientMock.Setup(x => x.SendTransactionAsync(It.IsAny<byte[]>(), It.IsAny<bool>(), It.IsAny<Commitment>())).Returns(Task.FromResult(result));
+            _rpcClientMock.Setup(x => x.GetTokenAccountsByOwnerAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(account));
 
             var bet = new Bet(BetStatus.NeedsRewarding, 2) { Wallet = WALLET_FOR_TESTS };
             var transaction = new BetTransactionAmountResult(2, (ulong)(2 * Math.Pow(10, 5)));
@@ -273,8 +357,21 @@ namespace Monkify.Tests.Services
                     }
                 }
             };
+            var account = new RequestResult<ResponseValue<List<TokenAccount>>>()
+            {
+                WasHttpRequestSuccessful = true,
+                WasRequestSuccessfullyHandled = true,
+                Result = new()
+                {
+                    Value = new()
+                    {
+                        new TokenAccount() { PublicKey = "GHxPmQcC4s6iGi9bAFtsw75wB2RprqXGXbEewTcN7EyN" }
+                    }
+                }
+            };
             _rpcClientMock.Setup(x => x.GetLatestBlockHashAsync(It.IsAny<Commitment>())).Returns(Task.FromResult(blockhash));
             _rpcClientMock.Setup(x => x.SendTransactionAsync(It.IsAny<byte[]>(), It.IsAny<bool>(), It.IsAny<Commitment>())).Returns(Task.FromResult((RequestResult<string>)null));
+            _rpcClientMock.Setup(x => x.GetTokenAccountsByOwnerAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(account));
 
             var bet = new Bet(BetStatus.NeedsRewarding, 2) { Wallet = WALLET_FOR_TESTS };
             var transaction = new BetTransactionAmountResult(2, (ulong)(2 * Math.Pow(10, 5)));

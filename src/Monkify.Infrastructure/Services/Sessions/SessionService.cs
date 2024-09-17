@@ -59,6 +59,9 @@ namespace Monkify.Infrastructure.Services.Sessions
                 
                 await _context.SaveChangesAsync();
 
+                //Debug
+                await Task.Delay(1000);
+
                 var statusJson = new SessionStatusUpdated(status, result).AsJson();
                 string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionStatusEndpoint, session.Id.ToString());
                 await _activeSessionsHub.Clients.All.SendAsync(sessionStatusEndpoint, statusJson);
