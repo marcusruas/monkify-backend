@@ -99,10 +99,44 @@ namespace Monkify.Tests.Services
 
                 updatedSession.ShouldNotBeNull();
                 updatedSession.WinningChoice = typer.FirstChoiceTyped;
+                updatedSession.EndDate.ShouldNotBeNull();
                 updatedSession.Status.ShouldBe(SessionStatus.Ended);
                 updatedSession.Seed.ShouldNotBeNull();
                 updatedSession.Seed.Value.ShouldNotBe(0);
                 updatedSession.StatusLogs.Any(x => x.PreviousStatus == SessionStatus.InProgress && x.NewStatus == SessionStatus.Ended).ShouldBeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task UpdateSessionStatus_UpdateSessionToEndedWithoutMonkey_ShouldReturnSuccess()
+        {
+            var session = new Session();
+            session.Status = SessionStatus.WaitingBets;
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Bets = new List<Bet>()
+            {
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "amor", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "baco", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "tres", 2),
+                new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "atos", 2),
+            };
+
+            using (var context = new MonkifyDbContext(ContextOptions))
+            {
+                context.Add(session);
+                context.SaveChanges();
+
+                var service = new SessionService(_settings, context, _hubContextMock.Object);
+
+                await service.UpdateSessionStatus(session, SessionStatus.NotEnoughPlayersToStart);
+                var updatedSession = context.Sessions.Include(x => x.StatusLogs).FirstOrDefault(x => x.Id == session.Id);
+
+                updatedSession.ShouldNotBeNull();
+                updatedSession.Status.ShouldBe(SessionStatus.NotEnoughPlayersToStart);
+                updatedSession.Seed.ShouldBeNull();
+                updatedSession.EndDate.ShouldNotBeNull();
+                updatedSession.StatusLogs.Any(x => x.PreviousStatus == SessionStatus.WaitingBets && x.NewStatus == SessionStatus.NotEnoughPlayersToStart).ShouldBeTrue();
             }
         }
 

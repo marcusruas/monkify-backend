@@ -85,7 +85,7 @@ namespace Monkify.Infrastructure.Background.Events
                     sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.Wallet)?.Count() >= _session.Parameters.MinimumNumberOfPlayers;
                 }
 
-                await Task.Delay(2000, cancellationToken);
+                await Task.Delay(3000, cancellationToken);
             }
 
             return sessionHasEnoughPlayers;

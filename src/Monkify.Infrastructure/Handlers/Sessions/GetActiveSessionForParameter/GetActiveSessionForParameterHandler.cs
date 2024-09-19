@@ -39,7 +39,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetActiveSessionForParameter
         {
             var result = await Context.Sessions
                 .Include(x => x.Bets)
-                .FirstOrDefaultAsync(x => x.ParametersId == request.ParameterId && Session.SessionDisplayStatus.Contains(x.Status));
+                .FirstOrDefaultAsync(x => x.ParametersId == request.ParameterId && Session.SessionInProgressStatus.Contains(x.Status));
 
             if (result is null)
                 Messaging.ReturnValidationFailureMessage(ErrorMessages.ParameterHasNoActiveSessions);
