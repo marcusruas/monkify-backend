@@ -22,6 +22,8 @@ namespace Monkify.Domain.Sessions.ValueObjects
         [Description("The winners on this session got rewarded.")]
         RewardForWinnersCompleted,
         [Description("An error occurred while processing rewards for this session..")]
-        ErrorWhenProcessingRewards
+        ErrorWhenProcessingRewards,
+        [Description("An error occurred while processing the session so it was ended..")]
+        SessionEndedAbruptely
     }
 }

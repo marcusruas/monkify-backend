@@ -16,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using static Monkify.Infrastructure.DependencyInjection;
 using System.Configuration;
 using AspNetCoreRateLimit;
+using Monkify.Infrastructure.Background.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +69,7 @@ var app = builder.Build();
 app.UseIpRateLimiting();
 
 ApplyMigrations(app);
+CloseOpenSessions(app);
 
 if (app.Environment.IsDevelopment())
 {
@@ -85,6 +87,24 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+void CloseOpenSessions(WebApplication app)
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+
+        try
+        {
+            var service = services.GetRequiredService<ApplicationStartService>();
+            service.CloseOpenSessions();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to apply migrations of the database.");
+        }
+    }
+}
 
 void ApplyMigrations(WebApplication app)
 {

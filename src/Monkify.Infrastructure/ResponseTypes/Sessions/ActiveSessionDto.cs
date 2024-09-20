@@ -1,5 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using Monkify.Domain.Sessions.Entities;
+﻿using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using System;
 using System.Collections.Generic;

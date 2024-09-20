@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.IdentityModel.Tokens;
 using Monkify.Common.Extensions;
 using Monkify.Common.Messaging;
 using Monkify.Common.Resources;
@@ -7,6 +6,7 @@ using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using System.ComponentModel;
+
 namespace Monkify.Domain.Sessions.Services
 {
     public class BetDomainService

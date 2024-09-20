@@ -1,5 +1,4 @@
 ﻿using Bogus.DataSets;
-using Microsoft.IdentityModel.Tokens;
 using Monkify.Common.Extensions;
 using Monkify.Common.Resources;
 using Monkify.Domain.Sessions.Entities;

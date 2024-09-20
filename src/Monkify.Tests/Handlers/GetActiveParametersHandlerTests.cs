@@ -1,5 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using Monkify.Domain.Sessions.Entities;
+﻿using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Handlers.Sessions.GetActiveParameters;

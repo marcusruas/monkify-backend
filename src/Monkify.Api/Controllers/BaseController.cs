@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Monkify.Common.Extensions;
 using Monkify.Common.Messaging;
 using Monkify.Results;
 using System;

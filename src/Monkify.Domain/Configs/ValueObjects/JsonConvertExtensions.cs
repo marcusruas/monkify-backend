@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,10 @@ namespace Monkify.Domain.Configs.ValueObjects
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 DateTimeZoneHandling = DateTimeZoneHandling.Utc,
                 MissingMemberHandling = MissingMemberHandling.Ignore,
+                ContractResolver = new DefaultContractResolver()
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                }
             };
     }
 }
