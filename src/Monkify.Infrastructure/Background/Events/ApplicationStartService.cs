@@ -43,7 +43,7 @@ namespace Monkify.Infrastructure.Background.Events
             }
             catch(Exception ex)
             {
-                Log.Error(ex, "Failed to shutdown the application properly.");
+                Log.Error(ex, "Failed to close the previous open sessions.");
             }
             
         }
