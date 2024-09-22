@@ -17,6 +17,8 @@ using static Monkify.Infrastructure.DependencyInjection;
 using System.Configuration;
 using AspNetCoreRateLimit;
 using Monkify.Infrastructure.Background.Events;
+using Monkify.Infrastructure.Services.Sessions;
+using Monkify.Domain.Sessions.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +72,7 @@ app.UseIpRateLimiting();
 
 ApplyMigrations(app);
 CloseOpenSessions(app);
+CreateDefaultSessionParameters(app);
 
 if (app.Environment.IsDevelopment())
 {
@@ -88,16 +91,14 @@ app.MapControllers();
 
 app.Run();
 
-void CloseOpenSessions(WebApplication app)
+void ApplyMigrations(WebApplication app)
 {
     using (var scope = app.Services.CreateScope())
     {
-        var services = scope.ServiceProvider;
-
         try
         {
-            var service = services.GetRequiredService<ApplicationStartService>();
-            service.CloseOpenSessions();
+            var dbContext = scope.ServiceProvider.GetRequiredService<MonkifyDbContext>();
+            dbContext.Database.Migrate();
         }
         catch (Exception ex)
         {
@@ -106,20 +107,36 @@ void CloseOpenSessions(WebApplication app)
     }
 }
 
-void ApplyMigrations(WebApplication app)
+void CloseOpenSessions(WebApplication app)
 {
     using (var scope = app.Services.CreateScope())
     {
-        var services = scope.ServiceProvider;
+        var service = scope.ServiceProvider.GetRequiredService<ISessionService>();
+        service.CloseOpenSessions();
+    }
+}
 
-        try
+void CreateDefaultSessionParameters(WebApplication app)
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<MonkifyDbContext>();
+
+        if (context.SessionParameters.Any())
+            return;
+
+        var parameters = new SessionParameters()
         {
-            var dbContext = services.GetRequiredService<MonkifyDbContext>();
-            dbContext.Database.Migrate();
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Failed to apply migrations of the database.");
-        }
+            Name = "Monkey Race",
+            SessionCharacterType = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.LowerCaseLetter,
+            RequiredAmount = 1,
+            MinimumNumberOfPlayers = 2,
+            ChoiceRequiredLength = 4,
+            AcceptDuplicatedCharacters = true,
+            Active = true,
+        };
+
+        context.AddAsync(parameters);
+        context.SaveChanges();
     }
 }

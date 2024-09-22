@@ -20,9 +20,7 @@ namespace Monkify.Api.Controllers
         private readonly MonkifyDbContext _context;
 
         [HttpPost("cadastrar-parametros")]
-        public async Task<IActionResult> CadastrarParametros(
-            [FromBody] CorpoLol parametros
-        )
+        public async Task<IActionResult> CadastrarParametros([FromBody] CorpoLol parametros)
         {
             var novo = new SessionParameters()
             {

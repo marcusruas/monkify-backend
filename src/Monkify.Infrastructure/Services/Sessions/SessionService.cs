@@ -100,6 +100,34 @@ namespace Monkify.Infrastructure.Services.Sessions
             }
         }
 
+        public void CloseOpenSessions()
+        {
+            try
+            {
+                var activeSessions = _context.Sessions
+                .Include(x => x.Bets)
+                .Where(x => Session.SessionInProgressStatus.Contains(x.Status))
+                .AsNoTracking().ToList();
+
+                if (activeSessions.IsNullOrEmpty())
+                    return;
+
+                foreach (var session in activeSessions)
+                {
+                    UpdateSessionStatus(session, SessionStatus.SessionEndedAbruptely).Wait();
+
+                    foreach (var bet in session.Bets)
+                    {
+                        UpdateBetStatus(bet, BetStatus.NeedsManualAnalysis).Wait();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to close the previous open sessions.");
+            }
+        }
+
         private async Task UpdateBetStatusWithoutSaving(Bet bet, BetStatus status)
         {
             await _context.BetStatusLogs.AddAsync(new BetStatusLog(bet.Id, bet.Status, status));

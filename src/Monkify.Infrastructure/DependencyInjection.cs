@@ -26,7 +26,6 @@ namespace Monkify.Infrastructure
         {
             var monkifyConnectionString = configuration.GetConnectionString("Monkify");
 
-            services.AddScoped<ApplicationStartService>();
             services.AddScoped<IMessaging, Messaging>();
             services.AddScoped<ISolanaService, SolanaService>();
             services.AddScoped<ISessionService, SessionService>();
