@@ -34,7 +34,7 @@ namespace Monkify.Tests.Background
             _serviceScopeMock.Setup(x => x.ServiceProvider).Returns(_serviceProviderMock.Object);
 
             var settings = new GeneralSettings();
-            settings.Workers = new() { CreateSessionsInterval = 0 };
+            settings.Workers = new() { CreateSessionsInterval = 2 };
             settings.Sessions = new() { ActiveSessionsEndpoint = "endpoint/{0}" };
 
             _serviceProviderMock.Setup(x => x.GetService(typeof(GeneralSettings))).Returns(settings);

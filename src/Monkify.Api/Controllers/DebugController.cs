@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Monkify.Common.Extensions;
 using Monkify.Common.Messaging;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
@@ -22,6 +23,13 @@ namespace Monkify.Api.Controllers
         [HttpPost("cadastrar-parametros")]
         public async Task<IActionResult> CadastrarParametros([FromBody] CorpoLol parametros)
         {
+            var presetChoices = new List<PresetChoice>();
+
+            if (!parametros.PresetChoices.IsNullOrEmpty())
+            {
+                presetChoices.AddRange(parametros.PresetChoices.Select(x => new PresetChoice(x)));
+            }
+
             var novo = new SessionParameters()
             {
                 SessionCharacterType = parametros.SessionCharacterType,
@@ -30,7 +38,8 @@ namespace Monkify.Api.Controllers
                 MinimumNumberOfPlayers = parametros.MinimumNumberOfPlayers,
                 ChoiceRequiredLength = parametros.ChoiceRequiredLength,
                 AcceptDuplicatedCharacters = parametros.AcceptDuplicatedCharacters,
-                Active = true
+                Active = true,
+                PresetChoices = presetChoices
             };
 
             await _context.AddAsync(novo);
@@ -66,5 +75,6 @@ namespace Monkify.Api.Controllers
         public int ChoiceRequiredLength { get; set; }
         public bool AcceptDuplicatedCharacters { get; set; }
         public bool Active { get; set; }
+        public string[] PresetChoices { get; set; }
     }
 }

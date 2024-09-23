@@ -15,10 +15,6 @@ namespace Monkify.Domain.Sessions.ValueObjects
         LowerCaseLetter,
         [Description("ABCDEFGHIJKLMNOPQRSTUVWXYZ")]
         UpperCaseLetter,
-        [Description("abcdefghijklmnopqrstuvwxyz")]
-        PresetLowercaseWords,
-        [Description("ABCDEFGHIJKLMNOPQRSTUVWXYZ")]
-        PresetUppercaseWords,
         PresetByPlayerChoices,
     }
 }
