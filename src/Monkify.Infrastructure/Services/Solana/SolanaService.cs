@@ -167,7 +167,6 @@ namespace Monkify.Infrastructure.Services.Solana
         {
             var jsonBody = JObject.Parse(transactionData.RawRpcResponse);
             var metaData = jsonBody["result"]["meta"];
-
             var preBalances = metaData["preTokenBalances"].ToObject<List<AccountBalance>>();
             var postBalances = metaData["postTokenBalances"].ToObject<List<AccountBalance>>();
 

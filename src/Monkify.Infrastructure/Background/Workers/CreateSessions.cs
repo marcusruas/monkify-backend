@@ -36,16 +36,17 @@ namespace Monkify.Infrastructure.Background.Workers
 
                 if (!activeParameters.Any())
                 {
-                    await Task.Delay(settings.Workers.CreateSessionsInterval * 1000, cancellationToken);;
+                    await Task.Delay(settings.Workers.CreateSessionsInterval * 1000, cancellationToken);
                     return;
                 }
 
-                var tasks = new List<Task>();
-
                 foreach (var parameters in activeParameters)
-                    tasks.Add(Task.Run(() => CreateNewSession(parameters, settings, cancellationToken), cancellationToken));
+                {
+                    _ = Task.Run(() => CreateNewSession(parameters, settings, cancellationToken), cancellationToken);
+                }
 
-                await Task.WhenAll(tasks);
+                await Task.Delay(settings.Workers.CreateSessionsInterval * 1000, cancellationToken);
+                return;
             }
         }
 

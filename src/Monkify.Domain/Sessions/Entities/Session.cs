@@ -36,7 +36,7 @@ namespace Monkify.Domain.Sessions.Entities
         public ICollection<Bet> Bets { get; set; }
         public ICollection<SessionStatusLog> StatusLogs { get; set; }
 
-        public static SessionStatus[] SessionInProgressStatus = [WaitingBets, InProgress, Ended, RewardForWinnersInProgress];
+        public static SessionStatus[] SessionInProgressStatus = [WaitingBets, InProgress, Ended];
         public static SessionStatus[] SessionEndedStatus = [NotEnoughPlayersToStart, Ended];
     }
 }
