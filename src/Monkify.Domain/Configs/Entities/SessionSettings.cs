@@ -10,6 +10,7 @@ namespace Monkify.Domain.Configs.Entities
     [ExcludeFromCodeCoverage]
     public class SessionSettings
     {
+        public int SupportEmail { get; set; }
         public int MinimumWaitPeriodForBets { get; set; }
         public int MaximumWaitPeriodForBets { get; set; }
         public int TerminalBatchLimit { get; set; }

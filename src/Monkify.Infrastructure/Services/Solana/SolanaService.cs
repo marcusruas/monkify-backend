@@ -218,7 +218,7 @@ namespace Monkify.Infrastructure.Services.Solana
             else
                 errorMessage = ErrorMessages.SignaturePaidMoreThanBetAmount;
 
-            errorMessage += ErrorMessages.AdviceOnDifferentSignatureBetAmount;
+            errorMessage += string.Format(ErrorMessages.AdviceOnDifferentSignatureBetAmount, _settings.Sessions.SupportEmail);
 
             return errorMessage;
         }

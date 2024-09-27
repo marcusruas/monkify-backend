@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AdviceOnDifferentSignatureBetAmount" xml:space="preserve">
-    <value>If you requested a transaction and it has a different amount than you desired. You can request a refund for the transaction sending an email with your wallet and signature to marcusruas.andrade@gmail.com</value>
+    <value>If you requested a transaction and it has a different amount than you desired. You can request a refund for the transaction sending an email with your wallet and signature to {0}</value>
   </data>
   <data name="BetCannotReceiveRefund" xml:space="preserve">
     <value>Bet is not in the status to receive refund.</value>

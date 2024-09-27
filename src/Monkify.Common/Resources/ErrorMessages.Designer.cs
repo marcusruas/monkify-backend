@@ -61,7 +61,7 @@ namespace Monkify.Common.Resources {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a If you requested a transaction and it has a different amount than you desired. You can request a refund for the transaction sending an email with your wallet and signature to marcusruas.andrade@gmail.com.
+        ///   Consulta uma cadeia de caracteres localizada semelhante a If you requested a transaction and it has a different amount than you desired. You can request a refund for the transaction sending an email with your wallet and signature to {0}.
         /// </summary>
         public static string AdviceOnDifferentSignatureBetAmount {
             get {
