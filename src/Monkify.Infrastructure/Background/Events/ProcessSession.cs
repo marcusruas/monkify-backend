@@ -61,8 +61,6 @@ namespace Monkify.Infrastructure.Background.Events
 
             await _sessionService.UpdateSessionStatus(_session, InProgress);
 
-            await Task.Delay(5000, cancellationToken);
-
             await SendTerminalCharacters();
             await _sessionService.UpdateSessionStatus(_session, Ended, _monkey);
             await DeclareWinners();
