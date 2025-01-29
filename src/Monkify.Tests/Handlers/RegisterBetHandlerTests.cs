@@ -45,8 +45,10 @@ namespace Monkify.Tests.Handlers
         private readonly Mock<ISolanaService> _solanaServiceMock;
         private readonly Mock<IHubContext<RecentBetsHub>> _hubContextMock;
 
-        [Fact]
-        public async Task RegisterBet_CorrectData_ShouldReturnSuccess()
+        [Theory]
+        [InlineData(SessionStatus.WaitingBets)]
+        [InlineData(SessionStatus.SessionStarting)]
+        public async Task RegisterBet_CorrectData_ShouldReturnSuccess(SessionStatus status)
         {
             var requestBody = new RegisterBetRequestBody()
             {
@@ -57,7 +59,7 @@ namespace Monkify.Tests.Handlers
                 Wallet = Faker.Random.String2(40)
             };
             var session = new Session();
-            session.Status = SessionStatus.WaitingBets;
+            session.Status = status;
             session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
             _solanaServiceMock.Setup(x => x.ValidateBetPayment(It.IsAny<Bet>())).Returns(Task.FromResult(new ValidationResult()));
 

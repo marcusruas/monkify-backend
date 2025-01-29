@@ -51,7 +51,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
             var session = await Context.Sessions
                 .Include(x => x.Parameters)
                 .ThenInclude(x => x.PresetChoices)
-                .FirstOrDefaultAsync(x => x.Id == request.SessionId && x.Status == SessionStatus.WaitingBets);
+                .FirstOrDefaultAsync(x => x.Id == request.SessionId && Session.SessionAcceptingBets.Contains(x.Status));
 
             if (session is null)
                 Messaging.ReturnValidationFailureMessage(ErrorMessages.SessionNotValidForBets);
