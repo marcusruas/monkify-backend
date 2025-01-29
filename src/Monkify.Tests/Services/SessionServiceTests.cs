@@ -69,6 +69,30 @@ namespace Monkify.Tests.Services
         }
 
         [Fact]
+        public async Task UpdateSessionStatus_UpdateSessionToStarting_ShouldReturnSuccess()
+        {
+            var session = new Session();
+            session.Status = SessionStatus.WaitingBets;
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+
+            using (var context = new MonkifyDbContext(ContextOptions))
+            {
+                context.Add(session);
+                context.SaveChanges();
+
+                var service = new SessionService(_settings, context, _hubContextMock.Object);
+
+                await service.UpdateSessionStatus(session, SessionStatus.SessionStarting);
+                var updatedSession = context.Sessions.Include(x => x.StatusLogs).FirstOrDefault(x => x.Id == session.Id);
+
+                updatedSession.ShouldNotBeNull();
+                updatedSession.Status.ShouldBe(SessionStatus.SessionStarting);
+                updatedSession.StartDate.ShouldNotBeNull();
+                updatedSession.StatusLogs.Any(x => x.PreviousStatus == SessionStatus.WaitingBets && x.NewStatus == SessionStatus.SessionStarting).ShouldBeTrue();
+            }
+        }
+
+        [Fact]
         public async Task UpdateSessionStatus_UpdateSessionToEnded_ShouldReturnSuccess()
         {
             var session = new Session();

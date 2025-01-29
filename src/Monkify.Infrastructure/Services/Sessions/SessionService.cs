@@ -59,9 +59,15 @@ namespace Monkify.Infrastructure.Services.Sessions
                 session.Status = status;
                 _context.Entry(session).Property(x => x.Status).IsModified = true;
                 
+                if (status == SessionStatus.SessionStarting)
+                {
+                    session.StartDate = DateTime.UtcNow.AddSeconds(_settings.Sessions.TimeUntilSessionStarts);
+                    _context.Entry(session).Property(x => x.StartDate).IsModified = true;
+                }
+
                 await _context.SaveChangesAsync();
 
-                var statusJson = new SessionStatusUpdated(status, result).AsJson();
+                var statusJson = new SessionStatusUpdated(status, session.StartDate, result).AsJson();
                 string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionStatusEndpoint, session.Id.ToString());
                 await _activeSessionsHub.Clients.All.SendAsync(sessionStatusEndpoint, statusJson);
             }

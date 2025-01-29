@@ -55,12 +55,11 @@ namespace Monkify.Infrastructure.Background.Events
 
                 await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
                 return;
-            }
+            }            
 
             _monkey = new MonkifyTyper(_session);
 
             await _sessionService.UpdateSessionStatus(_session, InProgress);
-
             await SendTerminalCharacters();
             await _sessionService.UpdateSessionStatus(_session, Ended, _monkey);
             await DeclareWinners();
@@ -87,6 +86,17 @@ namespace Monkify.Infrastructure.Background.Events
                 }
 
                 await Task.Delay(3000, cancellationToken);
+            }
+
+            if (sessionHasEnoughPlayers)
+            {
+                await _sessionService.UpdateSessionStatus(_session, SessionStarting);
+
+                while(DateTime.UtcNow <= _session.StartDate)
+                {
+                    _session.Bets = await _context.SessionBets.Where(x => x.SessionId == _session.Id).ToListAsync();
+                    await Task.Delay(1000, cancellationToken);
+                }
             }
 
             return sessionHasEnoughPlayers;

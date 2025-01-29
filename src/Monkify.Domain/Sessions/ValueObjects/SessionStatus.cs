@@ -13,6 +13,8 @@ namespace Monkify.Domain.Sessions.ValueObjects
         WaitingBets = 1,
         [Description("Session could not be started due to the number of players.")]
         NotEnoughPlayersToStart,
+        [Description("The session has enough players and will start shortly.")]
+        SessionStarting,
         [Description("Session is in progress, there was enough players.")]
         InProgress,
         [Description("Session has ended.")]
