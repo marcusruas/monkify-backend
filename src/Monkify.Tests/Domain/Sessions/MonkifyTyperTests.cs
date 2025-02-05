@@ -160,29 +160,33 @@ namespace Monkify.Tests.Domain.Sessions
             typer.FirstChoiceTyped.ShouldBeNull();
         }
 
-        [Fact]
-        public void Constructor_GenerateNextCharacter_ShouldEventuallySelectWinner()
+        [Theory]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)]
+        [InlineData(6)]
+        public void Constructor_GenerateNextCharacter_ShouldEventuallySelectWinner(int wordLength)
         {
-            string[] choices = [Faker.Random.String2(4), Faker.Random.String2(4), Faker.Random.String2(4), Faker.Random.String2(4)];
+            string[] choices = [Faker.Random.String2(wordLength), Faker.Random.String2(wordLength)];
 
             var watch = new Stopwatch();
             var session = new Session();
             session.Parameters = new SessionParameters() { SessionCharacterType = SessionCharacterType.LowerCaseLetter };
             session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[0] });
             session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[1] });
-            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[2] });
-            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[3] });
 
             var typer = new MonkifyTyper(session);
 
             watch.Start();
-            while (!typer.HasWinners && watch.Elapsed.TotalSeconds < 10) //arbitrary number of seconds
+            while (!typer.HasWinners)
                 typer.GenerateNextCharacter();
             watch.Stop();
 
             typer.HasWinners.ShouldBeTrue();
             typer.NumberOfWinners.ShouldBe(1);
             choices.Contains(typer.FirstChoiceTyped).ShouldBeTrue();
+            watch.Elapsed.TotalSeconds.ShouldBeLessThan(30); //arbitrary number of seconds
         }
     }
 }
