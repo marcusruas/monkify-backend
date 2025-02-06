@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using Serilog;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Runtime;
 using static Monkify.Domain.Sessions.ValueObjects.SessionStatus;
 
 namespace Monkify.Infrastructure.Background.Events
@@ -60,7 +61,7 @@ namespace Monkify.Infrastructure.Background.Events
             _monkey = new MonkifyTyper(_session);
 
             await _sessionService.UpdateSessionStatus(_session, InProgress);
-            await SendTerminalCharacters();
+            await SendTerminalCharacters(cancellationToken);
             await _sessionService.UpdateSessionStatus(_session, Ended, _monkey);
             await DeclareWinners();
 
@@ -82,7 +83,7 @@ namespace Monkify.Infrastructure.Background.Events
                 if (!sessionHasEnoughPlayers)
                 {
                     _session.Bets = await _context.SessionBets.Where(x => x.SessionId == _session.Id).ToListAsync();
-                    sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.Wallet)?.Count() >= _session.Parameters.MinimumNumberOfPlayers;
+                    sessionHasEnoughPlayers = _session.Bets.DistinctBy(x => x.Wallet).DistinctBy(x => x.Choice)?.Count() >= _session.Parameters.MinimumNumberOfPlayers;
                 }
 
                 await Task.Delay(3000, cancellationToken);
@@ -102,27 +103,36 @@ namespace Monkify.Infrastructure.Background.Events
             return sessionHasEnoughPlayers;
         }
 
-        private async Task SendTerminalCharacters()
+        private async Task SendTerminalCharacters(CancellationToken cancellationToken)
         {
             string terminalEndpoint = string.Format(_sessionSettings.SessionTerminalEndpoint, _session.Id.ToString());
-            List<char> batch = new(_sessionSettings.TerminalBatchLimit);
+            
+            char[] batch = new char[_sessionSettings.TerminalBatchLimit];
+            int batchIndex = 0;
 
-            while (!_monkey.HasWinners)
+            while (!_monkey.HasWinners && !cancellationToken.IsCancellationRequested)
             {
-                batch.Add(_monkey.GenerateNextCharacter());
-                if (batch.Count >= _sessionSettings.TerminalBatchLimit)
+                batch[batchIndex] = _monkey.GenerateNextCharacter();
+                if (batchIndex >= _sessionSettings.TerminalBatchLimit - 1)
+                {
                     await SendBatch(terminalEndpoint, batch);
+                    batchIndex = 0;
+                    continue;
+                }
+                batchIndex++;
             }
 
-            if (batch.Count > 0)
-                await SendBatch(terminalEndpoint, batch);
+            if (batchIndex > 0)
+            {
+                var remainingBatch = batch.Take(batchIndex + 1).ToArray();
+                await SendBatch(terminalEndpoint, remainingBatch);
+            }
         }
 
-        private async Task SendBatch(string endpoint, List<char> batch)
+        private async Task SendBatch(string endpoint, char[] batch)
         {
             await Task.Delay(_sessionSettings.DelayBetweenTerminalBatches);
             await _activeSessions.Clients.All.SendAsync(endpoint, batch);
-            batch.Clear();
         }
 
         private async Task DeclareWinners()

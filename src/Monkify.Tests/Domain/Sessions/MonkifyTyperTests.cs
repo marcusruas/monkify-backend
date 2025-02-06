@@ -165,7 +165,6 @@ namespace Monkify.Tests.Domain.Sessions
         [InlineData(3)]
         [InlineData(4)]
         [InlineData(5)]
-        [InlineData(6)]
         public void Constructor_GenerateNextCharacter_ShouldEventuallySelectWinner(int wordLength)
         {
             string[] choices = [Faker.Random.String2(wordLength), Faker.Random.String2(wordLength)];
@@ -186,7 +185,37 @@ namespace Monkify.Tests.Domain.Sessions
             typer.HasWinners.ShouldBeTrue();
             typer.NumberOfWinners.ShouldBe(1);
             choices.Contains(typer.FirstChoiceTyped).ShouldBeTrue();
-            watch.Elapsed.TotalSeconds.ShouldBeLessThan(30); //arbitrary number of seconds
+            watch.Elapsed.TotalSeconds.ShouldBeLessThan(10);
+        }
+
+        [Theory]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)]
+        [InlineData(6)]
+        [InlineData(7)]
+        public void Constructor_GenerateNextCharacter_PresetCharacterChoices_ShouldEventuallySelectWinner(int wordLength)
+        {
+            string[] choices = [Faker.Random.String2(wordLength), Faker.Random.String2(wordLength)];
+
+            var watch = new Stopwatch();
+            var session = new Session();
+            session.Parameters = new SessionParameters() { SessionCharacterType = SessionCharacterType.PresetByPlayerChoices };
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[0] });
+            session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[1] });
+
+            var typer = new MonkifyTyper(session);
+
+            watch.Start();
+            while (!typer.HasWinners)
+                typer.GenerateNextCharacter();
+            watch.Stop();
+
+            typer.HasWinners.ShouldBeTrue();
+            typer.NumberOfWinners.ShouldBe(1);
+            choices.Contains(typer.FirstChoiceTyped).ShouldBeTrue();
+            watch.Elapsed.TotalSeconds.ShouldBeLessThan(10);
         }
     }
 }
