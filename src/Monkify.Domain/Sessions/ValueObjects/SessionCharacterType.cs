@@ -12,9 +12,8 @@ namespace Monkify.Domain.Sessions.ValueObjects
         [Description("0123456789")]
         Number = 1,
         [Description("abcdefghijklmnopqrstuvwxyz")]
-        LowerCaseLetter,
-        [Description("ABCDEFGHIJKLMNOPQRSTUVWXYZ")]
-        UpperCaseLetter,
-        PresetByPlayerChoices,
+        Letters,
+        [Description("abcdefghijklmnopqrstuvwxyz0123456789")]
+        NumbersAndLetters,
     }
 }

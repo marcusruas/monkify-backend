@@ -32,7 +32,7 @@ namespace Monkify.Api.Controllers
 
             var novo = new SessionParameters()
             {
-                SessionCharacterType = parametros.SessionCharacterType,
+                AllowedCharacters = parametros.SessionCharacterType,
                 Name = parametros.Name,
                 RequiredAmount = parametros.RequiredAmount,
                 MinimumNumberOfPlayers = parametros.MinimumNumberOfPlayers,

@@ -29,11 +29,12 @@ namespace Monkify.Domain.Sessions.Services
         public int SessionSeed { get; private set; }
         public string FirstChoiceTyped { get; private set; }
 
-        public Random _random { get; private set; }
         public Dictionary<string, int> Bets { get; private set; }
         public int QueueLength { get; private set; }
         public char[] CharactersOnTyper { get; private set; }
-        public Queue<char> TypedCharacters { get; private set; }
+
+        private Random _random { get; set; }
+        private Queue<char> TypedCharacters { get; set; }
 
         private void SetBets(Session session)
         {
@@ -66,10 +67,10 @@ namespace Monkify.Domain.Sessions.Services
 
         private void SetCharactersOnTyper(Session session)
         {
-            if (session.Parameters.SessionCharacterType.ContainsAttribute<DescriptionAttribute>())
-                CharactersOnTyper = [.. session.Parameters.SessionCharacterType.StringValueOf()];
-            else
+            if (session.Parameters.PlayersDefineCharacters)
                 SetCharactersOnTyperByBets(session);
+            else
+                CharactersOnTyper = [.. session.Parameters.AllowedCharacters.StringValueOf()];
         }
 
         private void SetCharactersOnTyperByBets(Session session)

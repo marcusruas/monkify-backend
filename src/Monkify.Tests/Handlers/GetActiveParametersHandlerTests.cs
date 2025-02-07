@@ -23,7 +23,7 @@ namespace Monkify.Tests.Handlers
                 AcceptDuplicatedCharacters = true,
                 ChoiceRequiredLength = 4,
                 RequiredAmount = 2,
-                SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                AllowedCharacters = SessionCharacterType.Letters,
                 PresetChoices = new List<PresetChoice>() { new PresetChoice(Faker.Random.String2(4)), new PresetChoice(Faker.Random.String2(4)), new PresetChoice(Faker.Random.String2(4)) },
                 Active = true,
             };
@@ -59,7 +59,7 @@ namespace Monkify.Tests.Handlers
                 AcceptDuplicatedCharacters = true,
                 ChoiceRequiredLength = 4,
                 RequiredAmount = 2,
-                SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                AllowedCharacters = SessionCharacterType.Letters,
                 Active = true,
             };
 
@@ -97,7 +97,7 @@ namespace Monkify.Tests.Handlers
                 AcceptDuplicatedCharacters = true,
                 ChoiceRequiredLength = 4,
                 RequiredAmount = 2,
-                SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                AllowedCharacters = SessionCharacterType.Letters,
                 PresetChoices = new List<PresetChoice>() { new PresetChoice(Faker.Random.String2(4)), new PresetChoice(Faker.Random.String2(4)), new PresetChoice(Faker.Random.String2(4)) },
                 Active = false,
             };

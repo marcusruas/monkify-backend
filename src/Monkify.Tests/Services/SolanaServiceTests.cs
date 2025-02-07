@@ -174,7 +174,7 @@ namespace Monkify.Tests.Services
 
             var session = new Session();
             session.Status = SessionStatus.RewardForWinnersInProgress;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), Faker.Random.String2(4), 2) { Wallet = WALLET_FOR_TESTS };
             session.Bets.Add(bet);
             var transaction = new BetTransactionAmountResult(2, (ulong) (2 * Math.Pow(10, 5)));
@@ -231,7 +231,7 @@ namespace Monkify.Tests.Services
 
             var session = new Session();
             session.Status = SessionStatus.RewardForWinnersInProgress;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), Faker.Random.String2(4), 2) { Wallet = WALLET_FOR_TESTS };
             session.Bets.Add(bet);
             var transaction = new BetTransactionAmountResult(2, (ulong)(2 * Math.Pow(10, 5)));
@@ -401,7 +401,7 @@ namespace Monkify.Tests.Services
             _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
             var session = new Session();
             session.Status = SessionStatus.RewardForWinnersInProgress;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), WALLET_FOR_TESTS, "abcd", 10);
             session.Bets.Add(bet);
 
@@ -433,7 +433,7 @@ namespace Monkify.Tests.Services
             _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
             var session = new Session();
             session.Status = SessionStatus.RewardForWinnersInProgress;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), WALLET_FOR_TESTS, "abcd", 0);
             session.Bets.Add(bet);
 
@@ -464,7 +464,7 @@ namespace Monkify.Tests.Services
             _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
             var session = new Session();
             session.Status = SessionStatus.RewardForWinnersInProgress;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), WALLET_FOR_TESTS, "abcd", 10);
             session.Bets.Add(bet);
 
@@ -496,7 +496,7 @@ namespace Monkify.Tests.Services
             _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
             var session = new Session();
             session.Status = SessionStatus.RewardForWinnersInProgress;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), "abcd", 10);
             session.Bets.Add(bet);
 
@@ -529,7 +529,7 @@ namespace Monkify.Tests.Services
             _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
             var session = new Session();
             session.Status = SessionStatus.RewardForWinnersInProgress;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), "abcd", 10);
             session.Bets.Add(bet);
 
@@ -565,7 +565,7 @@ namespace Monkify.Tests.Services
             _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
             var session = new Session();
             session.Status = SessionStatus.RewardForWinnersInProgress;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), "abcd", 10);
             session.Bets.Add(bet);
 
@@ -597,7 +597,7 @@ namespace Monkify.Tests.Services
             _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
             var session = new Session();
             session.Status = SessionStatus.RewardForWinnersInProgress;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), "abcd", 9);
             session.Bets.Add(bet);
 
@@ -629,7 +629,7 @@ namespace Monkify.Tests.Services
             _rpcClientMock.Setup(x => x.GetTransactionAsync(It.IsAny<string>(), It.IsAny<Commitment>())).Returns(Task.FromResult(transaction));
             var session = new Session();
             session.Status = SessionStatus.RewardForWinnersInProgress;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), "abcd", 12);
             session.Bets.Add(bet);
 

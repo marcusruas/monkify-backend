@@ -12,8 +12,8 @@ using Monkify.Infrastructure.Context;
 namespace Monkify.Infrastructure.Migrations
 {
     [DbContext(typeof(MonkifyDbContext))]
-    [Migration("20250129034942_AdicionadoCampoStartDate")]
-    partial class AdicionadoCampoStartDate
+    [Migration("20250207030142_PrimeiraMigration")]
+    partial class PrimeiraMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -189,6 +189,9 @@ namespace Monkify.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<int>("AllowedCharacters")
+                        .HasColumnType("int");
+
                     b.Property<int?>("ChoiceRequiredLength")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -207,12 +210,12 @@ namespace Monkify.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<bool>("PlayersDefineCharacters")
+                        .HasColumnType("bit");
+
                     b.Property<decimal>("RequiredAmount")
                         .HasPrecision(18, 9)
                         .HasColumnType("decimal(18,9)");
-
-                    b.Property<int>("SessionCharacterType")
-                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");

@@ -48,12 +48,10 @@ namespace Monkify.Domain.Sessions.Services
             {
                 return BetValidationResult.InvalidChoice;
             }
-            else if (parameters.SessionCharacterType.ContainsAttribute<DescriptionAttribute>())
-            {
-                var acceptedCharacters = parameters.SessionCharacterType.StringValueOf().ToArray();
-                if (!bet.Choice.All(character => acceptedCharacters.Contains(character)))
-                    return BetValidationResult.InvalidCharacters;
-            }
+
+            var acceptedCharacters = parameters.AllowedCharacters.StringValueOf().ToArray();
+            if (!bet.Choice.All(character => acceptedCharacters.Contains(character)))
+                return BetValidationResult.InvalidCharacters;
 
             return BetValidationResult.Valid;
         }

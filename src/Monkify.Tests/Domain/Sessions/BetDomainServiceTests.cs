@@ -255,7 +255,6 @@ namespace Monkify.Tests.Domain.Sessions
         [Theory]
         [InlineData("macaco", "MACACO")]
         [InlineData("abcdef", "ghijkl")]
-        [InlineData(" macac", "macaco")]
         public void ChoiceIsValidForSession_ChoiceNotInPresetChoices_ShouldReturnInvalidChoice(string choice, string presetChoice)
         {
             var session = new Session
@@ -275,16 +274,16 @@ namespace Monkify.Tests.Domain.Sessions
         }
 
         [Theory]
-        [InlineData(SessionCharacterType.LowerCaseLetter, "macacO")]
-        [InlineData(SessionCharacterType.UpperCaseLetter, "MACACo")]
-        [InlineData(SessionCharacterType.Number, "12345a")]
-        public void ChoiceIsValidForSession_ChoiceWithInvalidCharacters_ShouldReturnInvalidCharacters(SessionCharacterType characterType, string choice)
+        [InlineData("macac ", "macaco")]
+        [InlineData(" macac", "macaco")]
+        [InlineData(" macac ", "macaco")]
+        public void ChoiceIsValidForSession_ChoiceWhiteSpace_ShouldReturnInvalidChoice(string choice, string presetChoice)
         {
             var session = new Session
             {
                 Parameters = new SessionParameters
                 {
-                    SessionCharacterType = characterType,
+                    PresetChoices = new List<PresetChoice> { new PresetChoice { Choice = presetChoice } },
                     ChoiceRequiredLength = 6,
                     AcceptDuplicatedCharacters = true
                 }
@@ -293,7 +292,30 @@ namespace Monkify.Tests.Domain.Sessions
 
             var result = BetDomainService.ChoiceIsValidForSession(bet, session);
 
-            result.ShouldBe(BetValidationResult.InvalidCharacters);
+            result.ShouldBe(BetValidationResult.WrongChoiceLength);
+        }
+
+        [Theory]
+        [InlineData(SessionCharacterType.Letters, "macacO")]
+        [InlineData(SessionCharacterType.Letters, "MACACO")]
+        [InlineData(SessionCharacterType.Letters, "MaCaCo")]
+        [InlineData(SessionCharacterType.Letters, " MaCaCo ")]
+        public void ChoiceIsValidForSession_ChoiceWithUppercase_ShouldReturnValid(SessionCharacterType characterType, string choice)
+        {
+            var session = new Session
+            {
+                Parameters = new SessionParameters
+                {
+                    AllowedCharacters = characterType,
+                    ChoiceRequiredLength = 6,
+                    AcceptDuplicatedCharacters = true
+                }
+            };
+            var bet = new Bet { Choice = choice };
+
+            var result = BetDomainService.ChoiceIsValidForSession(bet, session);
+
+            result.ShouldBe(BetValidationResult.Valid);
         }
 
         [Theory]
@@ -306,7 +328,7 @@ namespace Monkify.Tests.Domain.Sessions
             {
                 Parameters = new SessionParameters
                 {
-                    SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                    AllowedCharacters = SessionCharacterType.Letters,
                     ChoiceRequiredLength = choiceRequiredLength
                 }
             };
@@ -327,7 +349,7 @@ namespace Monkify.Tests.Domain.Sessions
             {
                 Parameters = new SessionParameters
                 {
-                    SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                    AllowedCharacters = SessionCharacterType.Letters,
                     AcceptDuplicatedCharacters = acceptDuplicates,
                     ChoiceRequiredLength = 7
                 }
@@ -367,7 +389,7 @@ namespace Monkify.Tests.Domain.Sessions
             {
                 Parameters = new SessionParameters
                 {
-                    SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                    AllowedCharacters = SessionCharacterType.Letters,
                     RequiredAmount = 2,
                     ChoiceRequiredLength = 4,
                     AcceptDuplicatedCharacters = true
@@ -388,7 +410,7 @@ namespace Monkify.Tests.Domain.Sessions
                 Parameters = new SessionParameters
                 {
 
-                    SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                    AllowedCharacters = SessionCharacterType.Letters,
                     PresetChoices = new List<PresetChoice>() { new() { Choice = "abcd" } },
                     RequiredAmount = 2,
                     ChoiceRequiredLength = 4,

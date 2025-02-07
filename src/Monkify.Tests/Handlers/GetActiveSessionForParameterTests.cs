@@ -26,7 +26,7 @@ namespace Monkify.Tests.Handlers
                 AcceptDuplicatedCharacters = true,
                 ChoiceRequiredLength = 4,
                 RequiredAmount = 2,
-                SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                AllowedCharacters = SessionCharacterType.Letters,
                 Active = true,
             };
             session.Bets = new List<Bet>()
@@ -78,7 +78,7 @@ namespace Monkify.Tests.Handlers
                 AcceptDuplicatedCharacters = true,
                 ChoiceRequiredLength = 4,
                 RequiredAmount = 2,
-                SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                AllowedCharacters = SessionCharacterType.Letters,
                 Active = false,
             };
             session.Bets = new List<Bet>()
@@ -111,7 +111,7 @@ namespace Monkify.Tests.Handlers
                 AcceptDuplicatedCharacters = true,
                 ChoiceRequiredLength = 4,
                 RequiredAmount = 2,
-                SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                AllowedCharacters = SessionCharacterType.Letters,
                 Active = true,
             };
             using (var context = new MonkifyDbContext(ContextOptions))
@@ -137,7 +137,7 @@ namespace Monkify.Tests.Handlers
                 AcceptDuplicatedCharacters = true,
                 ChoiceRequiredLength = 4,
                 RequiredAmount = 2,
-                SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                AllowedCharacters = SessionCharacterType.Letters,
                 Active = true,
             };
             session.Bets = new List<Bet>()

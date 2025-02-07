@@ -29,7 +29,8 @@ namespace Monkify.Domain.Sessions.Entities
         public string Seed { get; set; }
         public string PaymentSignature { get; set; }
         public string Wallet { get; set; }
-        public string Choice { get; set; }
+        private string _choice { get; set; }
+        public string Choice { get => _choice?.Trim()?.ToLower(); set => _choice = value.Trim()?.ToLower(); }
         public decimal Amount { get; set; }
         public BetStatus Status { get; set; }
         public ICollection<BetStatusLog> StatusLogs { get; set; }

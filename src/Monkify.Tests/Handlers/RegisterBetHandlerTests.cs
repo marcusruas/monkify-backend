@@ -60,7 +60,7 @@ namespace Monkify.Tests.Handlers
             };
             var session = new Session();
             session.Status = status;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             _solanaServiceMock.Setup(x => x.ValidateBetPayment(It.IsAny<Bet>())).Returns(Task.FromResult(new ValidationResult()));
 
             using (var context = new MonkifyDbContext(ContextOptions))
@@ -111,7 +111,7 @@ namespace Monkify.Tests.Handlers
             };
             var session = new Session();
             session.Status = SessionStatus.RewardForWinnersCompleted;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             _solanaServiceMock.Setup(x => x.ValidateBetPayment(It.IsAny<Bet>())).Returns(Task.FromResult(new ValidationResult()));
 
             using (var context = new MonkifyDbContext(ContextOptions))
@@ -138,7 +138,7 @@ namespace Monkify.Tests.Handlers
             };
             var session = new Session();
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = false, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = false, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             _solanaServiceMock.Setup(x => x.ValidateBetPayment(It.IsAny<Bet>())).Returns(Task.FromResult(new ValidationResult()));
 
             using (var context = new MonkifyDbContext(ContextOptions))
@@ -168,7 +168,7 @@ namespace Monkify.Tests.Handlers
             var session = new Session();
             session.Bets.Add(new Bet(session.Id, Faker.Random.String2(40), paymentSignature, Faker.Random.String2(40), "test", 2));
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             _solanaServiceMock.Setup(x => x.ValidateBetPayment(It.IsAny<Bet>())).Returns(Task.FromResult(new ValidationResult()));
 
             using (var context = new MonkifyDbContext(ContextOptions))
@@ -197,7 +197,7 @@ namespace Monkify.Tests.Handlers
             };
             var session = new Session();
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, SessionCharacterType = SessionCharacterType.LowerCaseLetter };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             _solanaServiceMock.Setup(x => x.ValidateBetPayment(It.IsAny<Bet>())).Returns(Task.FromResult(new ValidationResult(errorMessage)));
 
             using (var context = new MonkifyDbContext(ContextOptions))

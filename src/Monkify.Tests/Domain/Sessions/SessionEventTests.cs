@@ -17,7 +17,7 @@ namespace Monkify.Tests.Domain.Sessions
         {
             SessionParameters sessionParameters = new SessionParameters
             {
-                SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                AllowedCharacters = SessionCharacterType.Letters,
                 RequiredAmount = 100.0m,
                 MinimumNumberOfPlayers = 5,
                 ChoiceRequiredLength = 3,
@@ -34,7 +34,7 @@ namespace Monkify.Tests.Domain.Sessions
             var sessionCreated = new SessionCreated(sessionId, sessionParameters);
 
             sessionCreated.SessionId.ShouldBe(sessionId);
-            sessionCreated.CharacterType.ShouldBe(sessionParameters.SessionCharacterType);
+            sessionCreated.CharacterType.ShouldBe(sessionParameters.AllowedCharacters);
             sessionCreated.MinimumNumberOfPlayers.ShouldBe(sessionParameters.MinimumNumberOfPlayers);
             sessionCreated.ChoiceRequiredLength.ShouldBe(sessionParameters.ChoiceRequiredLength);
             sessionCreated.PresetChoices.ShouldNotBeNull();
@@ -48,7 +48,7 @@ namespace Monkify.Tests.Domain.Sessions
             var sessionId = Guid.NewGuid();
             var parameters = new SessionParameters
             {
-                SessionCharacterType = SessionCharacterType.LowerCaseLetter,
+                AllowedCharacters = SessionCharacterType.Letters,
                 MinimumNumberOfPlayers = 2,
                 ChoiceRequiredLength = null,
                 PresetChoices = null

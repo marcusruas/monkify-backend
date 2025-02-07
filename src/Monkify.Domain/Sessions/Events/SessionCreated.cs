@@ -15,7 +15,7 @@ namespace Monkify.Domain.Sessions.Events
         {
             SessionId = sessionId;
             Name = parameters.Name;
-            CharacterType = parameters.SessionCharacterType;
+            CharacterType = parameters.AllowedCharacters;
             MinimumNumberOfPlayers = parameters.MinimumNumberOfPlayers;
             ChoiceRequiredLength = parameters.ChoiceRequiredLength;
 

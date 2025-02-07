@@ -125,18 +125,42 @@ void CreateDefaultSessionParameters(WebApplication app)
         if (context.SessionParameters.Any())
             return;
 
-        var parameters = new SessionParameters()
+        var parameters = new List<SessionParameters>()
         {
-            Name = "Monkey Race",
-            SessionCharacterType = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.LowerCaseLetter,
-            RequiredAmount = 1,
-            MinimumNumberOfPlayers = 2,
-            ChoiceRequiredLength = 4,
-            AcceptDuplicatedCharacters = true,
-            Active = true,
+            new SessionParameters()
+            {
+                Name = "Monkey Race with Letters",
+                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Letters,
+                RequiredAmount = 1,
+                MinimumNumberOfPlayers = 2,
+                ChoiceRequiredLength = 4,
+                AcceptDuplicatedCharacters = true,
+                Active = true,
+            },
+            new SessionParameters()
+            {
+                Name = "Monkey Race with Numbers",
+                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Number,
+                RequiredAmount = 1,
+                MinimumNumberOfPlayers = 2,
+                ChoiceRequiredLength = 4,
+                AcceptDuplicatedCharacters = true,
+                Active = true,
+            },
+            new SessionParameters()
+            {
+                Name = "Monkey Race with Letters and Numbers",
+                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.NumbersAndLetters,
+                RequiredAmount = 1,
+                MinimumNumberOfPlayers = 2,
+                ChoiceRequiredLength = 4,
+                PlayersDefineCharacters = true,
+                AcceptDuplicatedCharacters = true,
+                Active = true,
+            }
         };
 
-        context.AddAsync(parameters);
+        context.AddRangeAsync(parameters);
         context.SaveChanges();
     }
 }
