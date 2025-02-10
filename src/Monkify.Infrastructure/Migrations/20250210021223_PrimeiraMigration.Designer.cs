@@ -12,7 +12,7 @@ using Monkify.Infrastructure.Context;
 namespace Monkify.Infrastructure.Migrations
 {
     [DbContext(typeof(MonkifyDbContext))]
-    [Migration("20250207030142_PrimeiraMigration")]
+    [Migration("20250210021223_PrimeiraMigration")]
     partial class PrimeiraMigration
     {
         /// <inheritdoc />
