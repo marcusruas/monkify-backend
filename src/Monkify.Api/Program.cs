@@ -143,7 +143,7 @@ void CreateDefaultSessionParameters(WebApplication app)
                 AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Number,
                 RequiredAmount = 1,
                 MinimumNumberOfPlayers = 2,
-                ChoiceRequiredLength = 4,
+                ChoiceRequiredLength = 6,
                 AcceptDuplicatedCharacters = true,
                 Active = true,
             },

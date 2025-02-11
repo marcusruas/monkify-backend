@@ -124,7 +124,7 @@ namespace Monkify.Infrastructure.Background.Events
 
             if (batchIndex > 0)
             {
-                var remainingBatch = batch.Take(batchIndex + 1).ToArray();
+                var remainingBatch = batch.Take(batchIndex).ToArray();
                 await SendBatch(terminalEndpoint, remainingBatch);
             }
         }
