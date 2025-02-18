@@ -12,8 +12,8 @@ using Monkify.Infrastructure.Context;
 namespace Monkify.Infrastructure.Migrations
 {
     [DbContext(typeof(MonkifyDbContext))]
-    [Migration("20250210021223_PrimeiraMigration")]
-    partial class PrimeiraMigration
+    [Migration("20250218025738_FirstMigration")]
+    partial class FirstMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -131,6 +131,37 @@ namespace Monkify.Infrastructure.Migrations
                     b.HasIndex("ParametersId");
 
                     b.ToTable("PresetChoices");
+                });
+
+            modelBuilder.Entity("Monkify.Domain.Sessions.Entities.RefundLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 9)
+                        .HasColumnType("decimal(18,9)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Signature")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Wallet")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Refunds");
                 });
 
             modelBuilder.Entity("Monkify.Domain.Sessions.Entities.Session", b =>

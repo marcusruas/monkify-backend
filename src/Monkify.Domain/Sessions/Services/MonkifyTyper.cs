@@ -103,7 +103,7 @@ namespace Monkify.Domain.Sessions.Services
 
         private void CheckForWinners()
         {
-            string choice = new (TypedCharacters.ToArray());
+            string choice = new ([.. TypedCharacters]);
 
             if (Bets.TryGetValue(choice, out int amountOfPlayers))
             {

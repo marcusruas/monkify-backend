@@ -150,6 +150,9 @@
   <data name="PaymentSignatureHasBeenUsed" xml:space="preserve">
     <value>The requested payment signature has already been used. Make another transaction with the appropriate amount.</value>
   </data>
+  <data name="RefundWarning" xml:space="preserve">
+    <value>Your bet should be refunded soon.</value>
+  </data>
   <data name="SessionNotValidForBets" xml:space="preserve">
     <value>The requested session was not found or is not receiving bets at the current moment.</value>
   </data>

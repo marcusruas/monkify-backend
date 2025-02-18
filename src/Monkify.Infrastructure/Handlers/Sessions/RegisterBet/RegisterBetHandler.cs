@@ -34,11 +34,14 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         private readonly IHubContext<RecentBetsHub> _recentBetsHub;
         private readonly GeneralSettings _settings;
         private readonly ISolanaService _solanaService;
-
+        
         private Bet _bet;
 
         public override async Task<BetDto> HandleRequest(RegisterBetRequest request, CancellationToken cancellationToken)
         {
+            _bet = new(request.SessionId, request.Body.Seed, request.Body.PaymentSignature, request.Body.Wallet, request.Body.Choice, request.Body.Amount.Value);
+
+            await ValidateBetSignature();
             await ValidateBet(request);
             await RegisterBet();
             await SendBet();
@@ -46,24 +49,9 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
             return new BetDto(_bet);
         }
 
-        private async Task ValidateBet(RegisterBetRequest request)
+        private async Task ValidateBetSignature()
         {
-            var session = await Context.Sessions
-                .Include(x => x.Parameters)
-                .ThenInclude(x => x.PresetChoices)
-                .FirstOrDefaultAsync(x => x.Id == request.SessionId && Session.SessionAcceptingBets.Contains(x.Status));
-
-            if (session is null)
-                Messaging.ReturnValidationFailureMessage(ErrorMessages.SessionNotValidForBets);
-
-            _bet = new(request.SessionId, request.Body.Seed, request.Body.PaymentSignature, request.Body.Wallet, request.Body.Choice, request.Body.Amount.Value);
-
-            var betValidationResult = BetDomainService.ChoiceIsValidForSession(_bet, session);
-
-            if (betValidationResult != BetValidationResult.Valid)
-                Messaging.ReturnValidationFailureMessage(betValidationResult.StringValueOf());
-
-            var signatureHasBeenUsed = await Context.SessionBets.AnyAsync(x => x.PaymentSignature == request.Body.PaymentSignature);
+            var signatureHasBeenUsed = await Context.SessionBets.AnyAsync(x => x.PaymentSignature == _bet.PaymentSignature);
 
             if (signatureHasBeenUsed)
                 Messaging.ReturnValidationFailureMessage(ErrorMessages.PaymentSignatureHasBeenUsed);
@@ -74,6 +62,22 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
                 Messaging.ReturnValidationFailureMessage(paymentResult.ErrorMessage);
         }
 
+        private async Task ValidateBet(RegisterBetRequest request)
+        {
+            var session = await Context.Sessions
+                .Include(x => x.Parameters)
+                .ThenInclude(x => x.PresetChoices)
+                .FirstOrDefaultAsync(x => x.Id == request.SessionId && Session.SessionAcceptingBets.Contains(x.Status));
+
+            if (session is null)
+                await RefundBetAndReturnError(ErrorMessages.SessionNotValidForBets);
+
+            var betValidationResult = BetDomainService.ChoiceIsValidForSession(_bet, session);
+
+            if (betValidationResult != BetValidationResult.Valid)
+                await RefundBetAndReturnError(betValidationResult.StringValueOf());
+        }
+
         private async Task RegisterBet()
         {
             await Context.SessionBets.AddAsync(_bet);
@@ -81,8 +85,8 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
             if (affectedRows <= 0)
             {
-                Messaging.ReturnValidationFailureMessage(ErrorMessages.FailedToRegisterBet);
                 Log.Error("An error occurred while trying to register a bet for the wallet {0} under the session {1}", _bet.Wallet, _bet.SessionId);
+                await RefundBetAndReturnError(ErrorMessages.FailedToRegisterBet);
             }
         }
 
@@ -92,6 +96,15 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
             var sessionJson = new BetCreated(_bet.Wallet, _bet.PaymentSignature, _bet.Amount, _bet.Choice).AsJson();
             await _recentBetsHub.Clients.All.SendAsync(sessionBetsEndpoint, sessionJson);
+        }
+
+        private async Task RefundBetAndReturnError(string errorMessage)
+        {
+            errorMessage += " " + ErrorMessages.RefundWarning;
+
+            var refundAmount = BetDomainService.CalculateRefundForBet(_settings.Token, _bet);
+            await _solanaService.RefundTokens(_bet.Wallet, refundAmount);
+            Messaging.ReturnValidationFailureMessage(errorMessage);
         }
     }
 }

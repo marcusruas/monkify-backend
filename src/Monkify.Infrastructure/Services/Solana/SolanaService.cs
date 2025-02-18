@@ -91,32 +91,11 @@ namespace Monkify.Infrastructure.Services.Solana
 
             try
             {
-                var latestBlockhash = await GetLatestBlockhashForTokenTransfer(Commitment.Finalized);
+                var result = await TransferTokens(bet.Wallet, amount);
 
-                if (string.IsNullOrWhiteSpace(latestBlockhash))
-                    return false;
-
-                var tokenAccount = await _rpcClient.GetTokenAccountsByOwnerAsync(bet.Wallet, _settings.Token.MintAddress);
-
-                if (!tokenAccount.WasSuccessful || tokenAccount.Result.Value == null || !tokenAccount.Result.Value.Any())
+                if (!result.WasSuccessful || string.IsNullOrWhiteSpace(result.Result))
                 {
-                    Serilog.Log.Error("Failed to transfer funds to wallet {0} due to it not having a token account for the token {1}. Value: {2}. Details: {3}", bet.Wallet, _settings.Token.MintAddress, amount.AsJson(), tokenAccount.RawRpcResponse);
-                    return false;
-                }
-
-                var transferInstruction = TokenProgram.Transfer(new PublicKey(_settings.Token.SenderAccount), new PublicKey(tokenAccount.Result.Value.FirstOrDefault().PublicKey), amount.ValueInTokens, _ownerAccount.PublicKey);
-
-                var transaction = new TransactionBuilder()
-                        .SetRecentBlockHash(latestBlockhash)
-                        .SetFeePayer(_ownerAccount)
-                        .AddInstruction(transferInstruction)
-                        .Build(new List<Account> { _ownerAccount });
-
-                RequestResult<string> result = await _rpcClient.SendTransactionAsync(transaction);
-
-                if (!result.WasSuccessful)
-                {
-                    Serilog.Log.Error("Failed to transfer funds to the bet's wallet. Value: {1}. Details: {2} ", bet.Id, amount.AsJson(), result.RawRpcResponse);
+                    Serilog.Log.Error("Failed to transfer funds to the bet's wallet. Value: {1}. Details: {2} ", bet.Id, amount.AsJson());
                     return false;
                 }
 
@@ -129,6 +108,61 @@ namespace Monkify.Infrastructure.Services.Solana
                 Serilog.Log.Error(ex, "Failed to reward the bet {0}. Value: {1}", bet.Id, amount.AsJson().ToString());
                 return false;
             }
+        }
+
+        public async Task<bool> RefundTokens(string wallet, BetTransactionAmountResult amount)
+        {
+            if (amount.ValueInTokens == 0)
+            {
+                Serilog.Log.Warning("An attempt to refund a transaction with 0 tokens has been made. wallet, ErrorMessage: {1}", wallet, amount.ErrorMessage);
+                return true;
+            }
+
+            try
+            {
+                var result = await TransferTokens(wallet, amount);
+
+                if (!result.WasSuccessful || string.IsNullOrWhiteSpace(result.Result))
+                {
+                    Serilog.Log.Error("Failed to refund wallet {0}. Value: {1}. Details: {2} ", wallet, amount.AsJson(), result.RawRpcResponse);
+                    return false;
+                }
+
+                await _context.Refunds.AddAsync(new RefundLog(wallet, amount.Value, result.Result));
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "Failed to refund the wallet {0}. Value: {1}", wallet, amount.AsJson().ToString());
+                return false;
+            }
+        }
+
+        public async Task<RequestResult<string>> TransferTokens(string wallet, BetTransactionAmountResult amount)
+        {
+            var latestBlockhash = await GetLatestBlockhashForTokenTransfer(Commitment.Finalized);
+
+            if (string.IsNullOrWhiteSpace(latestBlockhash))
+                return null;
+
+            var tokenAccount = await _rpcClient.GetTokenAccountsByOwnerAsync(wallet, _settings.Token.MintAddress);
+
+            if (!tokenAccount.WasSuccessful || tokenAccount.Result.Value == null || !tokenAccount.Result.Value.Any())
+            {
+                Serilog.Log.Error("Failed to transfer funds to wallet {0} due to it not having a token account for the token {1}. Value: {2}. Details: {3}", wallet, _settings.Token.MintAddress, amount.AsJson(), tokenAccount.RawRpcResponse);
+                return null;
+            }
+
+            var transferInstruction = TokenProgram.Transfer(new PublicKey(_settings.Token.SenderAccount), new PublicKey(tokenAccount.Result.Value.FirstOrDefault().PublicKey), amount.ValueInTokens, _ownerAccount.PublicKey);
+
+            var transaction = new TransactionBuilder()
+                    .SetRecentBlockHash(latestBlockhash)
+                    .SetFeePayer(_ownerAccount)
+                    .AddInstruction(transferInstruction)
+                    .Build(new List<Account> { _ownerAccount });
+
+            return await _rpcClient.SendTransactionAsync(transaction);
         }
 
         public async Task<ValidationResult> ValidateBetPayment(Bet bet)

@@ -94,8 +94,10 @@ namespace Monkify.Tests.Handlers
             {
                 var request = new RegisterBetRequest(Guid.NewGuid(), requestBody);
                 var handler = new RegisterBetHandler(context, Messaging, _hubContextMock.Object, _settings, _solanaServiceMock.Object);
+                _solanaServiceMock.Setup(x => x.ValidateBetPayment(It.IsAny<Bet>())).Returns(Task.FromResult(new ValidationResult()));
 
-                await ShouldReturnValidationFailure(handler.HandleRequest(request, CancellationToken), ErrorMessages.SessionNotValidForBets);
+                string expectedMessage = ErrorMessages.SessionNotValidForBets + " " + ErrorMessages.RefundWarning;
+                await ShouldReturnValidationFailure(handler.HandleRequest(request, CancellationToken), expectedMessage);
             }
         }
 
@@ -122,7 +124,8 @@ namespace Monkify.Tests.Handlers
                 var request = new RegisterBetRequest(session.Id, requestBody);
                 var handler = new RegisterBetHandler(context, Messaging, _hubContextMock.Object, _settings, _solanaServiceMock.Object);
 
-                await ShouldReturnValidationFailure(handler.HandleRequest(request, CancellationToken), ErrorMessages.SessionNotValidForBets);
+                string expectedMessages = ErrorMessages.SessionNotValidForBets + " " + ErrorMessages.RefundWarning;
+                await ShouldReturnValidationFailure(handler.HandleRequest(request, CancellationToken), expectedMessages);
             }
         }
 
@@ -148,8 +151,9 @@ namespace Monkify.Tests.Handlers
 
                 var request = new RegisterBetRequest(session.Id, requestBody);
                 var handler = new RegisterBetHandler(context, Messaging, _hubContextMock.Object, _settings, _solanaServiceMock.Object);
+                string expectedMessage = BetValidationResult.UnacceptedDuplicateCharacters.StringValueOf() + " " + ErrorMessages.RefundWarning;
 
-                await ShouldReturnValidationFailure(handler.HandleRequest(request, CancellationToken), BetValidationResult.UnacceptedDuplicateCharacters.StringValueOf());
+                await ShouldReturnValidationFailure(handler.HandleRequest(request, CancellationToken), expectedMessage);
             }
         }
 

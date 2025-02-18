@@ -47,17 +47,6 @@ namespace Monkify.Infrastructure.Background.Events
 
             var sessionHasEnoughPlayers = await WaitForBets(cancellationToken);
 
-            if (!sessionHasEnoughPlayers)
-            {
-                await _sessionService.UpdateSessionStatus(_session, NotEnoughPlayersToStart);
-
-                if (_session.Bets.Any())
-                    await _sessionService.UpdateBetStatus(_session.Bets, BetStatus.NeedsRefunding);
-
-                await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
-                return;
-            }            
-
             _monkey = new MonkifyTyper(_session);
 
             await _sessionService.UpdateSessionStatus(_session, InProgress);
@@ -72,13 +61,11 @@ namespace Monkify.Infrastructure.Background.Events
         {
             bool sessionHasEnoughPlayers = false;
             bool minimumTimeElapsed = false;
-            bool maximumTimeElapsed = false;
 
-            while ((!minimumTimeElapsed || !sessionHasEnoughPlayers) && !maximumTimeElapsed)
+            while ((!minimumTimeElapsed || !sessionHasEnoughPlayers))
             {
                 var elapsedTimeSinceCreation = (DateTime.UtcNow - _session.CreatedDate).TotalSeconds;
                 minimumTimeElapsed = elapsedTimeSinceCreation > _sessionSettings.MinimumWaitPeriodForBets;
-                maximumTimeElapsed = elapsedTimeSinceCreation > _sessionSettings.MaximumWaitPeriodForBets;
 
                 if (!sessionHasEnoughPlayers)
                 {

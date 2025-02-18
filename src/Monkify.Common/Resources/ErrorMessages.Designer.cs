@@ -160,6 +160,15 @@ namespace Monkify.Common.Resources {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your bet should be refunded soon..
+        /// </summary>
+        public static string RefundWarning {
+            get {
+                return ResourceManager.GetString("RefundWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a The requested session was not found or is not receiving bets at the current moment..
         /// </summary>
         public static string SessionNotValidForBets {

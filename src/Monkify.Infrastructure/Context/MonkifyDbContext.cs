@@ -17,6 +17,7 @@ namespace Monkify.Infrastructure.Context
         public DbSet<Bet> SessionBets { get; set; }
         public DbSet<BetStatusLog> BetStatusLogs { get; set; }
         public DbSet<TransactionLog> TransactionLogs { get; set; }
+        public DbSet<RefundLog> Refunds { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -82,6 +83,14 @@ namespace Monkify.Infrastructure.Context
             modelBuilder.Entity<TransactionLog>(builder =>
             {
                 builder.HasKey(x => x.Id);
+                builder.Property(x => x.Amount).HasPrecision(18, 9).IsRequired();
+                builder.Property(x => x.Signature).IsRequired().HasMaxLength(100);
+            });
+
+            modelBuilder.Entity<RefundLog>(builder =>
+            {
+                builder.HasKey(x => x.Id);
+                builder.Property(x => x.Wallet).IsRequired().HasMaxLength(50);
                 builder.Property(x => x.Amount).HasPrecision(18, 9).IsRequired();
                 builder.Property(x => x.Signature).IsRequired().HasMaxLength(100);
             });
