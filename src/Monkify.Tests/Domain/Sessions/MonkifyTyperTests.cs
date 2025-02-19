@@ -173,7 +173,7 @@ namespace Monkify.Tests.Domain.Sessions
 
             var watch = new Stopwatch();
             var session = new Session();
-            session.Parameters = new SessionParameters() { AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { AllowedCharacters = SessionCharacterType.Letters, PlayersDefineCharacters = true };
             session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[0] });
             session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[1] });
 
@@ -205,7 +205,7 @@ namespace Monkify.Tests.Domain.Sessions
 
             var watch = new Stopwatch();
             var session = new Session();
-            session.Parameters = new SessionParameters() { AllowedCharacters = SessionCharacterType.Number };
+            session.Parameters = new SessionParameters() { AllowedCharacters = SessionCharacterType.Number, PlayersDefineCharacters = true };
             session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[0] });
             session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = choices[1] });
 

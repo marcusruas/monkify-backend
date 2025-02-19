@@ -12,6 +12,7 @@ namespace Monkify.Domain.Sessions.Entities
     {
         public SessionCharacterType AllowedCharacters { get; set; }
         public string Name { get; set; }
+        public string Description { get; set; }
         public decimal RequiredAmount { get; set; }
         public int MinimumNumberOfPlayers { get; set; }
         public int? ChoiceRequiredLength { get; set; }

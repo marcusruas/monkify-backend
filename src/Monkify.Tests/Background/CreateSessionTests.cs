@@ -61,6 +61,7 @@ namespace Monkify.Tests.Background
             var parameters = new SessionParameters()
             {
                 Name = Faker.Random.Word(),
+                Description = Faker.Random.Words(6),
                 AcceptDuplicatedCharacters = true,
                 ChoiceRequiredLength = 4,
                 RequiredAmount = 2,

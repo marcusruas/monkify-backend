@@ -228,6 +228,11 @@ namespace Monkify.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<int>("MinimumNumberOfPlayers")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")

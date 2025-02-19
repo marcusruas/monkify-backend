@@ -34,6 +34,7 @@ namespace Monkify.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AllowedCharacters = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     RequiredAmount = table.Column<decimal>(type: "decimal(18,9)", precision: 18, scale: 9, nullable: false),
                     MinimumNumberOfPlayers = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
                     ChoiceRequiredLength = table.Column<int>(type: "int", nullable: true, defaultValue: 1),

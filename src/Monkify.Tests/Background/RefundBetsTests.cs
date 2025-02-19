@@ -62,7 +62,7 @@ namespace Monkify.Tests.Background
 
             var session = new Session();
             session.Status = SessionStatus.Ended;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             session.Bets = new List<Bet>()
             {
                 new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), Faker.Random.String2(4), 2) { Status = BetStatus.NeedsRefunding },
@@ -97,7 +97,7 @@ namespace Monkify.Tests.Background
 
             var session = new Session();
             session.Status = SessionStatus.Ended;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             session.Bets = new List<Bet>()
             {
                 new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), Faker.Random.String2(4), 2) { Status = BetStatus.NeedsRefunding },
@@ -131,7 +131,7 @@ namespace Monkify.Tests.Background
 
             var session = new Session();
             session.Status = SessionStatus.Ended;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             session.Bets = new List<Bet>()
             {
                 new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), Faker.Random.String2(4), 2),
@@ -166,7 +166,7 @@ namespace Monkify.Tests.Background
 
             var session = new Session();
             session.Status = SessionStatus.Ended;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             session.Bets = new List<Bet>()
             {
                 new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), Faker.Random.String2(4), 2) { Status = BetStatus.NeedsRefunding },
@@ -201,7 +201,7 @@ namespace Monkify.Tests.Background
 
             var session = new Session();
             session.Status = SessionStatus.Ended;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             session.Bets = new List<Bet>()
             {
                 new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), Faker.Random.String2(4), 2) { Status = BetStatus.NeedsRefunding },

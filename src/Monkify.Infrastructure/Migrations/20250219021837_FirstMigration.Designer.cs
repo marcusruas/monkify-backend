@@ -12,7 +12,7 @@ using Monkify.Infrastructure.Context;
 namespace Monkify.Infrastructure.Migrations
 {
     [DbContext(typeof(MonkifyDbContext))]
-    [Migration("20250218025738_FirstMigration")]
+    [Migration("20250219021837_FirstMigration")]
     partial class FirstMigration
     {
         /// <inheritdoc />
@@ -230,6 +230,11 @@ namespace Monkify.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("MinimumNumberOfPlayers")
                         .ValueGeneratedOnAdd()

@@ -13,6 +13,7 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
         public Guid SessionTypeId { get; set; } = parameters.Id;
         public SessionCharacterType SessionCharacterType { get; set; } = parameters.AllowedCharacters;
         public string Name { get; set; } = parameters.Name;
+        public string Description { get; set; } = parameters.Description;
         public decimal RequiredAmount { get; set; } = parameters.RequiredAmount;
         public int MinimumNumberOfPlayers { get; set; } = parameters.MinimumNumberOfPlayers;
         public int? ChoiceRequiredLength { get; set; } = parameters.ChoiceRequiredLength;

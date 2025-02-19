@@ -50,7 +50,7 @@ namespace Monkify.Tests.Services
         {
             var session = new Session();
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
 
             using (var context = new MonkifyDbContext(ContextOptions))
             {
@@ -73,7 +73,7 @@ namespace Monkify.Tests.Services
         {
             var session = new Session();
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
 
             using (var context = new MonkifyDbContext(ContextOptions))
             {
@@ -97,7 +97,7 @@ namespace Monkify.Tests.Services
         {
             var session = new Session();
             session.Status = SessionStatus.InProgress;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             session.Bets = new List<Bet>()
             {
                 new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
@@ -136,7 +136,7 @@ namespace Monkify.Tests.Services
         {
             var session = new Session();
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             session.Bets = new List<Bet>()
             {
                 new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
@@ -169,7 +169,7 @@ namespace Monkify.Tests.Services
         {
             var session = new Session();
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
 
             using (var context = new MonkifyDbContext(ContextOptions))
             {
@@ -187,7 +187,7 @@ namespace Monkify.Tests.Services
         {
             var session = new Session();
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             session.Bets = new List<Bet>()
             {
                 new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
@@ -242,7 +242,7 @@ namespace Monkify.Tests.Services
         {
             var session = new Session();
             session.Status = SessionStatus.WaitingBets;
-            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
+            session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             session.Bets = new List<Bet>()
                 {
                     new (session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(44), "love", 2),
