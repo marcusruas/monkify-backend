@@ -32,6 +32,10 @@ namespace Monkify.Tests.Handlers
             {
                 SessionBetsEndpoint = "endpoint/{0}",
             };
+            _settings.Token = new TokenSettings()
+            {
+                Decimals = 6
+            };
 
             _hubContextMock = new Mock<IHubContext<RecentBetsHub>>();
             var mockClients = new Mock<IHubClients>();

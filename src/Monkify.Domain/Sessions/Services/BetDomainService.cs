@@ -83,6 +83,14 @@ namespace Monkify.Domain.Sessions.Services
             if (bet.Status != BetStatus.NeedsRefunding)
                 return new BetTransactionAmountResult(ErrorMessages.BetCannotReceiveRefund);
 
+            return CalculateRemainingBetPayout(settings, bet);
+        }
+
+        public static BetTransactionAmountResult CalculateRefundForInvalidBet(TokenSettings settings, Bet bet)
+            => CalculateRemainingBetPayout(settings, bet);
+
+        private static BetTransactionAmountResult CalculateRemainingBetPayout(TokenSettings settings, Bet bet)
+        {
             var credits = CalculateCreditsForBet(bet);
 
             var refundValue = Math.Round(bet.Amount, settings.Decimals, MidpointRounding.ToZero);

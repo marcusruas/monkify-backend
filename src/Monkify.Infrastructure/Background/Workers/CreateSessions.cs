@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Monkify.Common.Extensions;
@@ -29,16 +30,9 @@ namespace Monkify.Infrastructure.Background.Workers
                 var context = upperScope.GetService<MonkifyDbContext>();
 
                 var activeParameters = await context.SessionParameters
-                    .Include(x => x.Sessions.Where(y => Session.SessionInProgressStatus.Contains(y.Status)))
                     .Include(x => x.PresetChoices)
-                    .Where(x => x.Active &&  !x.Sessions.Any(y => Session.SessionInProgressStatus.Contains(y.Status)))
-                    .ToListAsync();
-
-                if (!activeParameters.Any())
-                {
-                    await Task.Delay(settings.Workers.CreateSessionsInterval * 1000, cancellationToken);
-                    return;
-                }
+                    .Where(x => x.Active && !x.Sessions.Any(y => Session.SessionInProgressStatus.Contains(y.Status)))
+                    .ToListAsync(cancellationToken);
 
                 foreach (var parameters in activeParameters)
                 {
@@ -65,10 +59,10 @@ namespace Monkify.Infrastructure.Background.Workers
 
             session.Parameters = parameters;
 
-            var sessionCreatedEvent = new SessionCreated(session.Id, parameters);
+            var sessionCreatedEvent = new SessionCreatedEvent(session.Id, parameters);
             await openSessionsHub.Clients.All.SendAsync(settings.Sessions.ActiveSessionsEndpoint, sessionCreatedEvent.AsJson(), cancellationToken);
 
-            await mediator.Publish(new SessionForProcessing(session), cancellationToken);
+            await mediator.Publish(new SessionStartEvent(session), cancellationToken);
         }
     }
 }

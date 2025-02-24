@@ -73,6 +73,8 @@ namespace Monkify.Infrastructure.Context
                 builder.Property(x => x.Status).IsRequired().HasDefaultValue(BetStatus.Made).HasSentinel(BetStatus.Made);
                 builder.HasMany(x => x.TransactionLogs).WithOne(x => x.Bet).HasForeignKey(x => x.BetId);
                 builder.HasMany(x => x.StatusLogs).WithOne(x => x.Bet).HasForeignKey(x => x.BetId);
+
+                builder.HasIndex(x => x.SessionId);
             });
 
             modelBuilder.Entity<BetStatusLog>(builder =>

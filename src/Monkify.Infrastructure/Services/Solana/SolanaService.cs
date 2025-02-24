@@ -105,7 +105,7 @@ namespace Monkify.Infrastructure.Services.Solana
             }
             catch (Exception ex)
             {
-                Serilog.Log.Error(ex, "Failed to reward the bet {0}. Value: {1}", bet.Id, amount.AsJson().ToString());
+                Serilog.Log.Error(ex, "Failed to transfer tokens for bet {0}. Value: {1}", bet.Id, amount.AsJson().ToString());
                 return false;
             }
         }
@@ -139,7 +139,7 @@ namespace Monkify.Infrastructure.Services.Solana
             }
         }
 
-        public async Task<RequestResult<string>> TransferTokens(string wallet, BetTransactionAmountResult amount)
+        private async Task<RequestResult<string>> TransferTokens(string wallet, BetTransactionAmountResult amount)
         {
             var latestBlockhash = await GetLatestBlockhashForTokenTransfer(Commitment.Finalized);
 

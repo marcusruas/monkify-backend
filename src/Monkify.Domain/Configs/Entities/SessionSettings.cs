@@ -12,7 +12,6 @@ namespace Monkify.Domain.Configs.Entities
     {
         public string SupportEmail { get; set; }
         public int MinimumWaitPeriodForBets { get; set; }
-        public int MaximumWaitPeriodForBets { get; set; }
         public int TimeUntilSessionStarts { get; set; }
         public int TerminalBatchLimit { get; set; }
         public int DelayBetweenTerminalBatches { get; set; }

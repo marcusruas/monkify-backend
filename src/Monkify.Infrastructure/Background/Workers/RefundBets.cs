@@ -29,7 +29,7 @@ namespace Monkify.Infrastructure.Background.Workers
             var betsToBeRefunded = await context.SessionBets
                 .Include(x => x.TransactionLogs)
                 .Where(x => x.Status == BetStatus.NeedsRefunding)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             if (!betsToBeRefunded.Any())
             {

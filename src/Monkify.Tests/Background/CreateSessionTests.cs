@@ -82,7 +82,7 @@ namespace Monkify.Tests.Background
                 await worker.ExecuteProcess(CancellationToken);
 
                 context.Sessions.Any(x => x.ParametersId == parameters.Id).ShouldBeTrue();
-                _mediatorMock.Verify(x => x.Publish(It.IsAny<SessionForProcessing>(), It.IsAny<CancellationToken>()));
+                _mediatorMock.Verify(x => x.Publish(It.IsAny<SessionStartEvent>(), It.IsAny<CancellationToken>()));
             }
         }
 
