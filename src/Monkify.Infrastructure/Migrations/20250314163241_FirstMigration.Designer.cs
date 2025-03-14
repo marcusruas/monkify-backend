@@ -12,7 +12,7 @@ using Monkify.Infrastructure.Context;
 namespace Monkify.Infrastructure.Migrations
 {
     [DbContext(typeof(MonkifyDbContext))]
-    [Migration("20250219021837_FirstMigration")]
+    [Migration("20250314163241_FirstMigration")]
     partial class FirstMigration
     {
         /// <inheritdoc />
@@ -245,9 +245,6 @@ namespace Monkify.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("PlayersDefineCharacters")
-                        .HasColumnType("bit");
 
                     b.Property<decimal>("RequiredAmount")
                         .HasPrecision(18, 9)

@@ -26,18 +26,16 @@ namespace Monkify.Infrastructure.Background.Events
 {
     public class SessionStart : BaseNotificationHandler<SessionStartEvent>
     {
-        public SessionStart(MonkifyDbContext context, IMediator mediator, IHubContext<ActiveSessionsHub> hub, ISessionService sessionService, GeneralSettings settings)
+        public SessionStart(MonkifyDbContext context, IMediator mediator, ISessionService sessionService, GeneralSettings settings)
         {
             _context = context;
             _mediator = mediator;
-            _activeSessions = hub;
             _sessionService = sessionService;
             _sessionSettings = settings.Sessions;
         }
 
         private readonly MonkifyDbContext _context;
         private readonly IMediator _mediator;
-        private readonly IHubContext<ActiveSessionsHub> _activeSessions;
         private readonly ISessionService _sessionService;
         private readonly SessionSettings _sessionSettings;
 
@@ -47,12 +45,13 @@ namespace Monkify.Infrastructure.Background.Events
         public override async Task HandleRequest(SessionStartEvent notification, CancellationToken cancellationToken)
         {
             _session = notification.Session;
+
             await WaitForMinimumAmountOfPlayers(cancellationToken);
+            await PrepareSessionForStart(cancellationToken);
 
-            await StartSession(cancellationToken);
-            await SendTerminalCharacters(cancellationToken);
+            _monkey = await _sessionService.RunSession(_session, cancellationToken);
+
             await _sessionService.UpdateSessionStatus(_session, Ended, _monkey);
-
             await DeclareWinners();
 
             await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
@@ -78,7 +77,7 @@ namespace Monkify.Infrastructure.Background.Events
             }
         }
 
-        private async Task StartSession(CancellationToken cancellationToken)
+        private async Task PrepareSessionForStart(CancellationToken cancellationToken)
         {
             await _sessionService.UpdateSessionStatus(_session, SessionStarting);
 
@@ -90,39 +89,6 @@ namespace Monkify.Infrastructure.Background.Events
             await _sessionService.UpdateSessionStatus(_session, InProgress);
 
             _session.Bets = await _context.SessionBets.Where(x => x.SessionId == _session.Id).ToListAsync(cancellationToken);
-            _monkey = new MonkifyTyper(_session);
-        }
-
-        private async Task SendTerminalCharacters(CancellationToken cancellationToken)
-        {
-            string terminalEndpoint = string.Format(_sessionSettings.SessionTerminalEndpoint, _session.Id.ToString());
-            
-            char[] batch = new char[_sessionSettings.TerminalBatchLimit];
-            int batchIndex = 0;
-
-            while (!_monkey.HasWinners && !cancellationToken.IsCancellationRequested)
-            {
-                batch[batchIndex] = _monkey.GenerateNextCharacter();
-                if (batchIndex >= _sessionSettings.TerminalBatchLimit - 1)
-                {
-                    await SendBatch(terminalEndpoint, batch);
-                    batchIndex = 0;
-                    continue;
-                }
-                batchIndex++;
-            }
-
-            if (batchIndex > 0)
-            {
-                var remainingBatch = batch.Take(batchIndex);
-                await SendBatch(terminalEndpoint, remainingBatch);
-            }
-        }
-
-        private async Task SendBatch(string endpoint, IEnumerable<char> batch)
-        {
-            await Task.Delay(_sessionSettings.DelayBetweenTerminalBatches);
-            await _activeSessions.Clients.All.SendAsync(endpoint, batch);
         }
 
         private async Task DeclareWinners()

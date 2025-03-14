@@ -27,6 +27,12 @@ namespace Monkify.Domain.Sessions.Entities
             Status = WaitingBets;
         }
 
+        public Session(SessionParameters parameters, ICollection<Bet> bets)
+        {
+            Parameters = parameters;
+            Bets = bets;
+        }
+
         public SessionParameters Parameters { get; set; }
         public Guid ParametersId { get; set; }
         public SessionStatus Status { get; set; }

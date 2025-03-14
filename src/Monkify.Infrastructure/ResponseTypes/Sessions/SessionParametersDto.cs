@@ -17,7 +17,6 @@ namespace Monkify.Infrastructure.ResponseTypes.Sessions
         public decimal RequiredAmount { get; set; } = parameters.RequiredAmount;
         public int MinimumNumberOfPlayers { get; set; } = parameters.MinimumNumberOfPlayers;
         public int? ChoiceRequiredLength { get; set; } = parameters.ChoiceRequiredLength;
-        public bool PlayersDefineCharacters { get; set; } = parameters.PlayersDefineCharacters;
         public bool AcceptDuplicatedCharacters { get; set; } = parameters.AcceptDuplicatedCharacters;
         public IEnumerable<string>? PresetChoices { get; set; } = !parameters.PresetChoices.IsNullOrEmpty() ? parameters.PresetChoices.Select(x => x.Choice) : new List<string>();
     }

@@ -38,7 +38,6 @@ namespace Monkify.Infrastructure.Migrations
                     RequiredAmount = table.Column<decimal>(type: "decimal(18,9)", precision: 18, scale: 9, nullable: false),
                     MinimumNumberOfPlayers = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
                     ChoiceRequiredLength = table.Column<int>(type: "int", nullable: true, defaultValue: 1),
-                    PlayersDefineCharacters = table.Column<bool>(type: "bit", nullable: false),
                     AcceptDuplicatedCharacters = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     Active = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),

@@ -13,6 +13,14 @@ namespace Monkify.Domain.Sessions.Entities
             Amount = amount;
         }
 
+        public Bet(BetStatus status, decimal amount, string choice, string seed)
+        {
+            Status = status;
+            Amount = amount;
+            Choice = choice;
+            Seed = seed;
+        }
+
         public Bet(Guid sessionId, string seed, string paymentSignature, string wallet, string choice, decimal amount)
         {
             SessionId = sessionId;

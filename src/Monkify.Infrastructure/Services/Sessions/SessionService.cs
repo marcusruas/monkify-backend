@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -13,6 +14,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,6 +32,34 @@ namespace Monkify.Infrastructure.Services.Sessions
         private readonly GeneralSettings _settings;
         private readonly MonkifyDbContext _context;
         private readonly IHubContext<ActiveSessionsHub> _activeSessionsHub;
+
+        public async Task<MonkifyTyper> RunSession(Session session, CancellationToken cancellationToken)
+        {
+            var monkey = new MonkifyTyper(session);
+            string terminalEndpoint = string.Format(_settings.Sessions.SessionTerminalEndpoint, monkey.SessionId.ToString());
+
+            char[] batch = new char[_settings.Sessions.TerminalBatchLimit];
+            int batchIndex = 0;
+
+            while (!monkey.HasWinners && !cancellationToken.IsCancellationRequested)
+            {
+                batch[batchIndex++] = monkey.GenerateNextCharacter();
+                if (batchIndex >= _settings.Sessions.TerminalBatchLimit)
+                {
+                    await _activeSessionsHub.Clients.All.SendAsync(terminalEndpoint, batch, cancellationToken);
+                    batchIndex = 0;
+                    continue;
+                }
+            }
+
+            if (batchIndex > 0)
+            {
+                var remainingBatch = batch.Take(batchIndex);
+                await _activeSessionsHub.Clients.All.SendAsync(terminalEndpoint, remainingBatch, cancellationToken);
+            }
+
+            return monkey;
+        }
 
         public async Task UpdateSessionStatus(Session session, SessionStatus status, MonkifyTyper? monkey = null)
         {

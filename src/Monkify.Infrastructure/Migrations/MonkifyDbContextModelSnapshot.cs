@@ -243,9 +243,6 @@ namespace Monkify.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<bool>("PlayersDefineCharacters")
-                        .HasColumnType("bit");
-
                     b.Property<decimal>("RequiredAmount")
                         .HasPrecision(18, 9)
                         .HasColumnType("decimal(18,9)");

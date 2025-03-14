@@ -1,4 +1,5 @@
 ﻿using Bogus.DataSets;
+using MediatR;
 using Monkify.Common.Extensions;
 using Monkify.Common.Resources;
 using Monkify.Domain.Sessions.Entities;
@@ -19,11 +20,13 @@ namespace Monkify.Domain.Sessions.Services
             if (session.Bets.IsNullOrEmpty())
                 throw new ArgumentException(ErrorMessages.TyperStartedWithoutBets);
 
+            SessionId = session.Id;
             GenerateSessionSeed(session);
             SetBets(session);
-            SetCharactersOnTyper(session);            
+            SetCharactersOnTyper(session);
         }
 
+        public Guid SessionId { get; }
         public bool HasWinners { get; private set; }
         public int NumberOfWinners { get; private set; }
         public int SessionSeed { get; private set; }
@@ -36,13 +39,54 @@ namespace Monkify.Domain.Sessions.Services
         private Random _random { get; set; }
         private Queue<char> TypedCharacters { get; set; }
 
+        public char GenerateNextCharacter()
+        {
+            var characterIndex = _random.Next(CharactersOnTyper.Length);
+            var character = CharactersOnTyper[characterIndex];
+
+            if (TypedCharacters.Count == QueueLength)
+                TypedCharacters.Dequeue();
+
+            TypedCharacters.Enqueue(character);
+
+            CheckForWinners();
+
+            return character;
+        }
+
+        private void CheckForWinners()
+        {
+            string choice = string.Concat(TypedCharacters);
+
+            if (Bets.TryGetValue(choice, out int amountOfPlayers))
+            {
+                HasWinners = amountOfPlayers != 0;
+                NumberOfWinners += amountOfPlayers;
+                FirstChoiceTyped = choice;
+            }
+        }
+
+        private void GenerateSessionSeed(Session session)
+        {
+            var bytes = new byte[32];
+            RandomNumberGenerator.Fill(bytes);
+            var concatenatedSeed = new StringBuilder(Convert.ToBase64String(bytes));
+
+            foreach(var bet in session.Bets)
+                concatenatedSeed.Append(bet.Seed);
+
+            var seedInBytes = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(concatenatedSeed.ToString()));
+            SessionSeed = BitConverter.ToInt32(seedInBytes, 0);
+            _random = new Random(SessionSeed);
+        }
+
         private void SetBets(Session session)
         {
             Bets = [];
 
             if (!session.Parameters.PresetChoices.IsNullOrEmpty())
             {
-                foreach(var presetChoice in session.Parameters.PresetChoices)
+                foreach (var presetChoice in session.Parameters.PresetChoices)
                 {
                     if (presetChoice.Choice.Length > QueueLength)
                         QueueLength = presetChoice.Choice.Length;
@@ -67,7 +111,7 @@ namespace Monkify.Domain.Sessions.Services
 
         private void SetCharactersOnTyper(Session session)
         {
-            if (session.Parameters.PlayersDefineCharacters)
+            if (!session.Parameters.PresetChoices.IsNullOrEmpty() || (session.Parameters.AllowedCharacters != SessionCharacterType.Number && session.Parameters.ChoiceRequiredLength > 5))
                 SetCharactersOnTyperByBets(session);
             else
                 CharactersOnTyper = [.. session.Parameters.AllowedCharacters.StringValueOf()];
@@ -84,47 +128,6 @@ namespace Monkify.Domain.Sessions.Services
             }
 
             CharactersOnTyper = [.. result.Order()];
-        }
-
-        public char GenerateNextCharacter()
-        {
-            var characterIndex = _random.Next(CharactersOnTyper.Length);
-            var character = CharactersOnTyper[characterIndex];
-
-            if (TypedCharacters.Count == QueueLength)
-                TypedCharacters.Dequeue();
-
-            TypedCharacters.Enqueue(character);
-
-            CheckForWinners();
-
-            return character;
-        }
-
-        private void CheckForWinners()
-        {
-            string choice = new ([.. TypedCharacters]);
-
-            if (Bets.TryGetValue(choice, out int amountOfPlayers))
-            {
-                HasWinners = amountOfPlayers != 0;
-                NumberOfWinners += amountOfPlayers;
-                FirstChoiceTyped = choice;
-            }
-        }
-
-        private void GenerateSessionSeed(Session session)
-        {
-            var bytes = new byte[32];
-            RandomNumberGenerator.Fill(bytes);
-            var concatenatedSeed = new StringBuilder(Convert.ToBase64String(bytes));
-
-            foreach(var bet in session.Bets)
-                concatenatedSeed.Append(bet.Seed);
-
-            var seedInBytes = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(concatenatedSeed.ToString()));
-            SessionSeed = BitConverter.ToInt32(seedInBytes, 0);
-            _random = new Random(SessionSeed);
         }
     }
 }
