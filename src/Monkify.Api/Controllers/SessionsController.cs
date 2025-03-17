@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Monkify.Common.Messaging;
 using Monkify.Infrastructure.Handlers.Sessions.GetActiveParameters;
 using Monkify.Infrastructure.Handlers.Sessions.GetActiveSessionForParameter;
-using Monkify.Infrastructure.Handlers.Sessions.GetAllBets;
 using Monkify.Infrastructure.Handlers.Sessions.RegisterBet;
 
 namespace Monkify.Api.Controllers
@@ -20,10 +19,6 @@ namespace Monkify.Api.Controllers
         [HttpGet("{sessionTypeId}")]
         public async Task<IActionResult> GetActiveSessionForParameter(Guid sessionTypeId)
             => await ProcessRequest(new GetActiveSessionForParameterRequest(sessionTypeId));
-
-        [HttpGet("bets")]
-        public async Task<IActionResult> GetAllBets([FromQuery] FilterBetsRequest request)
-            => await ProcessRequest(request);
 
         [HttpPost("{id}/bets")]
         public async Task<IActionResult> RegisterBet(Guid id, [FromBody] RegisterBetRequestBody body)
