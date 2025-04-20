@@ -182,29 +182,7 @@ void CreateDefaultSessionParameters(WebApplication app)
                 ChoiceRequiredLength = 6,
                 AcceptDuplicatedCharacters = true,
                 Active = true,
-            },
-            new SessionParameters()
-            {
-                Name = "Four Char Race",
-                Description = "Cansado de fazer description fds",
-                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.NumbersAndLetters,
-                RequiredAmount = 1,
-                MinimumNumberOfPlayers = 2,
-                ChoiceRequiredLength = 4,
-                AcceptDuplicatedCharacters = true,
-                Active = true,
-            },
-            new SessionParameters()
-            {
-                Name = "Five Char Race",
-                Description = "Cansado de fazer description fds",
-                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.NumbersAndLetters,
-                RequiredAmount = 1,
-                MinimumNumberOfPlayers = 2,
-                ChoiceRequiredLength = 5,
-                AcceptDuplicatedCharacters = false,
-                Active = true,
-            },
+            }
         };
 
         context.AddRangeAsync(parameters);

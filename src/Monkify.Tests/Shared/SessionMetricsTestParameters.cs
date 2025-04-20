@@ -16,5 +16,6 @@ namespace Monkify.Tests.Shared
 
         public int WordLength { get; set; }
         public string Charset { get; set; } = "abcdefghijklmnopqrstuvwxyz";
+        public List<string> PresetChoices { get; set; } = new();
     }
 }

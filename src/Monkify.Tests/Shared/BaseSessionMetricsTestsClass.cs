@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Bogus;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Services;
@@ -20,8 +21,9 @@ namespace Monkify.Tests.Shared
             Console = console;
         }
 
-        protected const int NUMBER_OF_PARALLEL_SESSIONS = 8;
-        protected const int MAX_DURATION_FOR_SESSION = 10;
+        protected const int NUMBER_OF_PARALLEL_SESSIONS = 10;
+
+        protected const int MAX_DURATION_FOR_SESSION = 3;
 
         protected void ValidateSessionRuns(IEnumerable<SessionMetricsResult> sessionResults)
         {
@@ -40,20 +42,24 @@ namespace Monkify.Tests.Shared
 
             await Parallel.ForEachAsync(
                 Enumerable.Range(0, NUMBER_OF_PARALLEL_SESSIONS),
-                new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, // Define o grau de paralelismo
+                new ParallelOptions { MaxDegreeOfParallelism = 4 },
                 async (_, cancellationToken) =>
                 {
                     result.Add(await RunSession(parameters));
-                });
+                }
+            );
 
             return result;
         }
 
-        protected Task<SessionMetricsResult> RunSession(SessionMetricsTestParameters parameters)
+        protected async Task<SessionMetricsResult> RunSession(SessionMetricsTestParameters parameters)
         {
+            await Task.Yield();
+
             var sessionParameters = new SessionParameters(parameters.CharacterType, parameters.WordLength, parameters.AcceptsDuplicateCharacters);
-            var bets = CreateBetList(parameters.BetsPerGame, parameters.WordLength, parameters.Charset);
-             
+            sessionParameters.PresetChoices = parameters.PresetChoices.Select(x => new PresetChoice(x)).ToList();
+            var bets = CreateBetList(parameters.PresetChoices, parameters.BetsPerGame, parameters.WordLength, parameters.Charset, parameters.AcceptsDuplicateCharacters);
+
             int terminalBatchLimit = 100;
             int numberOfBatches = 0;
             var session = new Session(sessionParameters, [.. bets]);
@@ -71,22 +77,68 @@ namespace Monkify.Tests.Shared
                 {
                     batchIndex = 0;
                     numberOfBatches++;
-                    continue;
+                    continue; 
                 }
             }
             watch.Stop();
 
-            return Task.FromResult(new SessionMetricsResult(watch.Elapsed, numberOfBatches));
+            return new SessionMetricsResult(watch.Elapsed, numberOfBatches);
         }
 
-        private ConcurrentBag<Bet> CreateBetList(int numberOfBets, int wordLength, string charset)
+        private ConcurrentBag<Bet> CreateBetList(List<string> presetChoices, int numberOfBets, int wordLength, string charset, bool allowDuplicateCharacters)
         {
             var result = new ConcurrentBag<Bet>();
-            for (int i = 1; i <= numberOfBets; i++)
+
+            if (!presetChoices.IsNullOrEmpty())
             {
-                result.Add(new(BetStatus.Made, 10, Faker.Random.String2(wordLength, charset), Faker.Random.String2(40, "abcdefghijklmnopqrstuvwxyz0123456789 ")));
+                string seed = Faker.Random.String2(40, "abcdefghijklmnopqrstuvwxyz0123456789 ");
+
+                foreach (var choice in presetChoices)
+                {
+                    result.Add(new(BetStatus.Made, 10, choice, seed));
+                }
             }
+            else
+            {
+                for (int i = 1; i <= numberOfBets; i++)
+                {
+                    string choice = GenerateRandomString(wordLength, charset, allowDuplicateCharacters);
+                    string seed = Faker.Random.String2(40, "abcdefghijklmnopqrstuvwxyz0123456789 ");
+                    result.Add(new(BetStatus.Made, 10, choice, seed));
+                }
+            }
+
             return result;
+        }
+
+        static string GenerateRandomString(int length, string charset, bool allowDuplicates)
+        {
+            if (string.IsNullOrEmpty(charset))
+                throw new ArgumentException("Charset cannot be null or empty.");
+
+            if (!allowDuplicates && length > charset.Length)
+                throw new ArgumentException("Length cannot be greater than the charset size when duplicates are not allowed.");
+
+            Random random = new Random();
+            char[] result = new char[length];
+
+            if (allowDuplicates)
+            {
+                for (int i = 0; i < length; i++)
+                {
+                    result[i] = charset[random.Next(charset.Length)];
+                }
+            }
+            else
+            {
+                var shuffledCharset = charset.OrderBy(c => random.Next()).ToList();
+                for (int i = 0; i < length; i++)
+                {
+                    result[i] = shuffledCharset[i];
+                }
+            }
+
+            return new string(result);
         }
     }
 }

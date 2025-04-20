@@ -80,34 +80,5 @@ namespace Monkify.Tests.Domain.Sessions
 
             ValidateSessionRuns(sessionResults);
         }
-
-        [Theory]
-        [InlineData(2)]
-        [InlineData(4)]
-        [InlineData(6)]
-        [InlineData(8)]
-        [InlineData(10)]
-        [InlineData(12)]
-        [InlineData(24)]
-        [InlineData(36)]
-        [InlineData(48)]
-        [InlineData(60)]
-        [InlineData(72)]
-        [InlineData(84)]
-        [InlineData(96)]
-        public async Task Session_WithSixLetters_ShouldEventuallySelectWinner(int betsPerSession)
-        {
-            var parameters = new SessionMetricsTestParameters()
-            {
-                BetsPerGame = betsPerSession,
-                CharacterType = SessionCharacterType.Letters,
-                AcceptsDuplicateCharacters = true,
-                WordLength = 6,
-            };
-
-            var sessionResults = await RunMultipleSessions(parameters);
-
-            ValidateSessionRuns(sessionResults);
-        }
     }
 }

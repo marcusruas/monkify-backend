@@ -111,9 +111,13 @@ namespace Monkify.Domain.Sessions.Services
 
         private void SetCharactersOnTyper(Session session)
         {
-            if (!session.Parameters.PresetChoices.IsNullOrEmpty() || (session.Parameters.AllowedCharacters != SessionCharacterType.Number && session.Parameters.ChoiceRequiredLength > 5))
+            if (!session.Parameters.PresetChoices.IsNullOrEmpty())
                 SetCharactersOnTyperByBets(session);
-            else
+            else if (session.Parameters.AllowedCharacters == SessionCharacterType.Letters && session.Parameters.ChoiceRequiredLength > 5 && session.Bets.Count <= 5)
+                SetCharactersOnTyperByBets(session);
+            else if (session.Parameters.AllowedCharacters == SessionCharacterType.NumbersAndLetters && session.Parameters.ChoiceRequiredLength >= 5 && session.Bets.Count <= 5)
+                SetCharactersOnTyperByBets(session);
+            else 
                 CharactersOnTyper = [.. session.Parameters.AllowedCharacters.StringValueOf()];
         }
 
