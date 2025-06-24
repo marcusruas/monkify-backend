@@ -94,7 +94,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         {
             string sessionBetsEndpoint = string.Format(_settings.Sessions.SessionBetsEndpoint, _bet.SessionId.ToString());
 
-            var sessionJson = new BetCreatedEvent(_bet.Wallet, _bet.PaymentSignature, _bet.Amount, _bet.Choice).AsJson();
+            var sessionJson = new BetPlacedEvent(_bet.Wallet, _bet.PaymentSignature, _bet.Amount, _bet.Choice).AsJson();
             await _recentBetsHub.Clients.All.SendAsync(sessionBetsEndpoint, sessionJson);
         }
 

@@ -13,6 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
+	<PackageReference Include="Confluent.Kafka" Version="2.10.0" />
+	<PackageReference Include="MassTransit" Version="8.4.0" />
+	<PackageReference Include="MassTransit.Kafka" Version="8.4.0" />
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.17.4" />
     <PackageReference Include="MediatR" Version="12.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />

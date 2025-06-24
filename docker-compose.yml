@@ -1,25 +1,58 @@
 version: '3.8'
+
 services:
+  # ───────────────────────────── API .NET ─────────────────────────────
   api:
     build: .
     ports:
       - "6001:6001"
     environment:
-      - ASPNETCORE_HTTP_PORTS=6001
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__Monkify=Server=database;Database=Monkify;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;
+      ASPNETCORE_HTTP_PORTS: "6001"
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Monkify: "Server=database;Database=Monkify;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;"
+      Kafka__BootstrapServers: "kafka:9092"
     depends_on:
       - database
+      - kafka
     networks:
       - monkify-network
 
+  # ───────────────────────────── SQL Server ───────────────────────────
   database:
     image: mcr.microsoft.com/mssql/server:2019-latest
     environment:
-      - SA_PASSWORD=Monkify@123
-      - ACCEPT_EULA=Y
+      SA_PASSWORD: "Monkify@123"
+      ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
+    networks:
+      - monkify-network
+
+  # ───────────────────────────── Zookeeper ────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - monkify-network
+
+  # ───────────────────────────── Kafka Broker ─────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
     networks:
       - monkify-network
 

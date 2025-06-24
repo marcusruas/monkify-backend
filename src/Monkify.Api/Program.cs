@@ -20,6 +20,8 @@ using Monkify.Infrastructure.Background.Events;
 using Monkify.Infrastructure.Services.Sessions;
 using Monkify.Domain.Sessions.Entities;
 using System.Collections.ObjectModel;
+using MassTransit;
+using Monkify.Domain.Sessions.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +67,25 @@ builder.Services.AddCors(options =>
                 .AllowCredentials();
         }
     );
+});
+
+builder.Services.AddMassTransit(x =>
+{
+    x.AddRider(rider =>
+    {
+        rider.AddProducer<BetPlacedEvent>("bets");
+        rider.AddConsumer<BetPlacedConsumer>();
+
+        rider.UsingKafka((ctx, k) =>
+        {
+            k.Host(builder.Configuration.GetConnectionString("Kafka"));
+
+            k.TopicEndpoint<BetPlacedEvent>("bets", "session-aggregator", e =>
+            {
+                e.ConfigureConsumer<BetPlacedConsumer>(ctx);
+            });
+        });
+    });
 });
 
 var app = builder.Build();
