@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monkify.Tests", "Monkify.Te
 		{DC57CF9C-3995-4631-B36B-CEC30B0E8F2A} = {DC57CF9C-3995-4631-B36B-CEC30B0E8F2A}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monkify.Consumers", "Monkify.Consumers\Monkify.Consumers.csproj", "{C1A703A1-B7CD-4740-9A70-82B88585491C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,10 @@ Global
 		{E2D4F231-6B07-44D4-A41F-481E583F71C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2D4F231-6B07-44D4-A41F-481E583F71C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2D4F231-6B07-44D4-A41F-481E583F71C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1A703A1-B7CD-4740-9A70-82B88585491C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1A703A1-B7CD-4740-9A70-82B88585491C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1A703A1-B7CD-4740-9A70-82B88585491C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1A703A1-B7CD-4740-9A70-82B88585491C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

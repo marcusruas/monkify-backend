@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using Monkify.Infrastructure.ResponseTypes.Sessions;
+using Monkify.Infrastructure.Contracts.Sessions;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.GetActiveParameters
 {

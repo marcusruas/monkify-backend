@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Monkify.Domain.Sessions.Entities;
-using Monkify.Infrastructure.ResponseTypes.Sessions;
+using Monkify.Infrastructure.Contracts.Sessions;
 
 namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 {

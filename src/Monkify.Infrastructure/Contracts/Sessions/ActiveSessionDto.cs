@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Infrastructure.ResponseTypes.Sessions
+namespace Monkify.Infrastructure.Contracts.Sessions
 {
     public class ActiveSessionDto(Session session)
     {

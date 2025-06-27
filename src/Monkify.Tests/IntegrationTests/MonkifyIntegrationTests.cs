@@ -13,8 +13,6 @@ using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Background.Workers;
 using Monkify.Infrastructure.Context;
-using Monkify.Infrastructure.ResponseTypes.Sessions;
-using Monkify.Results;
 using Monkify.Tests.IntegrationTests.Shared;
 using Monkify.Tests.IntegrationTests.TestData;
 using Polly;

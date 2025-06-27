@@ -2,7 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Monkify.Common.Messaging;
 using Monkify.Infrastructure.Context;
-using Monkify.Infrastructure.ResponseTypes.Sessions;
+using Monkify.Infrastructure.Contracts.Sessions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

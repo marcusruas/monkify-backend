@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using Monkify.Infrastructure.ResponseTypes.Sessions;
+using Monkify.Infrastructure.Contracts.Sessions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

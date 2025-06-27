@@ -1,7 +1,7 @@
 ﻿using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 
-namespace Monkify.Infrastructure.ResponseTypes.Sessions
+namespace Monkify.Infrastructure.Contracts.Sessions
 {
     public class BetDto(Bet bet)
     {

@@ -11,7 +11,7 @@ using Monkify.Domain.Sessions.Services;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
-using Monkify.Infrastructure.ResponseTypes.Sessions;
+using Monkify.Infrastructure.Contracts.Sessions;
 using Monkify.Infrastructure.Services.Solana;
 using Serilog;
 
