@@ -21,7 +21,7 @@ using Shouldly;
 namespace Monkify.Tests.IntegrationTests
 {
     [Collection(nameof(MonkifyTestsCollection))]
-    public class MonkifyIntegrationTests : IAsyncLifetime
+    public class MonkifyApiIntegrationTests : IAsyncLifetime
     {
         private IContainer AppContainer { get; set; }
         private ApplicationFixture Fixture { get; set; }
@@ -30,7 +30,7 @@ namespace Monkify.Tests.IntegrationTests
 
         private readonly DbContextOptions<MonkifyDbContext> DatabaseOptions;
 
-        public MonkifyIntegrationTests(ApplicationFixture fixture)
+        public MonkifyApiIntegrationTests(ApplicationFixture fixture)
         {
             Fixture = fixture;
             DatabaseOptions = new DbContextOptionsBuilder<MonkifyDbContext>().UseSqlServer(Fixture.GetLocalSqlServerConnectionString("MONKIFY")).Options;
@@ -131,11 +131,9 @@ namespace Monkify.Tests.IntegrationTests
         #region Life cycle methods
         public async Task InitializeAsync()
         {
-            var dir = Directory.GetParent(CommonDirectoryPath.GetSolutionDirectory().DirectoryPath).FullName;
-
             var image = new ImageFromDockerfileBuilder()
-                .WithDockerfileDirectory(dir)
-                .WithDockerfile("Dockerfile")
+                .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), string.Empty)
+                .WithDockerfile("Monkify.Api/Dockerfile")
                 .Build();
 
             await image.CreateAsync();

@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "http": {
+    "api-http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
@@ -19,7 +19,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "https": {
+    "api-https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

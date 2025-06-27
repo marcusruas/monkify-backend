@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Monkify.Common.Extensions;
-using Monkify.Common.Messaging;
+using Monkify.Common.Notifications;
 using Monkify.Results;
 using System;
 using System.Net;
@@ -11,13 +11,13 @@ namespace Monkify.Api.Controllers
 {
     public abstract class BaseController : ControllerBase
     {
-        public BaseController(IMediator mediador, IMessaging messaging)
+        public BaseController(IMediator mediador, INotifications messaging)
         {
-            Messaging = messaging;
+            Notifications = messaging;
             Mediator = mediador;
         }
 
-        protected readonly IMessaging Messaging;
+        protected readonly INotifications Notifications;
         protected readonly IMediator Mediator;
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Monkify.Api.Controllers
             if ((result is null) || (result is IEnumerable<object> list && list.IsNullOrEmpty()))
                 statusCode = (int) HttpStatusCode.NotFound;
 
-            var defaultResult = new ApiResult<T>(result, Messaging.Messages);
+            var defaultResult = new ApiResult<T>(result, Notifications.Notifications);
             return StatusCode(statusCode, defaultResult);
         }
 
@@ -43,17 +43,17 @@ namespace Monkify.Api.Controllers
         /// </summary>
         protected IActionResult GenerateResultBody<T>(HttpStatusCode statusCode, T response)
         {
-            var messaging = HttpContext.RequestServices.GetService<IMessaging>();
-            var defaultResult = new ApiResult<T>(response, messaging.Messages);
+            var messaging = HttpContext.RequestServices.GetService<INotifications>();
+            var defaultResult = new ApiResult<T>(response, messaging.Notifications);
             return StatusCode((int) statusCode, defaultResult);
         }
 
         private HttpStatusCode GetStatusCodeResult()
         {
-            if (Messaging.HasErrors())
+            if (Notifications.HasErrors())
                 return HttpStatusCode.InternalServerError;
 
-            if (Messaging.HasValidationFailures())
+            if (Notifications.HasValidationFailures())
                 return HttpStatusCode.BadRequest;
 
             return HttpStatusCode.OK;

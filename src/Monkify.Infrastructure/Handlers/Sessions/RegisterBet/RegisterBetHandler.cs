@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Monkify.Common.Extensions;
-using Monkify.Common.Messaging;
+using Monkify.Common.Notifications;
 using Monkify.Common.Resources;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Configs.ValueObjects;
@@ -21,7 +21,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
     {
         public RegisterBetHandler(
             MonkifyDbContext context, 
-            IMessaging messaging, 
+            INotifications messaging, 
             IHubContext<RecentBetsHub> activeSessionsHub, GeneralSettings settings,
             ISolanaService solanaService
         ) : base(context, messaging)
@@ -54,12 +54,12 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
             var signatureHasBeenUsed = await Context.SessionBets.AnyAsync(x => x.PaymentSignature == _bet.PaymentSignature);
 
             if (signatureHasBeenUsed)
-                Messaging.ReturnValidationFailureMessage(ErrorMessages.PaymentSignatureHasBeenUsed);
+                Messaging.ReturnValidationFailureNotification(ErrorMessages.PaymentSignatureHasBeenUsed);
 
             var paymentResult = await _solanaService.ValidateBetPayment(_bet);
 
             if (!paymentResult.IsValid)
-                Messaging.ReturnValidationFailureMessage(paymentResult.ErrorMessage);
+                Messaging.ReturnValidationFailureNotification(paymentResult.ErrorMessage);
         }
 
         private async Task ValidateBetParameters(RegisterBetRequest request)
@@ -104,7 +104,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
             var refundAmount = BetDomainService.CalculateRefundForInvalidBet(_settings.Token, _bet);
             await _solanaService.RefundTokens(_bet.Wallet, refundAmount);
-            Messaging.ReturnValidationFailureMessage(errorMessageWithAdvice);
+            Messaging.ReturnValidationFailureNotification(errorMessageWithAdvice);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Configuration;
 using Monkify.Common.Exceptions;
-using Monkify.Common.Messaging;
+using Monkify.Common.Notifications;
 using Monkify.Common.Models;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Infrastructure.Context;

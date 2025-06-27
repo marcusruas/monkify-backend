@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Monkify.Common.Messaging;
+using Monkify.Common.Notifications;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Contracts.Sessions;
 using System;
@@ -13,7 +13,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetActiveParameters
 {
     public class GetActiveParametersHandler : BaseRequestHandler<GetActiveParametersRequest, IEnumerable<SessionParametersDto>>
     {
-        public GetActiveParametersHandler(MonkifyDbContext context, IMessaging messaging) : base(context, messaging) { }
+        public GetActiveParametersHandler(MonkifyDbContext context, INotifications messaging) : base(context, messaging) { }
 
         public override async Task<IEnumerable<SessionParametersDto>> HandleRequest(GetActiveParametersRequest request, CancellationToken cancellationToken)
         {

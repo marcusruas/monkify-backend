@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Monkify.Common.Extensions;
-using Monkify.Common.Messaging;
+using Monkify.Common.Notifications;
 using Monkify.Common.Resources;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;

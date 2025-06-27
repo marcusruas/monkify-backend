@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Monkify.Common.Exceptions;
-using Monkify.Common.Messaging;
+using Monkify.Common.Notifications;
 using Monkify.Results;
 using Serilog;
 using System;
@@ -43,8 +43,8 @@ internal class ExceptionFilter : IExceptionFilter
         else
             errorMessage = "Your request could not be processed. Please check the data and try again.";
 
-        var messaging = context.HttpContext.RequestServices.GetService<IMessaging>();
-        var model =  new ApiResult<string>(errorMessage, messaging.Messages);
+        var messaging = context.HttpContext.RequestServices.GetService<INotifications>();
+        var model =  new ApiResult<string>(errorMessage, messaging.Notifications);
 
         context.Result = new ObjectResult(model);
     }

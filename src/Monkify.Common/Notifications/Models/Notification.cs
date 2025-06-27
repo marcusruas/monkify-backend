@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Monkify.Common.Messaging
+namespace Monkify.Common.Notifications
 {
-    public class Message
+    public class Notification
     {
-        public Message(MessageType type, string value)
+        public Notification(NotificationType type, string value)
         {
             Type = type;
             Value = value;
         }
 
-        public MessageType Type { get; }
+        public NotificationType Type { get; }
         public string Value { get; }
     }
 }

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Monkify.Common.Messaging
+namespace Monkify.Common.Notifications
 {
-    public enum MessageType
+    public enum NotificationType
     {
         Informational,
         Alert,

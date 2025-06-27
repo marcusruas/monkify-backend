@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Monkify.Common.Extensions;
-using Monkify.Common.Messaging;
+using Monkify.Common.Notifications;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Context;
@@ -13,7 +13,7 @@ namespace Monkify.Api.Controllers
     [Produces("application/json")]
     public class DebugController : BaseController
     {
-        public DebugController(IMediator mediador, IMessaging messaging, MonkifyDbContext context) : base(mediador, messaging)
+        public DebugController(IMediator mediador, INotifications messaging, MonkifyDbContext context) : base(mediador, messaging)
         {
             _context = context;
         }

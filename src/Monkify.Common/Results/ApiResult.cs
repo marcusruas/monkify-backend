@@ -1,4 +1,4 @@
-﻿using Monkify.Common.Messaging;
+﻿using Monkify.Common.Notifications;
 
 namespace Monkify.Results
 {
@@ -6,13 +6,13 @@ namespace Monkify.Results
     {
         public ApiResult() { }
 
-        public ApiResult(T data, IEnumerable<Message> messages)
+        public ApiResult(T data, IEnumerable<Notification> messages)
         {
             Data = data;
             Messages = messages;
         }
 
         public T Data { get; set; }
-        public IEnumerable<Message> Messages { get; set; }
+        public IEnumerable<Notification> Messages { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Bogus;
 using Microsoft.EntityFrameworkCore;
 using Monkify.Common.Exceptions;
-using Monkify.Common.Messaging;
+using Monkify.Common.Notifications;
 using Monkify.Infrastructure.Context;
 using Shouldly;
 using System;
@@ -18,12 +18,12 @@ namespace Monkify.Tests.UnitTests.Shared
         {
             CancellationToken = new CancellationToken();
             Faker = new Faker();
-            Messaging = new Messaging();
+            Messaging = new NotificationsService();
             ContextOptions = new DbContextOptionsBuilder<MonkifyDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()).Options;
         }
 
-        protected readonly IMessaging Messaging;
+        protected readonly INotifications Messaging;
         protected readonly DbContextOptions<MonkifyDbContext> ContextOptions;
         protected readonly Faker Faker;
         protected CancellationToken CancellationToken;
@@ -33,7 +33,7 @@ namespace Monkify.Tests.UnitTests.Shared
             await Should.ThrowAsync<ValidationFailureException>(action);
 
             Messaging.HasValidationFailures().ShouldBeTrue();
-            Messaging.Messages.Any(x => x.Type == MessageType.ValidationFailure && x.Value == expectedErrorMessage).ShouldBeTrue();
+            Messaging.Notifications.Any(x => x.Type == NotificationType.ValidationFailure && x.Value == expectedErrorMessage).ShouldBeTrue();
         }
 
         protected async Task ShouldReturnError(Task action, string expectedErrorMessage)
@@ -41,7 +41,7 @@ namespace Monkify.Tests.UnitTests.Shared
             await Should.ThrowAsync<InternalErrorException>(action);
 
             Messaging.HasErrors().ShouldBeTrue();
-            Messaging.Messages.Any(x => x.Type == MessageType.Error && x.Value == expectedErrorMessage).ShouldBeTrue();
+            Messaging.Notifications.Any(x => x.Type == NotificationType.Error && x.Value == expectedErrorMessage).ShouldBeTrue();
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Monkify.Common.Messaging;
+using Monkify.Common.Notifications;
 using Monkify.Common.Resources;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Infrastructure.Context;
@@ -14,7 +14,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetActiveSessionForParameter
 {
     public class GetActiveSessionForParameterHandler : BaseRequestHandler<GetActiveSessionForParameterRequest, ActiveSessionDto>
     {
-        public GetActiveSessionForParameterHandler(MonkifyDbContext context, IMessaging messaging) : base(context, messaging)
+        public GetActiveSessionForParameterHandler(MonkifyDbContext context, INotifications messaging) : base(context, messaging)
         {
         }
 
@@ -32,7 +32,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetActiveSessionForParameter
                 .AnyAsync(x => x.Id == request.ParameterId && x.Active);
 
             if (!parameterIsValid)
-                Messaging.ReturnValidationFailureMessage(ErrorMessages.ParameterNotFound);
+                Messaging.ReturnValidationFailureNotification(ErrorMessages.ParameterNotFound);
         }
 
         private async Task<Session> GetActiveSession(GetActiveSessionForParameterRequest request)
@@ -42,7 +42,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.GetActiveSessionForParameter
                 .FirstOrDefaultAsync(x => x.ParametersId == request.ParameterId && Session.SessionInProgressStatus.Contains(x.Status));
 
             if (result is null)
-                Messaging.ReturnValidationFailureMessage(ErrorMessages.ParameterHasNoActiveSessions);
+                Messaging.ReturnValidationFailureNotification(ErrorMessages.ParameterHasNoActiveSessions);
 
             return result;
         }

@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using Monkify.Common.Exceptions;
-using Monkify.Common.Messaging;
+using Monkify.Common.Notifications;
 using Monkify.Infrastructure.Context;
 using Newtonsoft.Json;
 using Serilog;
@@ -17,14 +17,14 @@ namespace Monkify.Infrastructure.Handlers
     [ExcludeFromCodeCoverage]
     public abstract class BaseRequestHandler<TRequest, TResponse> : IRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
     {
-        public BaseRequestHandler(MonkifyDbContext context, IMessaging messaging)
+        public BaseRequestHandler(MonkifyDbContext context, INotifications messaging)
         {
             Context = context;
             Messaging = messaging;
         }
 
         protected readonly MonkifyDbContext Context;
-        protected readonly IMessaging Messaging;
+        protected readonly INotifications Messaging;
 
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken)
         {

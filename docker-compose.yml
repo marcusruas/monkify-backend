@@ -1,11 +1,27 @@
 version: '3.8'
+
 services:
   api:
-    build: .
+    build:
+      context: ./src
+      dockerfile: Monkify.Api/Dockerfile
     ports:
       - "6001:6001"
     environment:
       - ASPNETCORE_HTTP_PORTS=6001
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Monkify=Server=database;Database=Monkify;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;
+    depends_on:
+      - database
+      - consumers
+    networks:
+      - monkify-network
+
+  consumers:
+    build:
+      context: ./src
+      dockerfile: Monkify.Consumers/Dockerfile
+    environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Monkify=Server=database;Database=Monkify;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;
     depends_on:

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Monkify.Common.Messaging;
+using Monkify.Common.Notifications;
 using Serilog.Sinks.MSSqlServer;
 using Serilog;
 using System;
@@ -26,7 +26,7 @@ namespace Monkify.Infrastructure
         {
             var monkifyConnectionString = configuration.GetConnectionString("Monkify");
 
-            services.AddScoped<IMessaging, Messaging>();
+            services.AddScoped<INotifications, NotificationsService>();
             services.AddScoped<ISolanaService, SolanaService>();
             services.AddScoped<ISessionService, SessionService>();
 
