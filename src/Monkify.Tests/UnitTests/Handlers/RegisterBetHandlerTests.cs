@@ -10,7 +10,7 @@ using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Handlers.Sessions.RegisterBet;
 using Monkify.Infrastructure.Services.Solana;
-using Monkify.Tests.Shared;
+using Monkify.Tests.UnitTests.Shared;
 using Moq;
 using Shouldly;
 using System;
@@ -19,7 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Tests.Handlers
+namespace Monkify.Tests.UnitTests.Handlers
 {
     public class RegisterBetHandlerTests : UnitTestsClass
     {
@@ -93,7 +93,7 @@ namespace Monkify.Tests.Handlers
                 PaymentSignature = Faker.Random.String2(88),
                 Wallet = Faker.Random.String2(40)
             };
-            
+
             using (var context = new MonkifyDbContext(ContextOptions))
             {
                 var request = new RegisterBetRequest(Guid.NewGuid(), requestBody);

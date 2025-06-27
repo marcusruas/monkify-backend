@@ -9,7 +9,7 @@ using Monkify.Infrastructure.Background.Workers;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Services.Sessions;
 using Monkify.Infrastructure.Services.Solana;
-using Monkify.Tests.Shared;
+using Monkify.Tests.UnitTests.Shared;
 using Moq;
 using Shouldly;
 using System;
@@ -18,7 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Tests.Background
+namespace Monkify.Tests.UnitTests.Background
 {
     public class RefundBetsTests : UnitTestsClass
     {
@@ -215,7 +215,7 @@ namespace Monkify.Tests.Background
             {
                 context.Add(session);
 
-                foreach(var bet in session.Bets)
+                foreach (var bet in session.Bets)
                 {
                     context.Add(new TransactionLog(bet.Id, 2, Faker.Random.String2(88)));
                 }

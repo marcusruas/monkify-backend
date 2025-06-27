@@ -7,7 +7,7 @@ using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using Shouldly;
 
-namespace Monkify.Tests.Domain.Sessions
+namespace Monkify.Tests.UnitTests.Domain.Sessions
 {
     public class SessionTests
     {

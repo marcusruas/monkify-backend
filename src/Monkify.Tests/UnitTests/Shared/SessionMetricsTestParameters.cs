@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Monkify.Domain.Sessions.ValueObjects;
 
-namespace Monkify.Tests.Shared
+namespace Monkify.Tests.UnitTests.Shared
 {
     public class SessionMetricsTestParameters
     {

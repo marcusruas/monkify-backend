@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Tests.Domain.Sessions
+namespace Monkify.Tests.UnitTests.Domain.Sessions
 {
     public class MonkifyTyperTests
     {
@@ -37,8 +37,8 @@ namespace Monkify.Tests.Domain.Sessions
             session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = Faker.Random.String2(4) });
             session.Bets.Add(new Bet(BetStatus.Made, 10) { Choice = Faker.Random.String2(4) });
 
-            MonkifyTyper? typer = null; 
-            
+            MonkifyTyper? typer = null;
+
             Should.NotThrow(() => typer = new MonkifyTyper(session));
 
             typer.HasWinners.ShouldBeFalse();

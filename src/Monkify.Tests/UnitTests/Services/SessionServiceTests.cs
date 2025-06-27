@@ -9,7 +9,7 @@ using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Handlers.Sessions.RegisterBet;
 using Monkify.Infrastructure.Services.Sessions;
 using Monkify.Infrastructure.Services.Solana;
-using Monkify.Tests.Shared;
+using Monkify.Tests.UnitTests.Shared;
 using Moq;
 using Shouldly;
 using Solnet.Rpc;
@@ -19,7 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Tests.Services
+namespace Monkify.Tests.UnitTests.Services
 {
     public class SessionServiceTests : UnitTestsClass
     {

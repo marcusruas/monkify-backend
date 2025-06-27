@@ -4,7 +4,7 @@ using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Services.Solana;
-using Monkify.Tests.Shared;
+using Monkify.Tests.UnitTests.Shared;
 using Moq;
 using Newtonsoft.Json;
 using Shouldly;
@@ -21,7 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit.Sdk;
 
-namespace Monkify.Tests.Services
+namespace Monkify.Tests.UnitTests.Services
 {
     public class SolanaServiceTests : UnitTestsClass
     {
@@ -31,7 +31,7 @@ namespace Monkify.Tests.Services
             _settings = new()
             {
                 Polly = new()
-                { 
+                {
                     GetTransactionRetryCount = 3,
                     LatestBlockshashRetryCount = 3
                 },
@@ -177,7 +177,7 @@ namespace Monkify.Tests.Services
             session.Parameters = new SessionParameters() { Name = Faker.Random.Word(), Description = Faker.Random.Words(6), AcceptDuplicatedCharacters = true, ChoiceRequiredLength = 4, RequiredAmount = 2, AllowedCharacters = SessionCharacterType.Letters };
             var bet = new Bet(session.Id, Faker.Random.String2(40), Faker.Random.String2(88), Faker.Random.String2(40), Faker.Random.String2(4), 2) { Wallet = WALLET_FOR_TESTS };
             session.Bets.Add(bet);
-            var transaction = new BetTransactionAmountResult(2, (ulong) (2 * Math.Pow(10, 5)));
+            var transaction = new BetTransactionAmountResult(2, (ulong)(2 * Math.Pow(10, 5)));
             using (var context = new MonkifyDbContext(ContextOptions))
             {
                 context.Add(session);

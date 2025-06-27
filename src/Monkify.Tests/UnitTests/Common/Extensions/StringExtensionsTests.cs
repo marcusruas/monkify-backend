@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Tests.Common.Extensions
+namespace Monkify.Tests.UnitTests.Common.Extensions
 {
     public class StringExtensionsTests
     {

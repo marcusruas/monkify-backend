@@ -8,7 +8,7 @@ using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Background.Workers;
 using Monkify.Infrastructure.Context;
-using Monkify.Tests.Shared;
+using Monkify.Tests.UnitTests.Shared;
 using Moq;
 using Polly;
 using Shouldly;
@@ -18,7 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Tests.Background
+namespace Monkify.Tests.UnitTests.Background
 {
     public class CreateSessionTests : UnitTestsClass
     {

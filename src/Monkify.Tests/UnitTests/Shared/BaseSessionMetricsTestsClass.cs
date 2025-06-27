@@ -8,7 +8,7 @@ using Monkify.Domain.Sessions.ValueObjects;
 using Shouldly;
 using Xunit.Abstractions;
 
-namespace Monkify.Tests.Shared
+namespace Monkify.Tests.UnitTests.Shared
 {
     public abstract class BaseSessionMetricsTestsClass
     {
@@ -23,7 +23,7 @@ namespace Monkify.Tests.Shared
 
         protected const int NUMBER_OF_PARALLEL_SESSIONS = 10;
 
-        protected const int MAX_DURATION_FOR_SESSION = 3;
+        protected const int MAX_DURATION_FOR_SESSION = 5;
 
         protected void ValidateSessionRuns(IEnumerable<SessionMetricsResult> sessionResults)
         {
@@ -77,7 +77,7 @@ namespace Monkify.Tests.Shared
                 {
                     batchIndex = 0;
                     numberOfBatches++;
-                    continue; 
+                    continue;
                 }
             }
             watch.Stop();

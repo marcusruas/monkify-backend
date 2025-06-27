@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Tests.Shared
+namespace Monkify.Tests.UnitTests.Shared
 {
     public record SessionMetricsResult(TimeSpan Duration, int NumberOfBatches)
     {
-        public double BatchesPerSecond = Math.Round((NumberOfBatches / Duration.TotalMicroseconds) * 1_000_000, 2);
+        public double BatchesPerSecond = Math.Round(NumberOfBatches / Duration.TotalMicroseconds * 1_000_000, 2);
 
         public override string ToString()
         {

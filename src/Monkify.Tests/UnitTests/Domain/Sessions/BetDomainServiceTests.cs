@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Tests.Domain.Sessions
+namespace Monkify.Tests.UnitTests.Domain.Sessions
 {
     public class BetDomainServiceTests
     {
@@ -61,7 +61,7 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_SessionWithBets_ShouldCalculateCorrectly()
         {
-            Bet winnerBet = new (BetStatus.NeedsRewarding, 4);
+            Bet winnerBet = new(BetStatus.NeedsRewarding, 4);
             var session = new Session();
 
             session.Bets = new List<Bet>()
@@ -83,7 +83,7 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_BetWithCredits_ShouldCalculateCorrectly()
         {
-            Bet winnerBet = new (BetStatus.NeedsRewarding, 4);
+            Bet winnerBet = new(BetStatus.NeedsRewarding, 4);
             winnerBet.TransactionLogs = new List<TransactionLog>() { new() { Amount = 3 } };
             var session = new Session();
 
@@ -106,7 +106,7 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_SessionWithMultipleWinners_ShouldCalculateCorrectly()
         {
-            Bet winnerBet = new (BetStatus.NeedsRewarding, 4);
+            Bet winnerBet = new(BetStatus.NeedsRewarding, 4);
             var session = new Session();
 
             session.Bets = new List<Bet>()
@@ -174,8 +174,8 @@ namespace Monkify.Tests.Domain.Sessions
         [Fact]
         public void CalculateRewardForBet_AlreadyRewardedBet_ShouldCalculateCorrectly()
         {
-            Bet winnerBet = new (BetStatus.NeedsRewarding, 4);
-            winnerBet.TransactionLogs = new List<TransactionLog>() { new () { Amount = 10.8m } };
+            Bet winnerBet = new(BetStatus.NeedsRewarding, 4);
+            winnerBet.TransactionLogs = new List<TransactionLog>() { new() { Amount = 10.8m } };
             var session = new Session();
 
             session.Bets = new List<Bet>()

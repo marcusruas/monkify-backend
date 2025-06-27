@@ -111,17 +111,21 @@ namespace Monkify.Domain.Sessions.Services
 
         private void SetCharactersOnTyper(Session session)
         {
-            if (!session.Parameters.PresetChoices.IsNullOrEmpty())
-                SetCharactersOnTyperByBets(session);
-            else if (session.Parameters.AllowedCharacters == SessionCharacterType.Letters && session.Parameters.ChoiceRequiredLength > 5 && session.Bets.Count <= 5)
-                SetCharactersOnTyperByBets(session);
-            else if (session.Parameters.AllowedCharacters == SessionCharacterType.NumbersAndLetters && session.Parameters.ChoiceRequiredLength >= 5 && session.Bets.Count <= 5)
-                SetCharactersOnTyperByBets(session);
-            else 
+            bool shouldSetByBets = !session.Parameters.PresetChoices.IsNullOrEmpty() ||
+                                   (session.Parameters.AllowedCharacters == SessionCharacterType.Letters && session.Parameters.ChoiceRequiredLength > 5 && session.Bets.Count <= 5) ||
+                                   (session.Parameters.AllowedCharacters == SessionCharacterType.NumbersAndLetters && session.Parameters.ChoiceRequiredLength >= 5 && session.Bets.Count <= 5);
+
+            if (shouldSetByBets)
+            {
+                CharactersOnTyper = SetCharactersOnTyperByBets(session);
+            }
+            else
+            {
                 CharactersOnTyper = [.. session.Parameters.AllowedCharacters.StringValueOf()];
+            }
         }
 
-        private void SetCharactersOnTyperByBets(Session session)
+        private char[] SetCharactersOnTyperByBets(Session session)
         {
             var result = new HashSet<char>();
 
@@ -131,7 +135,7 @@ namespace Monkify.Domain.Sessions.Services
                     result.Add(character);
             }
 
-            CharactersOnTyper = [.. result.Order()];
+            return [.. result.Order()];
         }
     }
 }

@@ -12,12 +12,12 @@ using Monkify.Domain.Sessions.Services;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Services.Sessions;
-using Monkify.Tests.Shared;
+using Monkify.Tests.UnitTests.Shared;
 using Moq;
 using Shouldly;
 using Xunit.Abstractions;
 
-namespace Monkify.Tests.Domain.Sessions
+namespace Monkify.Tests.UnitTests.Domain.Sessions
 {
     public class LetterSessionTests : BaseSessionMetricsTestsClass
     {
