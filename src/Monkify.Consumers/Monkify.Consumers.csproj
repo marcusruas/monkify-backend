@@ -6,4 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Monkify.Common\Monkify.Common.csproj" />
+    <ProjectReference Include="..\Monkify.Domain\Monkify.Domain.csproj" />
+    <ProjectReference Include="..\Monkify.Infrastructure\Monkify.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

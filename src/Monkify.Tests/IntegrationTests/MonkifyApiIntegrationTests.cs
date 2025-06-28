@@ -24,6 +24,7 @@ namespace Monkify.Tests.IntegrationTests
     public class MonkifyApiIntegrationTests : IAsyncLifetime
     {
         private IContainer AppContainer { get; set; }
+        private IContainer ConsumerContainer { get; set; }
         private ApplicationFixture Fixture { get; set; }
 
         private string GetLocalAppContainerUrl() => $"http://localhost:{AppContainer.GetMappedPublicPort(8080)}";
@@ -131,15 +132,37 @@ namespace Monkify.Tests.IntegrationTests
         #region Life cycle methods
         public async Task InitializeAsync()
         {
-            var image = new ImageFromDockerfileBuilder()
+            var consumerImage = new ImageFromDockerfileBuilder()
+                .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), string.Empty)
+                .WithDockerfile("Monkify.Consumers/Dockerfile")
+                .Build();
+
+            var appImage = new ImageFromDockerfileBuilder()
                 .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), string.Empty)
                 .WithDockerfile("Monkify.Api/Dockerfile")
                 .Build();
 
-            await image.CreateAsync();
+            await Task.WhenAll(consumerImage.CreateAsync(), appImage.CreateAsync());
+
+            ConsumerContainer = new ContainerBuilder()
+                .WithImage(consumerImage)
+                .WithOutputConsumer(Consume.RedirectStdoutAndStderrToConsole())
+                .WithName($"{ApplicationFixture.PROJECT_NAME}-consumer-instance-{Guid.NewGuid()}")
+                .WithNetwork(Fixture.NetworkContainer)
+                .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
+                .WithEnvironment("ConnectionStrings__Monkify", Fixture.GetContainerSqlServerConnectionString("MONKIFY"))
+                .WithEnvironment("GeneralSettings__Sessions__MinimumWaitPeriodForBets", "5")
+                .WithEnvironment("GeneralSettings__Sessions__TimeUntilSessionStarts", "5")
+                .WithEnvironment("GeneralSettings__Sessions__TerminalBatchLimit", "100")
+                .WithEnvironment("GeneralSettings__Sessions__DelayBetweenSessions", "5")
+                .WithEnvironment("GeneralSettings__Workers__CreateSessionsInterval", "5")
+                .WithEnvironment("GeneralSettings__Workers__RefundBetsInterval", "1800")
+                .WithEnvironment("GeneralSettings__Workers__RewardSessionsInterval", "1800")
+                .WithAutoRemove(true).WithCleanUp(true)
+                .Build();
 
             AppContainer = new ContainerBuilder()
-                .WithImage(image)
+                .WithImage(appImage)
                 .WithOutputConsumer(Consume.RedirectStdoutAndStderrToConsole())
                 .WithName($"{ApplicationFixture.PROJECT_NAME}-app-instance-{Guid.NewGuid()}")
                 .WithNetwork(Fixture.NetworkContainer)
@@ -157,12 +180,14 @@ namespace Monkify.Tests.IntegrationTests
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(8080))
                 .Build();
 
+            await ConsumerContainer.StartAsync();
             await AppContainer.StartAsync();
         }
 
         public async Task DisposeAsync()
         {
             if (AppContainer != null) await AppContainer.StopAsync();
+            if (ConsumerContainer != null) await ConsumerContainer.StopAsync();
         }
         #endregion
     }
