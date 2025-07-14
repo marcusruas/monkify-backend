@@ -16,6 +16,7 @@ using Monkify.Infrastructure.Services.Sessions;
 using Monkify.Infrastructure.Services.Solana;
 using System.Diagnostics.CodeAnalysis;
 using Monkify.Infrastructure.Background.Events;
+using Monkify.Domain.Configs.Entities;
 
 namespace Monkify.Infrastructure
 {
@@ -30,7 +31,6 @@ namespace Monkify.Infrastructure
             services.AddScoped<ISolanaService, SolanaService>();
             services.AddScoped<ISessionService, SessionService>();
 
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddDbContext<MonkifyDbContext>(options => options.UseSqlServer(monkifyConnectionString));
             services.AddSignalR();
         }

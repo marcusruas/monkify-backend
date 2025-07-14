@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System.Text.Json;
+using Confluent.Kafka;
+using MassTransit;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Monkify.Common.Extensions;
 using Monkify.Common.Notifications;
@@ -9,7 +12,9 @@ using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Events;
 using Monkify.Domain.Sessions.Services;
 using Monkify.Domain.Sessions.ValueObjects;
+using Monkify.Infrastructure.Abstractions.KafkaHandlers;
 using Monkify.Infrastructure.Background.Hubs;
+using Monkify.Infrastructure.Consumers.BetPlaced;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Contracts.Sessions;
 using Monkify.Infrastructure.Services.Solana;
@@ -23,17 +28,21 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
             MonkifyDbContext context, 
             INotifications messaging, 
             IHubContext<RecentBetsHub> activeSessionsHub, GeneralSettings settings,
-            ISolanaService solanaService
+            ISolanaService solanaService,
+            IKafkaProducer<BetPlacedEvent> producer
         ) : base(context, messaging)
         {
             _recentBetsHub = activeSessionsHub;
             _settings = settings;
             _solanaService = solanaService;
+
+            _producer = producer;
         }
 
         private readonly IHubContext<RecentBetsHub> _recentBetsHub;
         private readonly GeneralSettings _settings;
         private readonly ISolanaService _solanaService;
+        private readonly IKafkaProducer<BetPlacedEvent> _producer;
 
         private Bet _bet;
 
@@ -43,7 +52,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
             await ValidateBetSignature();
             await ValidateBetParameters(request);
-            await RegisterBet();
+            await RegisterBet(); 
             await SendBet();
 
             return new BetDto(_bet);
@@ -96,6 +105,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
 
             var sessionJson = new BetCreatedEvent(_bet.Wallet, _bet.PaymentSignature, _bet.Amount, _bet.Choice).AsJson();
             await _recentBetsHub.Clients.All.SendAsync(sessionBetsEndpoint, sessionJson);
+            await _producer.ProduceAsync(new BetPlacedEvent(_bet.Id, _bet.Wallet, _bet.PaymentSignature, _bet.Amount, _bet.Choice));
         }
 
         private async Task RefundInvalidBet(string errorMessage)

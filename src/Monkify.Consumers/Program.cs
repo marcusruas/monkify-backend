@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
+using Monkify.Infrastructure.Abstractions.KafkaHandlers;
 using Monkify.Infrastructure.Background.Workers;
+using Monkify.Infrastructure.Consumers.BetPlaced;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Services.Sessions;
 using Serilog;
@@ -23,9 +25,12 @@ builder.Configuration.Bind(nameof(GeneralSettings), settings);
 builder.Services.AddSingleton(settings);
 builder.Services.AddSingleton(provider => ClientFactory.GetClient(settings.Token.ClusterUrl));
 
-builder.Services.AddHostedService<CreateSessions>();
-builder.Services.AddHostedService<RefundBets>();
-builder.Services.AddHostedService<RewardSessions>();
+//builder.Services.AddHostedService<CreateSessions>();
+//builder.Services.AddHostedService<RefundBets>();
+//builder.Services.AddHostedService<RewardSessions>();
+
+string kafkaServersUrl = builder.Configuration.GetValue<string>("Kafka:BootstrapServersUrl");
+builder.Services.AddConsumer<BetPlacedEvent, BetPlacedConsumer>(kafkaServersUrl, "bet-placed", "monkify-sessions-consumer");
 
 var app = builder.Build();
 

@@ -1,28 +1,16 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
+using AspNetCoreRateLimit;
+using MassTransit;
 using Microsoft.OpenApi.Models;
 using Monkify.Api.Filters;
-using Monkify.Domain.Configs.Entities;
-using Monkify.Infrastructure.Background.Hubs;
-using Monkify.Infrastructure.Background.Workers;
-using Monkify.Infrastructure.Context;
-using Serilog;
-using Solnet.Rpc;
-using System.Text;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using static Monkify.Infrastructure.DependencyInjection;
-using static Monkify.Common.Extensions.ConfigurationsExtensions;
-using System.Configuration;
-using AspNetCoreRateLimit;
-using Monkify.Infrastructure.Background.Events;
-using Monkify.Infrastructure.Services.Sessions;
-using Monkify.Domain.Sessions.Entities;
-using System.Collections.ObjectModel;
-using Microsoft.Extensions.Configuration;
 using Monkify.Common.Extensions;
+using Monkify.Domain.Configs.Entities;
+using Monkify.Infrastructure.Abstractions.KafkaHandlers;
+using Monkify.Infrastructure.Background.Hubs;
+using Monkify.Infrastructure.Consumers.BetPlaced;
+using Monkify.Infrastructure.Handlers.Sessions.RegisterBet;
+using Solnet.Rpc;
+using static Monkify.Common.Extensions.ConfigurationsExtensions;
+using static Monkify.Infrastructure.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,6 +55,11 @@ builder.Services.AddCors(options =>
         }
     );
 });
+
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(RegisterBetHandler).Assembly));
+
+string kafkaServersUrl = builder.Configuration.GetValue<string>("Kafka:BootstrapServersUrl");
+builder.Services.AddProducer<BetPlacedEvent>(kafkaServersUrl, "bet-placed", "monkify-sessions-consumer");
 
 var app = builder.Build();
 
