@@ -11,6 +11,7 @@ services:
       - ASPNETCORE_URLS=http://+:6001
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Monkify=Server=database;Database=Monkify;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;
+      - Kafka__BootstrapServersUrl=kafka:9093
     depends_on:
       - database
       - consumers
@@ -24,8 +25,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Monkify=Server=database;Database=Monkify;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;
+      - Kafka__BootstrapServersUrl=kafka:9093
     depends_on:
       - database
+      - kafka
     networks:
       - monkify-network
 
@@ -39,7 +42,6 @@ services:
     networks:
       - monkify-network
       
-  # ───────────────────────────── Zookeeper ────────────────────────────
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
     environment:
@@ -50,7 +52,6 @@ services:
     networks:
       - monkify-network
 
-  # ───────────────────────────── Kafka Broker ─────────────────────────
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     depends_on:
@@ -59,7 +60,6 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:9093
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1

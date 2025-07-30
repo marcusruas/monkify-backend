@@ -8,6 +8,8 @@ using Confluent.Kafka;
 using Microsoft.Extensions.Options;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Infrastructure.Consumers.BetPlaced;
+using Serilog;
+using Serilog.Core;
 
 namespace Monkify.Infrastructure.Abstractions.KafkaHandlers
 {
@@ -24,10 +26,15 @@ namespace Monkify.Infrastructure.Abstractions.KafkaHandlers
 
         public async Task ProduceAsync(TMessage message)
         {
-             await _producer.ProduceAsync(
-                _configuration.Topic, 
-                new Message<Null, string> { Value = JsonSerializer.Serialize(message) }
-            );
+            try
+            {
+                var messagePayload = new Message<Null, string> { Value = JsonSerializer.Serialize(message) };
+                await _producer.ProduceAsync(_configuration.Topic, messagePayload);
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, "An error occurred while producing a message to Kafka topic {Topic}", _configuration.Topic);
+            }
         }
     }
 }
