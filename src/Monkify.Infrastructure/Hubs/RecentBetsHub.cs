@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Infrastructure.Background.Hubs
+namespace Monkify.Infrastructure.Hubs
 {
-    public class ActiveSessionsHub : Hub { }
+    public class RecentBetsHub : Hub { }
 }

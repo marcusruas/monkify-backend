@@ -8,7 +8,7 @@ using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Events;
 using Monkify.Domain.Sessions.Services;
 using Monkify.Domain.Sessions.ValueObjects;
-using Monkify.Infrastructure.Background.Hubs;
+using Monkify.Infrastructure.Hubs;
 using Monkify.Infrastructure.Context;
 using Serilog;
 using System;

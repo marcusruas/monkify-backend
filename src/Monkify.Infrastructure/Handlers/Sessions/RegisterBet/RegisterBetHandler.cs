@@ -13,7 +13,7 @@ using Monkify.Domain.Sessions.Events;
 using Monkify.Domain.Sessions.Services;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Abstractions.KafkaHandlers;
-using Monkify.Infrastructure.Background.Hubs;
+using Monkify.Infrastructure.Hubs;
 using Monkify.Infrastructure.Consumers.BetPlaced;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Contracts.Sessions;
@@ -27,8 +27,9 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         public RegisterBetHandler(
             MonkifyDbContext context, 
             INotifications messaging, 
-            IHubContext<RecentBetsHub> activeSessionsHub, GeneralSettings settings,
+            GeneralSettings settings,
             ISolanaService solanaService,
+            IHubContext<RecentBetsHub> activeSessionsHub,
             IKafkaProducer<BetPlacedEvent> producer
         ) : base(context, messaging)
         {
@@ -103,9 +104,9 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         {
             string sessionBetsEndpoint = string.Format(_settings.Sessions.SessionBetsEndpoint, _bet.SessionId.ToString());
 
-            var sessionJson = new BetCreatedEvent(_bet.Wallet, _bet.PaymentSignature, _bet.Amount, _bet.Choice).AsJson();
-            await _recentBetsHub.Clients.All.SendAsync(sessionBetsEndpoint, sessionJson);
-            await _producer.ProduceAsync(new BetPlacedEvent(_bet.Id, _bet.Wallet, _bet.PaymentSignature, _bet.Amount, _bet.Choice));
+            var placedBet = new BetPlacedEvent(_bet.SessionId);
+            await _recentBetsHub.Clients.All.SendAsync(sessionBetsEndpoint, placedBet.AsJson());
+            await _producer.ProduceAsync(placedBet);
         }
 
         private async Task RefundInvalidBet(string errorMessage)

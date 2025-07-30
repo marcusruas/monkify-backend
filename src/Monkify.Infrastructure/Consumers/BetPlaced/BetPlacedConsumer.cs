@@ -9,8 +9,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
+using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Abstractions.KafkaHandlers;
 using Monkify.Infrastructure.Context;
+using Monkify.Infrastructure.Services.Sessions;
 
 namespace Monkify.Infrastructure.Consumers.BetPlaced
 {
@@ -25,17 +27,30 @@ namespace Monkify.Infrastructure.Consumers.BetPlaced
             using var scope = _services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<MonkifyDbContext>();
             var sessionSettings = scope.ServiceProvider.GetRequiredService<GeneralSettings>();
+            var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
 
             var session = await context.Sessions
-                .Include(x => x.Bets)
-                .Where(x => x.Id == message.SessionId)
-                .Select(x => new { BetCount = x.Bets.GroupBy(x => new { x.Wallet, x.Choice }).Count(), x.CreatedDate })
-                .FirstOrDefaultAsync();
+                .Include(x => x.Parameters)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == message.SessionId && x.Status == SessionStatus.WaitingBets, cancellationToken);
+
+            if (session == null)
+                return;
+
+            var betsPlaced = await context.SessionBets
+                .Where(b => b.SessionId == message.SessionId)
+                .GroupBy(x => new { x.Wallet, x.Choice })
+                .CountAsync(cancellationToken);
 
             var elapsedTimeSinceCreation = (DateTime.UtcNow - session.CreatedDate).TotalSeconds;
 
-            if (elapsedTimeSinceCreation < sessionSettings.Sessions.MinimumWaitPeriodForBets)
+            bool minimumTimeElapsed = elapsedTimeSinceCreation > sessionSettings.Sessions.MinimumWaitPeriodForBets;
+            bool sessionHasEnoughPlayers = betsPlaced >= session.Parameters.MinimumNumberOfPlayers;
+
+            if (!minimumTimeElapsed || !sessionHasEnoughPlayers)
                 return;
+
+            await sessionService.UpdateSessionStatus(session, SessionStatus.SessionStarting);
         }
     }
 }

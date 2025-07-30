@@ -10,7 +10,7 @@ using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Events;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
-using Monkify.Infrastructure.Background.Hubs;
+using Monkify.Infrastructure.Hubs;
 using Monkify.Infrastructure.Context;
 using Newtonsoft.Json;
 using Serilog;
@@ -61,8 +61,6 @@ namespace Monkify.Infrastructure.Background.Workers
 
             var sessionCreatedEvent = new SessionCreatedEvent(session.Id, parameters);
             await openSessionsHub.Clients.All.SendAsync(settings.Sessions.ActiveSessionsEndpoint, sessionCreatedEvent.AsJson(), cancellationToken);
-
-            await mediator.Publish(new SessionStartEvent(session), cancellationToken);
         }
     }
 }

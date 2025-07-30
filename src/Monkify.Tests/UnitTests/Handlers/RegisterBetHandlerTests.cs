@@ -6,7 +6,7 @@ using Monkify.Common.Results;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
-using Monkify.Infrastructure.Background.Hubs;
+using Monkify.Infrastructure.Hubs;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Handlers.Sessions.RegisterBet;
 using Monkify.Infrastructure.Services.Solana;

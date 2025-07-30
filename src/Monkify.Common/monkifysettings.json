@@ -48,7 +48,15 @@
         }
     },
     "Kafka": {
-        "BootstrapServersUrl": "localhost:9092"
+        "BootstrapServersUrl": "localhost:9092",
+        "BetPlacedEvent": {
+            "Topic": "bet-placed",
+            "GroupId": "monkify-sessions-consumer"
+        },
+        "GameSessionProcessorEvent": {
+            "Topic": "game-started",
+            "GroupId": "monkify-sessions-consumer"
+        }
     },
     "ConnectionStrings": {
         "Monkify": "Server=localhost,1433;Database=Monkify;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;"

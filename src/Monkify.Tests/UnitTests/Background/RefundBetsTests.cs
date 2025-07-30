@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
-using Monkify.Infrastructure.Background.Hubs;
+using Monkify.Infrastructure.Hubs;
 using Monkify.Infrastructure.Background.Workers;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Services.Sessions;

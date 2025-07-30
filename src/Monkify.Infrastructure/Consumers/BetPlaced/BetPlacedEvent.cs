@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Consumers.BetPlaced
 {
-    public record BetPlacedEvent(Guid SessionId, string Wallet, string PaymentSignature, decimal Amount, string Choice) { }
+    public record BetPlacedEvent(Guid SessionId) { }
 }
