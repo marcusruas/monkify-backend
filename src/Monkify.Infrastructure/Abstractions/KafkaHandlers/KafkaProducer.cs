@@ -26,14 +26,16 @@ namespace Monkify.Infrastructure.Abstractions.KafkaHandlers
 
         public async Task ProduceAsync(TMessage message)
         {
+            var messageJson = message.AsJson();
+            
             try
             {
-                var messagePayload = new Message<Null, string> { Value = JsonSerializer.Serialize(message) };
+                var messagePayload = new Message<Null, string> { Value = messageJson };
                 await _producer.ProduceAsync(_configuration.Topic, messagePayload);
             }
             catch(Exception ex)
             {
-                Log.Error(ex, "An error occurred while producing a message to Kafka topic {Topic}", _configuration.Topic);
+                Log.Error(ex, "An error occurred while producing a message to Kafka topic {Topic}. Message: {message}", _configuration.Topic, messageJson);
             }
         }
     }

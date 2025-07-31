@@ -136,6 +136,30 @@ namespace Monkify.Infrastructure.Services.Sessions
             }
         }
 
+        public void CreateDefaultSessionParameters()
+        {
+            if (_context.SessionParameters.Any(x => x.Active))
+                return;
+
+            var parameters = new List<SessionParameters>()
+            {
+                new SessionParameters()
+                { 
+                    Name = "Four Letter Race",
+                    Description = "Type a Four-letter word and hope that Edson types it before anyone else!",
+                    AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Letters,
+                    RequiredAmount = 1,
+                    MinimumNumberOfPlayers = 2,
+                    ChoiceRequiredLength = 4,
+                    AcceptDuplicatedCharacters = true,
+                    Active = true,
+                }
+            };
+
+            _context.AddRange(parameters);
+            _context.SaveChanges();
+        }
+
         public void CloseOpenSessions()
         {
             try

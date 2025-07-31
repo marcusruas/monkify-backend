@@ -19,6 +19,14 @@ namespace Monkify.Domain.Configs.ValueObjects
         public static string AsJson(this object? obj)
             => JsonConvert.SerializeObject(obj, JsonSettings);
 
+        public static T CastToObject<T>(this string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                return default!;
+
+            return JsonConvert.DeserializeObject<T>(json, JsonSettings) ?? default!;
+        }
+
         public static JsonSerializerSettings JsonSettings =>
             new JsonSerializerSettings()
             {

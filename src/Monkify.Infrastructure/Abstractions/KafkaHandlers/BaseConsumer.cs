@@ -50,7 +50,7 @@ namespace Monkify.Infrastructure.Abstractions.KafkaHandlers
 
                             Log.Information("Received message {messageId} for consumer {consumer}", consumeResult.Message.Key, GetType().Name);
 
-                            var messageBody = System.Text.Json.JsonSerializer.Deserialize<TEvent>(consumeResult.Message.Value);
+                            var messageBody = consumeResult.Message.Value.CastToObject<TEvent>();
                             await ConsumeAsync(messageBody, stoppingToken);
                         }
                         catch (OperationCanceledException)
