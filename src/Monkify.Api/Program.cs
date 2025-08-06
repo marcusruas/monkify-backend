@@ -4,14 +4,16 @@ using Microsoft.OpenApi.Models;
 using Monkify.Api.Filters;
 using Monkify.Common.Extensions;
 using Monkify.Domain.Configs.Entities;
+using Monkify.Domain.Sessions.Events;
 using Monkify.Infrastructure.Abstractions.KafkaHandlers;
-using Monkify.Infrastructure.Hubs;
 using Monkify.Infrastructure.Consumers.BetPlaced;
+using Monkify.Infrastructure.Consumers.GameSessionProcessor;
+using Monkify.Infrastructure.Consumers.StartSession;
 using Monkify.Infrastructure.Handlers.Sessions.RegisterBet;
+using Monkify.Infrastructure.Hubs;
 using Solnet.Rpc;
 using static Monkify.Common.Extensions.ConfigurationsExtensions;
 using static Monkify.Infrastructure.DependencyInjection;
-using Monkify.Infrastructure.Consumers.GameSessionProcessor;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,9 @@ builder.Services.AddSwaggerGen(configs =>
     configs.SwaggerDoc("v1", new OpenApiInfo { Title = "Monkify.Api", Version = "v1" });
 });
 
+builder.Services.AddProducer<BetPlacedEvent>(builder.Configuration);
+builder.Services.AddProducer<StartSessionEvent>(builder.Configuration);
+
 builder.AddLogs("MonkifyApiLogs");
 builder.Services.AddDefaultServices(builder.Configuration);
 
@@ -58,8 +63,6 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(RegisterBetHandler).Assembly));
-
-builder.Services.AddProducer<BetPlacedEvent>(builder.Configuration);
 
 var app = builder.Build();
 

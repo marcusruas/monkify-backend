@@ -17,13 +17,16 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Monkify.Infrastructure.Abstractions.KafkaHandlers;
+using Monkify.Infrastructure.Consumers.StartSession;
 
 namespace Monkify.Infrastructure.Services.Sessions
 {
     public class SessionService : ISessionService
     {
-        public SessionService(GeneralSettings settings, MonkifyDbContext context, IHubContext<ActiveSessionsHub> activeSessionsHub)
+        public SessionService(IKafkaProducer<StartSessionEvent> sessionStarterProducer, GeneralSettings settings, MonkifyDbContext context, IHubContext<ActiveSessionsHub> activeSessionsHub)
         {
+            _sessionStarterProducer = sessionStarterProducer;
             _settings = settings;
             _context = context;
             _activeSessionsHub = activeSessionsHub;
@@ -31,6 +34,7 @@ namespace Monkify.Infrastructure.Services.Sessions
 
         private readonly GeneralSettings _settings;
         private readonly MonkifyDbContext _context;
+        private readonly IKafkaProducer<StartSessionEvent> _sessionStarterProducer;
         private readonly IHubContext<ActiveSessionsHub> _activeSessionsHub;
 
         public async Task<MonkifyTyper> RunSession(Session session, CancellationToken cancellationToken)
@@ -158,6 +162,11 @@ namespace Monkify.Infrastructure.Services.Sessions
 
             _context.AddRange(parameters);
             _context.SaveChanges();
+
+            foreach(var parameter in parameters)
+            {
+                _sessionStarterProducer.ProduceAsync(new StartSessionEvent(parameter)).Wait();
+            }
         }
 
         public void CloseOpenSessions()

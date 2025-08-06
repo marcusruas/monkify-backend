@@ -46,6 +46,9 @@ namespace Monkify.Infrastructure.Consumers.GameSessionProcessor
                 return;
 
             await sessionService.UpdateBetStatus(message.Session.Bets.Where(x => x.Choice == gameResult.FirstChoiceTyped), BetStatus.NeedsRewarding);
+
+            var producer = scope.ServiceProvider.GetRequiredService<KafkaProducer<RewardWinnersEvent>>();
+            await producer.ProduceAsync(new RewardWinnersEvent(message.Session));
         }
 
     }

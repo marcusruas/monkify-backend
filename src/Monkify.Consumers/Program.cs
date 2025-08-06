@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
+using Monkify.Domain.Sessions.Events;
 using Monkify.Infrastructure.Abstractions.KafkaHandlers;
 using Monkify.Infrastructure.Background.Workers;
 using Monkify.Infrastructure.Consumers.BetPlaced;
 using Monkify.Infrastructure.Consumers.GameSessionProcessor;
+using Monkify.Infrastructure.Consumers.StartSession;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Services.Sessions;
 using Serilog;
@@ -18,6 +20,12 @@ builder.Services.AddOptions();
 builder.Services.AddMemoryCache();
 builder.Configuration.AddMonkifySettings();
 
+builder.Services.AddConsumer<BetPlacedEvent, BetPlacedConsumer>(builder.Configuration);
+builder.Services.AddProducer<GameSessionProcessorEvent>(builder.Configuration);
+builder.Services.AddConsumer<GameSessionProcessorEvent, GameSessionProcessorConsumer>(builder.Configuration);
+builder.Services.AddProducer<StartSessionEvent>(builder.Configuration);
+builder.Services.AddConsumer<StartSessionEvent, StartSessionConsumer>(builder.Configuration);
+
 builder.AddLogs("MonkifyConsumerLogs");
 builder.Services.AddDefaultServices(builder.Configuration);
 
@@ -29,14 +37,10 @@ builder.Services.AddSingleton(provider => ClientFactory.GetClient(settings.Token
 
 builder.Services.AddHostedService<CreateSessions>();
 
-builder.Services.AddConsumer<BetPlacedEvent, BetPlacedConsumer>(builder.Configuration);
-builder.Services.AddProducer<GameSessionProcessorEvent>(builder.Configuration);
-builder.Services.AddConsumer<GameSessionProcessorEvent, GameSessionProcessorConsumer>(builder.Configuration);
-
 var app = builder.Build();
 
 ApplyMigrations(app);
-CloseOpenSessions(app);
+StartGames(app);
 
 app.Run();
 
@@ -56,7 +60,7 @@ void ApplyMigrations(WebApplication app)
     }
 }
 
-void CloseOpenSessions(WebApplication app)
+void StartGames(WebApplication app)
 {
     using (var scope = app.Services.CreateScope())
     {

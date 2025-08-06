@@ -49,12 +49,20 @@
     },
     "Kafka": {
         "BootstrapServersUrl": "localhost:9092",
+        "StartSessionEvent": {
+            "Topic": "start-session",
+            "GroupId": "monkify-sessions-consumer"
+        },
         "BetPlacedEvent": {
             "Topic": "bet-placed",
             "GroupId": "monkify-sessions-consumer"
         },
         "GameSessionProcessorEvent": {
             "Topic": "game-started",
+            "GroupId": "monkify-sessions-consumer"
+        },
+        "RewardBetEvent": {
+            "Topic": "reward-bet",
             "GroupId": "monkify-sessions-consumer"
         }
     },

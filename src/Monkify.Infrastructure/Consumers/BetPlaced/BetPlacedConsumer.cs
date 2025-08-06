@@ -11,6 +11,7 @@ using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Abstractions.KafkaHandlers;
+using Monkify.Infrastructure.Consumers.GameSessionProcessor;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Services.Sessions;
 
@@ -51,6 +52,9 @@ namespace Monkify.Infrastructure.Consumers.BetPlaced
                 return;
 
             await sessionService.UpdateSessionStatus(session, SessionStatus.SessionStarting);
+
+            var producer = scope.ServiceProvider.GetRequiredService<KafkaProducer<GameSessionProcessorEvent>>();
+            await producer.ProduceAsync(new GameSessionProcessorEvent(session));
         }
     }
 }

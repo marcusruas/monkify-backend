@@ -39,7 +39,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Consumers\RewardWinner\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
 
