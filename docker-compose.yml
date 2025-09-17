@@ -7,7 +7,7 @@ services:
     environment:
       - ASPNETCORE_HTTP_PORTS=6001
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__Monkify=Server=database;Database=Monkify;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;
+      - ConnectionStrings__Monkify=Server=database;Database=master;User Id=sa;Password=Monkify@123;TrustServerCertificate=True;Encrypt=False;
     depends_on:
       - database
     networks:
