@@ -73,7 +73,7 @@ app.UseIpRateLimiting();
 
 ApplyMigrations(app);
 CloseOpenSessions(app);
-//CreateDefaultSessionParameters(app);
+CreateDefaultSessionParameters(app);
 
 if (app.Environment.IsDevelopment())
 {
