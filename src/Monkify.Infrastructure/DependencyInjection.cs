@@ -52,7 +52,11 @@ namespace Monkify.Infrastructure
             else
                 logBuilder = logBuilder.MinimumLevel.Warning();
 
-            logBuilder = logBuilder.WriteTo.MSSqlServer(logsConnectionString, logOptions);
+            logBuilder = logBuilder
+                .WriteTo.MSSqlServer(logsConnectionString, logOptions);
+
+            if (builder.Environment.IsDevelopment())
+                logBuilder.WriteTo.Console();
 
             Log.Logger = logBuilder.CreateLogger();
             builder.Logging.AddSerilog(Log.Logger);

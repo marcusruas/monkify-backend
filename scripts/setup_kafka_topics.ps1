@@ -1,12 +1,12 @@
 # Name of the Kafka container
-$kafkaContainer = "0d38e922cd18748ee6d20e4c594e05700111de41577ae5fe98716660f86ee44f"
+$kafkaContainer = "3b5fd4d432dd2e65fb1fe52c5ec409f1209c2c4ce3b163c0efd0fb48758a8c72"
 
 # Common settings
 $partitions = 3
 $replicationFactor = 1
 
 # List of topics to create
-$topics = @("game-started", "bet-placed")
+$topics = @("game-started", "bet-placed", "start-session")
 
 foreach ($topic in $topics) {
     Write-Host "Creating topic: $topic"
