@@ -8,6 +8,7 @@ using Monkify.Common.Extensions;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Events;
+using Monkify.Domain.Sessions.Services;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
 using Monkify.Infrastructure.Background.Hubs;
@@ -51,6 +52,7 @@ namespace Monkify.Infrastructure.Background.Workers
             var innerContext = innerScope.GetService<MonkifyDbContext>();
             var mediator = innerScope.GetService<IMediator>();
             var openSessionsHub = innerScope.GetService<IHubContext<ActiveSessionsHub>>();
+            var tracker = innerScope.GetService<SessionBetsTracker>();
 
             var session = new Session(parameters.Id);
 
@@ -62,6 +64,7 @@ namespace Monkify.Infrastructure.Background.Workers
             var sessionCreatedEvent = new SessionCreatedEvent(session.Id, parameters);
             await openSessionsHub.Clients.All.SendAsync(settings.Sessions.ActiveSessionsEndpoint, sessionCreatedEvent.AsJson(), cancellationToken);
 
+            tracker.AddSession(session.Id);
             await mediator.Publish(new SessionStartEvent(session), cancellationToken);
         }
     }

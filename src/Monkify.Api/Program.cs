@@ -1,25 +1,26 @@
+using System.Collections.ObjectModel;
+using System.Configuration;
+using System.Text;
+using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Monkify.Api.Filters;
 using Monkify.Domain.Configs.Entities;
+using Monkify.Domain.Sessions.Entities;
+using Monkify.Domain.Sessions.Services;
+using Monkify.Infrastructure.Background.Events;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Background.Workers;
 using Monkify.Infrastructure.Context;
+using Monkify.Infrastructure.Services.Sessions;
 using Serilog;
 using Solnet.Rpc;
-using System.Text;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using static Monkify.Infrastructure.DependencyInjection;
-using System.Configuration;
-using AspNetCoreRateLimit;
-using Monkify.Infrastructure.Background.Events;
-using Monkify.Infrastructure.Services.Sessions;
-using Monkify.Domain.Sessions.Entities;
-using System.Collections.ObjectModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,8 @@ var settings = new GeneralSettings();
 builder.Configuration.Bind(nameof(GeneralSettings), settings);
 builder.Services.AddSingleton(settings);
 builder.Services.AddSingleton(provider => ClientFactory.GetClient(settings.Token.ClusterUrl));
+
+builder.Services.AddSingleton(new SessionBetsTracker());
 
 builder.Services.AddHostedService<CreateSessions>();
 builder.Services.AddHostedService<RefundBets>();

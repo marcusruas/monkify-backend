@@ -54,6 +54,9 @@ namespace Monkify.Infrastructure
 
             logBuilder = logBuilder.WriteTo.MSSqlServer(logsConnectionString, logOptions);
 
+            if(builder.Environment.IsDevelopment())
+                logBuilder = logBuilder.WriteTo.Console();
+
             Log.Logger = logBuilder.CreateLogger();
             builder.Logging.AddSerilog(Log.Logger);
         }

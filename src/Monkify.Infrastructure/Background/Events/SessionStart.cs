@@ -26,18 +26,20 @@ namespace Monkify.Infrastructure.Background.Events
 {
     public class SessionStart : BaseNotificationHandler<SessionStartEvent>
     {
-        public SessionStart(MonkifyDbContext context, IMediator mediator, ISessionService sessionService, GeneralSettings settings)
+        public SessionStart(MonkifyDbContext context, IMediator mediator, ISessionService sessionService, GeneralSettings settings, SessionBetsTracker tracker)
         {
             _context = context;
             _mediator = mediator;
             _sessionService = sessionService;
-            _sessionSettings = settings.Sessions;
+            _sessionSettings = settings.Sessions;            _tracker = tracker;
+
         }
 
         private readonly MonkifyDbContext _context;
         private readonly IMediator _mediator;
         private readonly ISessionService _sessionService;
         private readonly SessionSettings _sessionSettings;
+        private readonly SessionBetsTracker _tracker;
 
         private Session _session;
         private MonkifyTyper _monkey;
@@ -52,6 +54,9 @@ namespace Monkify.Infrastructure.Background.Events
             _monkey = await _sessionService.RunSession(_session, cancellationToken);
 
             await _sessionService.UpdateSessionStatus(_session, Ended, _monkey);
+
+            _tracker.RemoveSession(_session.Id);
+
             await DeclareWinners();
 
             await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
@@ -69,11 +74,10 @@ namespace Monkify.Infrastructure.Background.Events
 
                 if (!sessionHasEnoughPlayers)
                 {
-                    var playerCount = await _context.SessionBets.Where(x => x.SessionId == _session.Id).GroupBy(x => new { x.Wallet, x.Choice }).AsNoTracking().CountAsync();
-                    sessionHasEnoughPlayers = playerCount >= _session.Parameters.MinimumNumberOfPlayers;
+                    sessionHasEnoughPlayers = _tracker.SessionHasEnoughPlayers(_session.Id, _session.Parameters.MinimumNumberOfPlayers);
                 }
 
-                await Task.Delay(2000, cancellationToken);
+                await Task.Delay(500, cancellationToken);
             }
         }
 

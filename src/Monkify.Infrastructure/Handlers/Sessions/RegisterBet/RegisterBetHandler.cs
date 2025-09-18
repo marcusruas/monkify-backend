@@ -23,15 +23,18 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
             MonkifyDbContext context, 
             IMessaging messaging, 
             IHubContext<RecentBetsHub> activeSessionsHub, GeneralSettings settings,
-            ISolanaService solanaService
+            ISolanaService solanaService,
+            SessionBetsTracker sessionBetsTracker
         ) : base(context, messaging)
         {
             _recentBetsHub = activeSessionsHub;
             _settings = settings;
             _solanaService = solanaService;
+            _tracker = sessionBetsTracker;
         }
 
         private readonly IHubContext<RecentBetsHub> _recentBetsHub;
+        private readonly SessionBetsTracker _tracker;
         private readonly GeneralSettings _settings;
         private readonly ISolanaService _solanaService;
 
@@ -88,6 +91,8 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
                 Log.Error("An error occurred while trying to register a bet for the wallet {0} under the session {1}", _bet.Wallet, _bet.SessionId);
                 await RefundInvalidBet(ErrorMessages.FailedToRegisterBet);
             }
+
+            _tracker.AddBet(_bet);
         }
 
         private async Task SendBet()
