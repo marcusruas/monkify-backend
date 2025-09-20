@@ -32,7 +32,7 @@ namespace Monkify.Domain.Sessions.Services
                 throw new ArgumentException($"Session {sessionId} not found");
             }
 
-            var playerCount = bets.GroupBy(x => new { x.Wallet, x.Choice }).Count();
+            var playerCount = bets.DistinctBy(x => x.Wallet).Count();
             return playerCount >= minimumNumberOfPlayers;
         }
 
