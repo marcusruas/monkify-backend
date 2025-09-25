@@ -45,7 +45,7 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
         {
             _bet = new(request.SessionId, request.Body.Seed, request.Body.PaymentSignature, request.Body.Wallet, request.Body.Choice, request.Body.Amount.Value);
 
-            //await ValidateBetSignature();
+            await ValidateBetSignature();
             await ValidateBetParameters(request);
             await RegisterBet();
 
