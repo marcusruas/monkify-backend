@@ -54,10 +54,9 @@ namespace Monkify.Infrastructure.Background.Events.StartSession
 
         private async Task PrepareSessionForStart(CancellationToken cancellationToken)
         {
-            while (DateTime.UtcNow <= _session.StartDate)
-            {
-                await Task.Delay(1000, cancellationToken);
-            }
+            var delay = Convert.ToInt32((_session.StartDate - DateTime.UtcNow).Value.TotalMilliseconds);
+
+            await Task.Delay(delay, cancellationToken);
 
             await _sessionService.UpdateSessionStatus(_session, InProgress);
 
