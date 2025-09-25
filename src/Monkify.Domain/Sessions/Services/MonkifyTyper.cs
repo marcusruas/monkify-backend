@@ -31,6 +31,7 @@ namespace Monkify.Domain.Sessions.Services
         public int NumberOfWinners { get; private set; }
         public int SessionSeed { get; private set; }
         public string FirstChoiceTyped { get; private set; }
+        public long NumberOfCharactersTyped { get; private set; }
 
         public Dictionary<string, int> Bets { get; private set; }
         public int QueueLength { get; private set; }
@@ -38,6 +39,7 @@ namespace Monkify.Domain.Sessions.Services
 
         private Random _random { get; set; }
         private Queue<char> TypedCharacters { get; set; }
+
 
         public char GenerateNextCharacter()
         {
@@ -51,6 +53,7 @@ namespace Monkify.Domain.Sessions.Services
 
             CheckForWinners();
 
+            NumberOfCharactersTyped++;
             return character;
         }
 
