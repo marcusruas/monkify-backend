@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediatR;
 
 namespace Monkify.Tests.UnitTests.Handlers
 {
@@ -26,7 +27,7 @@ namespace Monkify.Tests.UnitTests.Handlers
         public RegisterBetHandlerTests()
         {
             _solanaServiceMock = new();
-            _hubContextMock = new();
+            _mediatorMock = new();
             _settings = new GeneralSettings();
             _settings.Sessions = new SessionSettings()
             {
@@ -36,18 +37,11 @@ namespace Monkify.Tests.UnitTests.Handlers
             {
                 Decimals = 6
             };
-
-            _hubContextMock = new Mock<IHubContext<RecentBetsHub>>();
-            var mockClients = new Mock<IHubClients>();
-            var mockAllClientProxy = new Mock<IClientProxy>();
-
-            mockClients.Setup(clients => clients.All).Returns(mockAllClientProxy.Object);
-            _hubContextMock.Setup(x => x.Clients).Returns(mockClients.Object);
         }
 
         private readonly GeneralSettings _settings;
         private readonly Mock<ISolanaService> _solanaServiceMock;
-        private readonly Mock<IHubContext<RecentBetsHub>> _hubContextMock;
+        private readonly Mock<IMediator> _mediatorMock;
 
         [Theory]
         [InlineData(SessionStatus.WaitingBets)]
@@ -73,7 +67,7 @@ namespace Monkify.Tests.UnitTests.Handlers
                 context.SaveChanges();
 
                 var request = new RegisterBetRequest(session.Id, requestBody);
-                var handler = new RegisterBetHandler(context, Messaging, _hubContextMock.Object, _settings, _solanaServiceMock.Object, new());
+                var handler = new RegisterBetHandler(context, Messaging, _settings, _solanaServiceMock.Object, _mediatorMock.Object);
 
                 var result = await handler.HandleRequest(request, CancellationToken);
 
@@ -97,7 +91,7 @@ namespace Monkify.Tests.UnitTests.Handlers
             using (var context = new MonkifyDbContext(ContextOptions))
             {
                 var request = new RegisterBetRequest(Guid.NewGuid(), requestBody);
-                var handler = new RegisterBetHandler(context, Messaging, _hubContextMock.Object, _settings, _solanaServiceMock.Object, new());
+                var handler = new RegisterBetHandler(context, Messaging, _settings, _solanaServiceMock.Object, _mediatorMock.Object);
                 _solanaServiceMock.Setup(x => x.ValidateBetPayment(It.IsAny<Bet>())).Returns(Task.FromResult(new ValidationResult()));
 
                 string expectedMessage = ErrorMessages.SessionNotValidForBets + " " + ErrorMessages.RefundWarning;
@@ -126,7 +120,7 @@ namespace Monkify.Tests.UnitTests.Handlers
                 context.SaveChanges();
 
                 var request = new RegisterBetRequest(session.Id, requestBody);
-                var handler = new RegisterBetHandler(context, Messaging, _hubContextMock.Object, _settings, _solanaServiceMock.Object, new());
+                var handler = new RegisterBetHandler(context, Messaging, _settings, _solanaServiceMock.Object, _mediatorMock.Object);
 
                 string expectedMessages = ErrorMessages.SessionNotValidForBets + " " + ErrorMessages.RefundWarning;
                 await ShouldReturnValidationFailure(handler.HandleRequest(request, CancellationToken), expectedMessages);
@@ -154,7 +148,7 @@ namespace Monkify.Tests.UnitTests.Handlers
                 context.SaveChanges();
 
                 var request = new RegisterBetRequest(session.Id, requestBody);
-                var handler = new RegisterBetHandler(context, Messaging, _hubContextMock.Object, _settings, _solanaServiceMock.Object, new());
+                var handler = new RegisterBetHandler(context, Messaging, _settings, _solanaServiceMock.Object, _mediatorMock.Object);
                 string expectedMessage = BetValidationResult.UnacceptedDuplicateCharacters.StringValueOf() + " " + ErrorMessages.RefundWarning;
 
                 await ShouldReturnValidationFailure(handler.HandleRequest(request, CancellationToken), expectedMessage);
@@ -185,7 +179,7 @@ namespace Monkify.Tests.UnitTests.Handlers
                 context.SaveChanges();
 
                 var request = new RegisterBetRequest(session.Id, requestBody);
-                var handler = new RegisterBetHandler(context, Messaging, _hubContextMock.Object, _settings, _solanaServiceMock.Object, new());
+                var handler = new RegisterBetHandler(context, Messaging, _settings, _solanaServiceMock.Object, _mediatorMock.Object);
 
                 await ShouldReturnValidationFailure(handler.HandleRequest(request, CancellationToken), ErrorMessages.PaymentSignatureHasBeenUsed);
             }
@@ -214,7 +208,7 @@ namespace Monkify.Tests.UnitTests.Handlers
                 context.SaveChanges();
 
                 var request = new RegisterBetRequest(session.Id, requestBody);
-                var handler = new RegisterBetHandler(context, Messaging, _hubContextMock.Object, _settings, _solanaServiceMock.Object, new());
+                var handler = new RegisterBetHandler(context, Messaging, _settings, _solanaServiceMock.Object, _mediatorMock.Object);
 
                 await ShouldReturnValidationFailure(handler.HandleRequest(request, CancellationToken), errorMessage);
             }

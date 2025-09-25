@@ -9,7 +9,7 @@ cd ..
 cd src/
 cd Monkify.Tests/
 
-dotnet test --collect:"XPlat Code Coverage" --results-directory %REPORT_DIR%
+dotnet test --collect:"XPlat Code Coverage" --results-directory %REPORT_DIR% --filter "FullyQualifiedName~UnitTests"
 
 REM Generate the HTML report using ReportGenerator
 reportgenerator "-reports:%REPORT_DIR%/**/coverage.cobertura.xml" "-targetdir:%REPORT_DIR%/html" "-reporttypes:HTML;"

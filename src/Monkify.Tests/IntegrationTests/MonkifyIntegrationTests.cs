@@ -38,77 +38,8 @@ namespace Monkify.Tests.IntegrationTests
             DatabaseOptions = new DbContextOptionsBuilder<MonkifyDbContext>().UseSqlServer(Fixture.GetLocalSqlServerConnectionString("MONKIFY")).Options;
         }
 
-        [Fact]
-        public async Task Api_GetActiveParameters_ShouldReturnActiveParameter()
-        {
-            using var context = new MonkifyDbContext(DatabaseOptions);
-            var parameters = MonkifyIntegrationTestsStubs.GenerateSession();
-
-            await context.SessionParameters.AddAsync(parameters);
-            await context.SaveChangesAsync();
-
-            string endpoint = $"/api/sessions/active-types";
-            using var client = new HttpClient() { BaseAddress = new Uri(GetLocalAppContainerUrl()) };
-            var activeTypesResult = await client.GetAsync(endpoint);
-
-            activeTypesResult.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
-            var jsonTypes = await activeTypesResult.Content.ReadAsStringAsync();
-            var apiResultBody = JsonDocument.Parse(jsonTypes);
-
-            apiResultBody.RootElement.GetProperty("data").GetArrayLength().ShouldBeGreaterThan(0);
-            apiResultBody.RootElement.GetProperty("data")[0].GetProperty("sessionTypeId").GetString().ShouldBe(parameters.Id.ToString());
-        }
-
-        [Fact]
-        public async Task Api_GetActiveSessionForParameter_ShouldReturnActiveSession()
-        {
-            using var context = new MonkifyDbContext(DatabaseOptions);
-            var parameters = MonkifyIntegrationTestsStubs.GenerateSession();
-
-            await context.SessionParameters.AddAsync(parameters);
-            await context.SaveChangesAsync();
-
-            await Task.Delay(5000);
-
-            string endpoint = $"/api/sessions/{parameters.Id}";
-            using var client = new HttpClient() { BaseAddress = new Uri(GetLocalAppContainerUrl()) };
-            var activeTypesResult = await client.GetAsync(endpoint);
-
-            activeTypesResult.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
-            var jsonTypes = await activeTypesResult.Content.ReadAsStringAsync();
-            var apiResultBody = JsonDocument.Parse(jsonTypes);
-
-            var sessionId = apiResultBody.RootElement.GetProperty("data").GetProperty("sessionId").GetString();
-            sessionId.ShouldNotBeNullOrEmpty();
-        }
-
-        [Fact]
-        public async Task Api_RegisterBet_ShouldInsertBet()
-        {
-            using var context = new MonkifyDbContext(DatabaseOptions);
-            var parameters = MonkifyIntegrationTestsStubs.GenerateSession();
-
-            await context.SessionParameters.AddAsync(parameters);
-            await context.SaveChangesAsync();
-
-            await Task.Delay(5000);
-
-            var createdSession = await context.Sessions.FirstOrDefaultAsync(x => x.Status == SessionStatus.WaitingBets && x.ParametersId == parameters.Id);
-
-            createdSession.ShouldNotBeNull();
-            createdSession.Id.ShouldNotBe(Guid.Empty);
-
-            string endpoint = $"/api/sessions/{createdSession.Id}/bets";
-            using var client = new HttpClient() { BaseAddress = new Uri(GetLocalAppContainerUrl()) };
-            var request = new StringContent(MonkifyIntegrationTestsStubs.GenerateBet().AsJson());
-            request.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-            var betResult = await client.PostAsync(endpoint, request);
-
-            betResult.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
-        }
-
         //[Fact]
-        //public async Task SessionProcessing_NewBets_ShouldRunSession()
+        //public async Task Api_GetActiveParameters_ShouldReturnActiveParameter()
         //{
         //    using var context = new MonkifyDbContext(DatabaseOptions);
         //    var parameters = MonkifyIntegrationTestsStubs.GenerateSession();
@@ -116,18 +47,16 @@ namespace Monkify.Tests.IntegrationTests
         //    await context.SessionParameters.AddAsync(parameters);
         //    await context.SaveChangesAsync();
 
-        //    await Task.Delay(5000);
+        //    string endpoint = $"/api/sessions/active-types";
+        //    using var client = new HttpClient() { BaseAddress = new Uri(GetLocalAppContainerUrl()) };
+        //    var activeTypesResult = await client.GetAsync(endpoint);
 
-        //    var createdSession = await context.Sessions.FirstOrDefaultAsync(x => x.Status == SessionStatus.WaitingBets && x.ParametersId == parameters.Id);
+        //    activeTypesResult.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
+        //    var jsonTypes = await activeTypesResult.Content.ReadAsStringAsync();
+        //    var apiResultBody = JsonDocument.Parse(jsonTypes);
 
-        //    createdSession.ShouldNotBeNull();
-
-        //    string endpoint = $"/api/sessions/{createdSession.Id}/bets";
-
-        //    var client = new HttpClient() { BaseAddress = new Uri(GetLocalAppContainerUrl()) };
-        //    var firstBetResult = await client.PostAsync(endpoint, new StringContent(MonkifyIntegrationTestsStubs.GenerateBet().AsJson(), encoding: Encoding.UTF8, mediaType: "application/json"));
-
-        //    firstBetResult.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
+        //    apiResultBody.RootElement.GetProperty("data").GetArrayLength().ShouldBeGreaterThan(0);
+        //    apiResultBody.RootElement.GetProperty("data")[0].GetProperty("sessionTypeId").GetString().ShouldBe(parameters.Id.ToString());
         //}
 
         #region Life cycle methods

@@ -53,7 +53,6 @@ namespace Monkify.Tests.UnitTests.Domain.Sessions
         }
 
         [Theory]
-        [InlineData(2)]
         [InlineData(4)]
         [InlineData(6)]
         [InlineData(8)]

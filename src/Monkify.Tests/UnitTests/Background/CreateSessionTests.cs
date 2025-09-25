@@ -5,6 +5,7 @@ using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Events;
 using Monkify.Domain.Sessions.ValueObjects;
+using Monkify.Infrastructure.Background.Events.StartSession;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Background.Workers;
 using Monkify.Infrastructure.Context;
