@@ -24,16 +24,16 @@ namespace Monkify.Infrastructure.Background.Events.BetPlaced
 {
     public class BetPlacedHandler : BaseNotificationHandler<BetPlacedEvent>
     {
-        public BetPlacedHandler(IServiceProvider serviceProvider)
+        public BetPlacedHandler(IServiceScopeFactory serviceScopeFactory)
         {
-            _serviceProvider = serviceProvider;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public override async Task HandleRequest(BetPlacedEvent notification, CancellationToken cancellationToken)
         {
-            using var scope = _serviceProvider.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
 
             var tracker = scope.ServiceProvider.GetRequiredService<SessionBetsTracker>();
             var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
