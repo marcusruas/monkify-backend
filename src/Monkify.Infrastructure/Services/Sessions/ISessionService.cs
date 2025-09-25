@@ -13,6 +13,7 @@ namespace Monkify.Infrastructure.Services.Sessions
     {
         Task<MonkifyTyper> RunSession(Session session, CancellationToken cancellationToken);
         Task UpdateSessionStatus(Session session, SessionStatus status, MonkifyTyper? monkey = null);
+        Task<bool> TryStartSession(Session session);
         Task UpdateBetStatus(IEnumerable<Bet> bets, BetStatus status);
         Task UpdateBetStatus(Bet bet, BetStatus status);
         Task CreateSession(SessionParameters parameters);

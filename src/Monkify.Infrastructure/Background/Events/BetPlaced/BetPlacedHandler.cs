@@ -46,10 +46,14 @@ namespace Monkify.Infrastructure.Background.Events.BetPlaced
                 return;
             }
 
-            await sessionService.UpdateSessionStatus(notification.Bet.Session, SessionStatus.SessionStarting);
+            bool sessionStarted = await sessionService.TryStartSession(notification.Bet.Session);
 
-            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-            await mediator.Publish(new StartSessionEvent(notification.Bet.Session));
+            // Only publish the StartSessionEvent if this call successfully started the session
+            if (sessionStarted)
+            {
+                var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+                await mediator.Publish(new StartSessionEvent(notification.Bet.Session));
+            }
         }
 
         private async Task SendBetToWebSocket(IServiceScope scope, Bet bet)

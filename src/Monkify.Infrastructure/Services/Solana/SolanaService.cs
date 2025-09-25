@@ -93,7 +93,7 @@ namespace Monkify.Infrastructure.Services.Solana
             {
                 var result = await TransferTokens(bet.Wallet, amount);
 
-                if (!result.WasSuccessful || string.IsNullOrWhiteSpace(result.Result))
+                if (result == null || !result.WasSuccessful || string.IsNullOrWhiteSpace(result.Result))
                 {
                     Serilog.Log.Error("Failed to transfer funds to the bet's wallet. Value: {1}. Details: {2} ", bet.Id, amount.AsJson());
                     return false;

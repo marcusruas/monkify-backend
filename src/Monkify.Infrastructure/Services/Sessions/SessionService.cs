@@ -18,6 +18,7 @@ using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
 using Serilog;
+using Monkify.Domain.Configs.ValueObjects;
 
 namespace Monkify.Infrastructure.Services.Sessions
 {
@@ -109,6 +110,45 @@ namespace Monkify.Infrastructure.Services.Sessions
             {
                 Log.Error(ex, "Failed to change status for session {0}. CurrentStatus: {1}, New status {2}.", session.Id, session.Status, status);
             }
+        }
+
+        public async Task<bool> TryStartSession(Session session)
+        {
+            try
+            {
+                session.StartDate = DateTime.UtcNow.AddSeconds(_settings.Sessions.TimeUntilSessionStarts);
+
+                var affectedRows = await _context.Database.ExecuteSqlRawAsync(
+                    @"UPDATE Sessions 
+                      SET Status = {0}, 
+                          StartDate = {1},
+                          UpdatedDate = {2}
+                      WHERE Id = {3} AND Status = {4}",
+                    (int)SessionStatus.SessionStarting,
+                    session.StartDate,
+                    DateTime.UtcNow,
+                    session.Id,
+                    (int)SessionStatus.WaitingBets
+                );
+
+                if (affectedRows > 0)
+                {
+                    await _context.SessionStatusLogs.AddAsync(new SessionStatusLog(session.Id, SessionStatus.WaitingBets, SessionStatus.SessionStarting));
+                    await _context.SaveChangesAsync();
+
+                    var statusJson = new SessionStatusUpdatedEvent(SessionStatus.SessionStarting, session.StartDate, null).AsJson();
+                    string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionStatusEndpoint, session.Id.ToString());
+                    await _activeSessionsHub.Clients.All.SendAsync(sessionStatusEndpoint, statusJson);
+
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to start session {0}", session.Id);
+            }
+
+            return false;
         }
 
         public async Task UpdateBetStatus(IEnumerable<Bet> bets, BetStatus status)

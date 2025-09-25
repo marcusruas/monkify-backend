@@ -76,7 +76,9 @@ namespace Monkify.Infrastructure.Handlers.Sessions.RegisterBet
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == request.SessionId && Session.SessionAcceptingBets.Contains(x.Status));
 
-            if (_betSession is null)
+            Log.Information("SESSION STATUS: {0}. START DATE: {1}. END DATE: {2}", _betSession?.Status.StringValueOf() ?? "NULL", _betSession?.StartDate, _betSession?.EndDate);
+
+            if (_betSession is null || !Session.SessionAcceptingBets.Contains(_betSession.Status))
                 await RefundInvalidBet(ErrorMessages.SessionNotValidForBets);
 
             var betValidationResult = BetDomainService.ChoiceIsValidForSession(_bet, _betSession);
