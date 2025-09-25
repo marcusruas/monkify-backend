@@ -54,7 +54,6 @@ builder.Services.AddSingleton(provider => ClientFactory.GetClient(settings.Token
 
 builder.Services.AddSingleton(new SessionBetsTracker());
 
-builder.Services.AddHostedService<CreateSessions>();
 builder.Services.AddHostedService<RefundBets>();
 builder.Services.AddHostedService<RewardSessions>();
 
@@ -75,8 +74,9 @@ var app = builder.Build();
 app.UseIpRateLimiting();
 
 ApplyMigrations(app);
+CreateDefaultSessionParametersAsync(app);
 CloseOpenSessions(app);
-CreateDefaultSessionParameters(app);
+OpenNewSessions(app);
 
 if (app.Environment.IsDevelopment())
 {
@@ -120,11 +120,12 @@ void CloseOpenSessions(WebApplication app)
     }
 }
 
-void CreateDefaultSessionParameters(WebApplication app)
+void CreateDefaultSessionParametersAsync(WebApplication app)
 {
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<MonkifyDbContext>();
+        var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
 
         if (context.SessionParameters.Any())
             return;
@@ -142,53 +143,65 @@ void CreateDefaultSessionParameters(WebApplication app)
                 AcceptDuplicatedCharacters = true,
                 Active = true,
             },
-            new SessionParameters()
-            {
-                Name = "Five Letter Race",
-                Description = "Type a Five-letter word and hope that Edson types it before anyone else!",
-                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Letters,
-                RequiredAmount = 1,
-                MinimumNumberOfPlayers = 2,
-                ChoiceRequiredLength = 5,
-                AcceptDuplicatedCharacters = true,
-                Active = true,
-            },
-            new SessionParameters()
-            {
-                Name = "Six Letter Race",
-                Description = "Type a Six-letter word and hope that Edson types it before anyone else!",
-                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Letters,
-                RequiredAmount = 1,
-                MinimumNumberOfPlayers = 2,
-                ChoiceRequiredLength = 6,
-                AcceptDuplicatedCharacters = true,
-                Active = true,
-            },
-            new SessionParameters()
-            {
-                Name = "Four Number Race",
-                Description = "Type a Four number sequence and hope that Edson types it before anyone else!",
-                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Number,
-                RequiredAmount = 1,
-                MinimumNumberOfPlayers = 2,
-                ChoiceRequiredLength = 4,
-                AcceptDuplicatedCharacters = true,
-                Active = true,
-            },
-            new SessionParameters()
-            {
-                Name = "Six Number Race",
-                Description = "Type a Six number sequence and hope that Edson types it before anyone else!",
-                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Number,
-                RequiredAmount = 1,
-                MinimumNumberOfPlayers = 2,
-                ChoiceRequiredLength = 6,
-                AcceptDuplicatedCharacters = true,
-                Active = true,
-            }
+            //new SessionParameters()
+            //{
+            //    Name = "Five Letter Race",
+            //    Description = "Type a Five-letter word and hope that Edson types it before anyone else!",
+            //    AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Letters,
+            //    RequiredAmount = 1,
+            //    MinimumNumberOfPlayers = 2,
+            //    ChoiceRequiredLength = 5,
+            //    AcceptDuplicatedCharacters = true,
+            //    Active = true,
+            //},
+            //new SessionParameters()
+            //{
+            //    Name = "Six Letter Race",
+            //    Description = "Type a Six-letter word and hope that Edson types it before anyone else!",
+            //    AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Letters,
+            //    RequiredAmount = 1,
+            //    MinimumNumberOfPlayers = 2,
+            //    ChoiceRequiredLength = 6,
+            //    AcceptDuplicatedCharacters = true,
+            //    Active = true,
+            //},
+            //new SessionParameters()
+            //{
+            //    Name = "Four Number Race",
+            //    Description = "Type a Four number sequence and hope that Edson types it before anyone else!",
+            //    AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Number,
+            //    RequiredAmount = 1,
+            //    MinimumNumberOfPlayers = 2,
+            //    ChoiceRequiredLength = 4,
+            //    AcceptDuplicatedCharacters = true,
+            //    Active = true,
+            //},
+            //new SessionParameters()
+            //{
+            //    Name = "Six Number Race",
+            //    Description = "Type a Six number sequence and hope that Edson types it before anyone else!",
+            //    AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Number,
+            //    RequiredAmount = 1,
+            //    MinimumNumberOfPlayers = 2,
+            //    ChoiceRequiredLength = 6,
+            //    AcceptDuplicatedCharacters = true,
+            //    Active = true,
+            //}
         };
 
-        context.AddRangeAsync(parameters);
+        context.AddRange(parameters);
         context.SaveChanges();
+    }
+}
+
+void OpenNewSessions(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<MonkifyDbContext>();
+    var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
+
+    foreach (var parameter in context.SessionParameters.Where(x => x.Active).ToList())
+    {
+        sessionService.CreateSession(parameter).GetAwaiter().GetResult();
     }
 }

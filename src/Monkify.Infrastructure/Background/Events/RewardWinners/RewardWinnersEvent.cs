@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Domain.Sessions.Events
+namespace Monkify.Infrastructure.Background.Events.RewardWinners
 {
     public record RewardWinnersEvent(Session Session) : INotification;
 }

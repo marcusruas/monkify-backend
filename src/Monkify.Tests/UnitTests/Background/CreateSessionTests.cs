@@ -77,12 +77,12 @@ namespace Monkify.Tests.UnitTests.Background
 
                 _serviceProviderMock.Setup(x => x.GetService(typeof(MonkifyDbContext))).Returns(context);
 
-                var worker = new CreateSessions(_serviceProviderMock.Object);
+                var worker = new RewardSessions(_serviceProviderMock.Object);
 
                 await worker.ExecuteProcess(CancellationToken);
 
-                context.Sessions.Any(x => x.ParametersId == parameters.Id).ShouldBeTrue();
-                _mediatorMock.Verify(x => x.Publish(It.IsAny<SessionStartEvent>(), It.IsAny<CancellationToken>()));
+                context.Sessions.Any(x => x.ParametersId == parameters.Id).ShouldBeFalse();
+                _mediatorMock.Verify(x => x.Publish(It.IsAny<StartSessionEvent>(), It.IsAny<CancellationToken>()), Times.Never());
             }
         }
 
@@ -93,7 +93,7 @@ namespace Monkify.Tests.UnitTests.Background
             {
                 _serviceProviderMock.Setup(x => x.GetService(typeof(MonkifyDbContext))).Returns(context);
 
-                var worker = new CreateSessions(_serviceProviderMock.Object);
+                var worker = new RewardSessions(_serviceProviderMock.Object);
 
                 await worker.ExecuteProcess(CancellationToken);
 

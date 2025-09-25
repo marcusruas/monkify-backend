@@ -1,4 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.EntityFrameworkCore;
@@ -11,27 +18,24 @@ using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Background.Hubs;
 using Monkify.Infrastructure.Context;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Monkify.Infrastructure.Services.Sessions
 {
     public class SessionService : ISessionService
     {
-        public SessionService(GeneralSettings settings, MonkifyDbContext context, IHubContext<ActiveSessionsHub> activeSessionsHub)
+        public SessionService(GeneralSettings settings, MonkifyDbContext context, IHubContext<ActiveSessionsHub> activeSessionsHub, SessionBetsTracker sessionBetsTracker)
         {
             _settings = settings;
             _context = context;
             _activeSessionsHub = activeSessionsHub;
+
+            _sessionTracker = sessionBetsTracker;
         }
 
         private readonly GeneralSettings _settings;
         private readonly MonkifyDbContext _context;
         private readonly IHubContext<ActiveSessionsHub> _activeSessionsHub;
+        private readonly SessionBetsTracker _sessionTracker;
 
         public async Task<MonkifyTyper> RunSession(Session session, CancellationToken cancellationToken)
         {
@@ -101,7 +105,7 @@ namespace Monkify.Infrastructure.Services.Sessions
                 string sessionStatusEndpoint = string.Format(_settings.Sessions.SessionStatusEndpoint, session.Id.ToString());
                 await _activeSessionsHub.Clients.All.SendAsync(sessionStatusEndpoint, statusJson);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Error(ex, "Failed to change status for session {0}. CurrentStatus: {1}, New status {2}.", session.Id, session.Status, status);
             }
@@ -161,6 +165,28 @@ namespace Monkify.Infrastructure.Services.Sessions
             catch (Exception ex)
             {
                 Log.Error(ex, "Failed to close the previous open sessions.");
+            }
+        }
+
+        public async Task CreateSession(SessionParameters parameters)
+        {
+            try
+            {
+                var session = new Session(parameters.Id);
+
+                await _context.Sessions.AddAsync(session);
+                await _context.SaveChangesAsync();
+
+                _sessionTracker.AddSession(session.Id);
+
+                session.Parameters = parameters;
+
+                var sessionCreatedEvent = new SessionCreatedEvent(session.Id, parameters);
+                await _activeSessionsHub.Clients.All.SendAsync(_settings.Sessions.ActiveSessionsEndpoint, sessionCreatedEvent.AsJson());
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to create session for parameter {0}.", parameters.Id);
             }
         }
 

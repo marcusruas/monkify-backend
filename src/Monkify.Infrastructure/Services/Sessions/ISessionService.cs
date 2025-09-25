@@ -15,6 +15,7 @@ namespace Monkify.Infrastructure.Services.Sessions
         Task UpdateSessionStatus(Session session, SessionStatus status, MonkifyTyper? monkey = null);
         Task UpdateBetStatus(IEnumerable<Bet> bets, BetStatus status);
         Task UpdateBetStatus(Bet bet, BetStatus status);
+        Task CreateSession(SessionParameters parameters);
         void CloseOpenSessions();
     }
 }

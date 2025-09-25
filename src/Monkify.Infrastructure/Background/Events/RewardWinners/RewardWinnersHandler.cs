@@ -26,11 +26,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Monkify.Infrastructure.Background.Events
+namespace Monkify.Infrastructure.Background.Events.RewardWinners
 {
-    public class RewardWinners : BaseNotificationHandler<RewardWinnersEvent>
+    public class RewardWinnersHandler : BaseNotificationHandler<RewardWinnersEvent>
     {
-        public RewardWinners(ISolanaService client, ISessionService sessionService, GeneralSettings settings)
+        public RewardWinnersHandler(ISolanaService client, ISessionService sessionService, GeneralSettings settings)
         {
             _solanaService = client;
             _sessionService = sessionService;

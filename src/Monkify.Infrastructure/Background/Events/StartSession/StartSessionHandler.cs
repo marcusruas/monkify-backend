@@ -1,32 +1,21 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
-using Monkify.Domain.Sessions.Events;
 using Monkify.Domain.Sessions.Services;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
-using Monkify.Infrastructure.Background.Hubs;
+using Monkify.Infrastructure.Background.Events.RewardWinners;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Services.Sessions;
-using Newtonsoft.Json;
 using Serilog;
-using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Runtime;
-using System.Threading;
-using System.Threading.Channels;
 using static Monkify.Domain.Sessions.ValueObjects.SessionStatus;
 
-namespace Monkify.Infrastructure.Background.Events
+namespace Monkify.Infrastructure.Background.Events.StartSession
 {
-    public class SessionStart : BaseNotificationHandler<SessionStartEvent>
+    public class StartSessionHandler : BaseNotificationHandler<StartSessionEvent>
     {
-        public SessionStart(MonkifyDbContext context, IMediator mediator, ISessionService sessionService, GeneralSettings settings, SessionBetsTracker tracker)
+        public StartSessionHandler(MonkifyDbContext context, IMediator mediator, ISessionService sessionService, GeneralSettings settings, SessionBetsTracker tracker)
         {
             _context = context;
             _mediator = mediator;
@@ -44,47 +33,27 @@ namespace Monkify.Infrastructure.Background.Events
         private Session _session;
         private MonkifyTyper _monkey;
 
-        public override async Task HandleRequest(SessionStartEvent notification, CancellationToken cancellationToken)
+        public override async Task HandleRequest(StartSessionEvent notification, CancellationToken cancellationToken)
         {
             _session = notification.Session;
 
-            await WaitForMinimumAmountOfPlayers(cancellationToken);
             await PrepareSessionForStart(cancellationToken);
 
             _monkey = await _sessionService.RunSession(_session, cancellationToken);
 
             await _sessionService.UpdateSessionStatus(_session, Ended, _monkey);
 
-            _tracker.RemoveSession(_session.Id);
+            await _tracker.RemoveSessionAsync(_session.Id);
+
+            await _sessionService.CreateSession(notification.Session.Parameters);
 
             await DeclareWinners();
 
             await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
         }
 
-        private async Task WaitForMinimumAmountOfPlayers(CancellationToken cancellationToken)
-        {
-            bool sessionHasEnoughPlayers = false;
-            bool minimumTimeElapsed = false;
-
-            while (!minimumTimeElapsed || !sessionHasEnoughPlayers)
-            {
-                var elapsedTimeSinceCreation = (DateTime.UtcNow - _session.CreatedDate).TotalSeconds;
-                minimumTimeElapsed = elapsedTimeSinceCreation > _sessionSettings.MinimumWaitPeriodForBets;
-
-                if (!sessionHasEnoughPlayers)
-                {
-                    sessionHasEnoughPlayers = _tracker.SessionHasEnoughPlayers(_session.Id, _session.Parameters.MinimumNumberOfPlayers);
-                }
-
-                await Task.Delay(500, cancellationToken);
-            }
-        }
-
         private async Task PrepareSessionForStart(CancellationToken cancellationToken)
         {
-            await _sessionService.UpdateSessionStatus(_session, SessionStarting);
-
             while (DateTime.UtcNow <= _session.StartDate)
             {
                 await Task.Delay(1000, cancellationToken);

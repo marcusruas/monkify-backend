@@ -6,6 +6,7 @@ using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Events;
 using Monkify.Domain.Sessions.ValueObjects;
 using Monkify.Infrastructure.Abstractions;
+using Monkify.Infrastructure.Background.Events.RewardWinners;
 using Monkify.Infrastructure.Context;
 using Monkify.Infrastructure.Services.Sessions;
 using Monkify.Infrastructure.Services.Solana;

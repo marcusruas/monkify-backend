@@ -39,11 +39,14 @@ namespace Monkify.Tests.UnitTests.Services
 
             mockClients.Setup(clients => clients.All).Returns(mockAllClientProxy.Object);
             _hubContextMock.Setup(x => x.Clients).Returns(mockClients.Object);
+
+            _sessionBetsTracker = new SessionBetsTracker();
         }
 
 
         private readonly GeneralSettings _settings;
         private readonly Mock<IHubContext<ActiveSessionsHub>> _hubContextMock;
+        private readonly SessionBetsTracker _sessionBetsTracker;
 
         [Fact]
         public async Task UpdateSessionStatus_UpdateSessionToStarted_ShouldReturnSuccess()
@@ -57,7 +60,7 @@ namespace Monkify.Tests.UnitTests.Services
                 context.Add(session);
                 context.SaveChanges();
 
-                var service = new SessionService(_settings, context, _hubContextMock.Object);
+                var service = new SessionService(_settings, context, _hubContextMock.Object, _sessionBetsTracker);
 
                 await service.UpdateSessionStatus(session, SessionStatus.InProgress);
                 var updatedSession = context.Sessions.Include(x => x.StatusLogs).FirstOrDefault(x => x.Id == session.Id);
@@ -80,7 +83,7 @@ namespace Monkify.Tests.UnitTests.Services
                 context.Add(session);
                 context.SaveChanges();
 
-                var service = new SessionService(_settings, context, _hubContextMock.Object);
+                var service = new SessionService(_settings, context, _hubContextMock.Object, _sessionBetsTracker);
 
                 await service.UpdateSessionStatus(session, SessionStatus.SessionStarting);
                 var updatedSession = context.Sessions.Include(x => x.StatusLogs).FirstOrDefault(x => x.Id == session.Id);
@@ -116,7 +119,7 @@ namespace Monkify.Tests.UnitTests.Services
                 context.Add(session);
                 context.SaveChanges();
 
-                var service = new SessionService(_settings, context, _hubContextMock.Object);
+                var service = new SessionService(_settings, context, _hubContextMock.Object, _sessionBetsTracker);
 
                 await service.UpdateSessionStatus(session, SessionStatus.Ended, typer);
                 var updatedSession = context.Sessions.Include(x => x.StatusLogs).FirstOrDefault(x => x.Id == session.Id);
@@ -151,7 +154,7 @@ namespace Monkify.Tests.UnitTests.Services
                 context.Add(session);
                 context.SaveChanges();
 
-                var service = new SessionService(_settings, context, _hubContextMock.Object);
+                var service = new SessionService(_settings, context, _hubContextMock.Object, _sessionBetsTracker);
 
                 await service.UpdateSessionStatus(session, SessionStatus.NotEnoughPlayersToStart);
                 var updatedSession = context.Sessions.Include(x => x.StatusLogs).FirstOrDefault(x => x.Id == session.Id);
@@ -173,7 +176,7 @@ namespace Monkify.Tests.UnitTests.Services
 
             using (var context = new MonkifyDbContext(ContextOptions))
             {
-                var service = new SessionService(_settings, context, _hubContextMock.Object);
+                var service = new SessionService(_settings, context, _hubContextMock.Object, _sessionBetsTracker);
 
                 await service.UpdateSessionStatus(session, SessionStatus.InProgress);
                 var updatedSession = context.Sessions.Include(x => x.StatusLogs).FirstOrDefault(x => x.Id == session.Id);
@@ -202,7 +205,7 @@ namespace Monkify.Tests.UnitTests.Services
                 context.Add(session);
                 context.SaveChanges();
 
-                var service = new SessionService(_settings, context, _hubContextMock.Object);
+                var service = new SessionService(_settings, context, _hubContextMock.Object, _sessionBetsTracker);
 
                 await service.UpdateBetStatus(session.Bets, BetStatus.Refunded);
                 var bets = context.SessionBets.Include(x => x.StatusLogs).Where(x => x.SessionId == session.Id);
@@ -229,7 +232,7 @@ namespace Monkify.Tests.UnitTests.Services
 
             using (var context = new MonkifyDbContext(ContextOptions))
             {
-                var service = new SessionService(_settings, context, _hubContextMock.Object);
+                var service = new SessionService(_settings, context, _hubContextMock.Object, _sessionBetsTracker);
 
                 await service.UpdateBetStatus(bets, BetStatus.Refunded);
 
@@ -259,7 +262,7 @@ namespace Monkify.Tests.UnitTests.Services
 
                 var selectedBet = session.Bets.FirstOrDefault();
 
-                var service = new SessionService(_settings, context, _hubContextMock.Object);
+                var service = new SessionService(_settings, context, _hubContextMock.Object, _sessionBetsTracker);
 
                 await service.UpdateBetStatus(selectedBet, BetStatus.Refunded);
                 var updatedBet = context.SessionBets.Include(x => x.StatusLogs).FirstOrDefault(x => x.Id == selectedBet.Id);
@@ -276,7 +279,7 @@ namespace Monkify.Tests.UnitTests.Services
 
             using (var context = new MonkifyDbContext(ContextOptions))
             {
-                var service = new SessionService(_settings, context, _hubContextMock.Object);
+                var service = new SessionService(_settings, context, _hubContextMock.Object, _sessionBetsTracker);
 
                 await service.UpdateBetStatus(bet, BetStatus.Refunded);
                 var updatedBet = context.SessionBets.Include(x => x.StatusLogs).FirstOrDefault(x => x.Id == bet.Id);
