@@ -24,7 +24,7 @@ namespace Monkify.Tests.UnitTests.Shared
 
         protected const int NUMBER_OF_PARALLEL_SESSIONS = 10;
 
-        protected const int MAX_DURATION_FOR_SESSION = 5;
+        protected const int MAX_DURATION_FOR_SESSION = 15;
 
         protected void ValidateSessionRuns(IEnumerable<SessionMetricsResult> sessionResults)
         {

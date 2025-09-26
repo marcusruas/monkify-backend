@@ -34,7 +34,7 @@ namespace Monkify.Infrastructure.Background.Events.StartSession
         private MonkifyTyper _monkey;
 
         public override async Task HandleRequest(StartSessionEvent notification, CancellationToken cancellationToken)
-        {
+         {
             _session = notification.Session;
 
             await PrepareSessionForStart(cancellationToken);
@@ -45,16 +45,18 @@ namespace Monkify.Infrastructure.Background.Events.StartSession
 
             await _tracker.RemoveSessionAsync(_session.Id);
 
-            await _sessionService.CreateSession(notification.Session.Parameters);
-
-            await DeclareWinners();
+           await DeclareWinners();
 
             await Task.Delay(_sessionSettings.DelayBetweenSessions * 1000, cancellationToken);
+
+            await _sessionService.CreateSession(notification.Session.Parameters);
         }
 
         private async Task PrepareSessionForStart(CancellationToken cancellationToken)
         {
             var delay = Convert.ToInt32((_session.StartDate - DateTime.UtcNow).Value.TotalMilliseconds);
+
+            if (delay <= 0) delay = 1;
 
             await Task.Delay(delay, cancellationToken);
 

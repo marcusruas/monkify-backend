@@ -143,50 +143,50 @@ void CreateDefaultSessionParametersAsync(WebApplication app)
                 AcceptDuplicatedCharacters = true,
                 Active = true,
             },
-            //new SessionParameters()
-            //{
-            //    Name = "Five Letter Race",
-            //    Description = "Type a Five-letter word and hope that Edson types it before anyone else!",
-            //    AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Letters,
-            //    RequiredAmount = 1,
-            //    MinimumNumberOfPlayers = 2,
-            //    ChoiceRequiredLength = 5,
-            //    AcceptDuplicatedCharacters = true,
-            //    Active = true,
-            //},
-            //new SessionParameters()
-            //{
-            //    Name = "Six Letter Race",
-            //    Description = "Type a Six-letter word and hope that Edson types it before anyone else!",
-            //    AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Letters,
-            //    RequiredAmount = 1,
-            //    MinimumNumberOfPlayers = 2,
-            //    ChoiceRequiredLength = 6,
-            //    AcceptDuplicatedCharacters = true,
-            //    Active = true,
-            //},
-            //new SessionParameters()
-            //{
-            //    Name = "Four Number Race",
-            //    Description = "Type a Four number sequence and hope that Edson types it before anyone else!",
-            //    AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Number,
-            //    RequiredAmount = 1,
-            //    MinimumNumberOfPlayers = 2,
-            //    ChoiceRequiredLength = 4,
-            //    AcceptDuplicatedCharacters = true,
-            //    Active = true,
-            //},
-            //new SessionParameters()
-            //{
-            //    Name = "Six Number Race",
-            //    Description = "Type a Six number sequence and hope that Edson types it before anyone else!",
-            //    AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Number,
-            //    RequiredAmount = 1,
-            //    MinimumNumberOfPlayers = 2,
-            //    ChoiceRequiredLength = 6,
-            //    AcceptDuplicatedCharacters = true,
-            //    Active = true,
-            //}
+            new SessionParameters()
+            {
+                Name = "Five Letter Race",
+                Description = "Type a Five-letter word and hope that Edson types it before anyone else!",
+                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Letters,
+                RequiredAmount = 1,
+                MinimumNumberOfPlayers = 2,
+                ChoiceRequiredLength = 5,
+                AcceptDuplicatedCharacters = true,
+                Active = true,
+            },
+            new SessionParameters()
+            {
+                Name = "Six Letter Race",
+                Description = "Type a Six-letter word and hope that Edson types it before anyone else!",
+                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Letters,
+                RequiredAmount = 1,
+                MinimumNumberOfPlayers = 2,
+                ChoiceRequiredLength = 6,
+                AcceptDuplicatedCharacters = true,
+                Active = true,
+            },
+            new SessionParameters()
+            {
+                Name = "Four Number Race",
+                Description = "Type a Four number sequence and hope that Edson types it before anyone else!",
+                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Number,
+                RequiredAmount = 1,
+                MinimumNumberOfPlayers = 2,
+                ChoiceRequiredLength = 4,
+                AcceptDuplicatedCharacters = true,
+                Active = true,
+            },
+            new SessionParameters()
+            {
+                Name = "Six Number Race",
+                Description = "Type a Six number sequence and hope that Edson types it before anyone else!",
+                AllowedCharacters = Monkify.Domain.Sessions.ValueObjects.SessionCharacterType.Number,
+                RequiredAmount = 1,
+                MinimumNumberOfPlayers = 2,
+                ChoiceRequiredLength = 6,
+                AcceptDuplicatedCharacters = true,
+                Active = true,
+            }
         };
 
         context.AddRange(parameters);
