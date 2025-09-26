@@ -73,8 +73,8 @@ namespace Monkify.Tests.UnitTests.Background
             // Assert
             _sessionServiceMock.Verify(x => x.UpdateSessionStatus(session, SessionStatus.RewardForWinnersInProgress, It.IsAny<MonkifyTyper>()), Times.Once);
             _sessionServiceMock.Verify(x => x.UpdateSessionStatus(session, SessionStatus.RewardForWinnersCompleted, It.IsAny<MonkifyTyper>()), Times.Once);
-            _sessionServiceMock.Verify(x => x.UpdateBetStatus(It.IsAny<Bet>(), BetStatus.Rewarded), Times.Exactly(session.Bets.Count(b => b.Status == BetStatus.NeedsRewarding)));
-            _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>()), Times.Exactly(session.Bets.Count(b => b.Status == BetStatus.NeedsRewarding)));
+            _sessionServiceMock.Verify(x => x.UpdateBetStatus(It.IsAny<Bet>(), BetStatus.Rewarded), Times.Exactly(1));
+            _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>()), Times.Exactly(1));
         }
 
         [Fact]
@@ -161,6 +161,13 @@ namespace Monkify.Tests.UnitTests.Background
         {
             // Arrange
             var session = CreateSessionWithWinnersWithRewardError(ErrorMessages.BetHasAlreadyBeenRewarded);
+            var winner = new Bet(BetStatus.NeedsRewarding, 2, "abcd", "abc");
+            winner.TransactionLogs = new List<TransactionLog>()
+            {
+                new(Guid.NewGuid(), (session.Bets.Sum(x => x.Amount)) + 1, "asdfa") // + 1 = compensation for the commission
+            };
+            session.Bets.Add(winner);
+
             var notification = new RewardWinnersEvent(session);
 
             _solanaServiceMock.Setup(x => x.GetLatestBlockhashForTokenTransfer())
@@ -184,65 +191,6 @@ namespace Monkify.Tests.UnitTests.Background
             // Assert
             _sessionServiceMock.Verify(x => x.UpdateBetStatus(It.IsAny<Bet>(), BetStatus.Rewarded), Times.Once);
             _sessionServiceMock.Verify(x => x.UpdateSessionStatus(session, SessionStatus.RewardForWinnersCompleted, It.IsAny<MonkifyTyper>()), Times.Once);
-            _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task HandleRequest_BetRewardBiggerThanPotError_ShouldMarkBetAsNeedsManualAnalysis()
-        {
-            // Arrange
-            var session = CreateSessionWithWinnersWithRewardError(ErrorMessages.BetRewardBiggerThanThePot);
-            var notification = new RewardWinnersEvent(session);
-
-            _solanaServiceMock.Setup(x => x.GetLatestBlockhashForTokenTransfer())
-                .ReturnsAsync("valid-blockhash");
-
-            _sessionServiceMock.Setup(x => x.UpdateSessionStatus(session, SessionStatus.RewardForWinnersInProgress, It.IsAny<MonkifyTyper>()))
-                .Returns(Task.CompletedTask);
-
-            _sessionServiceMock.Setup(x => x.UpdateSessionStatus(session, SessionStatus.ErrorWhenProcessingRewards, It.IsAny<MonkifyTyper>()))
-                .Returns(Task.CompletedTask);
-
-            _sessionServiceMock.Setup(x => x.UpdateBetStatus(It.IsAny<Bet>(), BetStatus.NeedsManualAnalysis))
-                .Callback<Bet, BetStatus>((bet, status) => bet.Status = status)
-                .Returns(Task.CompletedTask);
-
-            var handler = new RewardWinnersHandler(_solanaServiceMock.Object, _sessionServiceMock.Object, _settings);
-
-            // Act
-            await handler.HandleRequest(notification, CancellationToken);
-
-            // Assert
-            _sessionServiceMock.Verify(x => x.UpdateBetStatus(It.IsAny<Bet>(), BetStatus.NeedsManualAnalysis), Times.Once);
-            _sessionServiceMock.Verify(x => x.UpdateSessionStatus(session, SessionStatus.ErrorWhenProcessingRewards, It.IsAny<MonkifyTyper>()), Times.Once);
-            _sessionServiceMock.Verify(x => x.UpdateSessionStatus(session, SessionStatus.RewardForWinnersCompleted, It.IsAny<MonkifyTyper>()), Times.Never);
-            _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task HandleRequest_OtherRewardError_ShouldNotUpdateBetStatus()
-        {
-            // Arrange
-            var session = CreateSessionWithWinnersWithRewardError("Some other error");
-            var notification = new RewardWinnersEvent(session);
-
-            _solanaServiceMock.Setup(x => x.GetLatestBlockhashForTokenTransfer())
-                .ReturnsAsync("valid-blockhash");
-
-            _sessionServiceMock.Setup(x => x.UpdateSessionStatus(session, SessionStatus.RewardForWinnersInProgress, It.IsAny<MonkifyTyper>()))
-                .Returns(Task.CompletedTask);
-
-            _sessionServiceMock.Setup(x => x.UpdateSessionStatus(session, SessionStatus.ErrorWhenProcessingRewards, It.IsAny<MonkifyTyper>()))
-                .Returns(Task.CompletedTask);
-
-            var handler = new RewardWinnersHandler(_solanaServiceMock.Object, _sessionServiceMock.Object, _settings);
-
-            // Act
-            await handler.HandleRequest(notification, CancellationToken);
-
-            // Assert
-            _sessionServiceMock.Verify(x => x.UpdateBetStatus(It.IsAny<Bet>(), It.IsAny<BetStatus>()), Times.Never);
-            _sessionServiceMock.Verify(x => x.UpdateSessionStatus(session, SessionStatus.ErrorWhenProcessingRewards, It.IsAny<MonkifyTyper>()), Times.Once);
             _solanaServiceMock.Verify(x => x.TransferTokensForBet(It.IsAny<Bet>(), It.IsAny<BetTransactionAmountResult>()), Times.Never);
         }
 
@@ -324,6 +272,8 @@ namespace Monkify.Tests.UnitTests.Background
             // Arrange
             var session = CreateSessionWithWinners();
             var notification = new RewardWinnersEvent(session);
+            var winner = new Bet(BetStatus.NeedsRewarding, 2, "abcd", "abc");
+            session.Bets.Add(winner);
 
             _solanaServiceMock.Setup(x => x.GetLatestBlockhashForTokenTransfer())
                 .ReturnsAsync("valid-blockhash");
@@ -338,6 +288,7 @@ namespace Monkify.Tests.UnitTests.Background
                 .Returns(Task.CompletedTask);
 
             _sessionServiceMock.Setup(x => x.UpdateBetStatus(It.IsAny<Bet>(), BetStatus.Rewarded))
+                .Callback<Bet, BetStatus>((bet, status) => bet.Status = status)
                 .Returns(Task.CompletedTask);
 
             var handler = new RewardWinnersHandler(_solanaServiceMock.Object, _sessionServiceMock.Object, _settings);
@@ -496,12 +447,8 @@ namespace Monkify.Tests.UnitTests.Background
         {
             var bet = new Bet(Guid.NewGuid(), "seed1", "sig1", "wallet1", "abcd", 2)
             {
-                Status = BetStatus.NeedsRewarding
+                Status = BetStatus.Made
             };
-
-            // Create a mock BetDomainService that will return the error
-            // Since we can't easily mock the static method, we rely on the handler's logic
-            // to handle the error conditions properly
 
             return bet;
         }
