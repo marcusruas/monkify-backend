@@ -2,10 +2,17 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Bogus;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Monkify.Common.Extensions;
+using Monkify.Domain.Configs.Entities;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.Services;
 using Monkify.Domain.Sessions.ValueObjects;
+using Monkify.Infrastructure.Background.Hubs;
+using Monkify.Infrastructure.Context;
+using Monkify.Infrastructure.Services.Sessions;
+using Moq;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -13,8 +20,6 @@ namespace Monkify.Tests.UnitTests.Shared
 {
     public abstract class BaseSessionMetricsTestsClass
     {
-        protected readonly ITestOutputHelper Console;
-        protected readonly Faker Faker;
 
         public BaseSessionMetricsTestsClass(ITestOutputHelper console)
         {
@@ -22,31 +27,25 @@ namespace Monkify.Tests.UnitTests.Shared
             Console = console;
         }
 
-        protected const int NUMBER_OF_PARALLEL_SESSIONS = 10;
 
-        protected const int MAX_DURATION_FOR_SESSION = 15;
+        protected const int MAX_DURATION_FOR_SESSION = 10;
+        
+        protected readonly ITestOutputHelper Console;
+        protected readonly Faker Faker;
 
-        protected void ValidateSessionRuns(IEnumerable<SessionMetricsResult> sessionResults)
+        protected async Task<ConcurrentDictionary<int, SessionMetricsResult>> RunMultipleSessions(SessionMetricsTestParameters parameters)
         {
-            Console.WriteLine("Session results:");
-            foreach (var result in sessionResults)
-            {
-                Console.WriteLine(result.ToString());
-            }
+            var result = new ConcurrentDictionary<int, SessionMetricsResult>();
 
-            sessionResults.Any(x => x.Duration.TotalSeconds > MAX_DURATION_FOR_SESSION).ShouldBeFalse();
-        }
-
-        protected async Task<ConcurrentBag<SessionMetricsResult>> RunMultipleSessions(SessionMetricsTestParameters parameters)
-        {
-            var result = new ConcurrentBag<SessionMetricsResult>();
+            var parallelismDegree = Environment.ProcessorCount / 2;
 
             await Parallel.ForEachAsync(
-                Enumerable.Range(0, NUMBER_OF_PARALLEL_SESSIONS),
-                new ParallelOptions { MaxDegreeOfParallelism = 4 },
-                async (_, cancellationToken) =>
+                Enumerable.Range(0, parallelismDegree),
+                new ParallelOptions { MaxDegreeOfParallelism = parallelismDegree },
+                async (index, cancellationToken) =>
                 {
-                    result.Add(await RunSession(parameters));
+                    var sessionResult = await RunSession(parameters);
+                    result.TryAdd(index + 1, sessionResult);
                 }
             );
 
@@ -55,91 +54,29 @@ namespace Monkify.Tests.UnitTests.Shared
 
         protected async Task<SessionMetricsResult> RunSession(SessionMetricsTestParameters parameters)
         {
-            await Task.Yield();
+            var factory = new SessionServiceTestFactory();
+            var service = factory.Create();
+            var sessionParameters = new SessionParameters(parameters.CharacterType, parameters.WordLength, true);
 
-            var sessionParameters = new SessionParameters(parameters.CharacterType, parameters.WordLength, parameters.AcceptsDuplicateCharacters);
-            sessionParameters.PresetChoices = parameters.PresetChoices.Select(x => new PresetChoice(x)).ToList();
-            var bets = CreateBetList(parameters.PresetChoices, parameters.BetsPerGame, parameters.WordLength, parameters.Charset, parameters.AcceptsDuplicateCharacters);
-
-            int terminalBatchLimit = 100;
-            int numberOfBatches = 0;
-            var session = new Session(sessionParameters, [.. bets]);
+            var session = new Session(sessionParameters, [.. factory.CreateBets(parameters.CharacterType, parameters.WordLength, parameters.BetsPerGame)]);
             var monkey = new MonkifyTyper(session);
 
             var watch = Stopwatch.StartNew();
-            char[] batch = new char[terminalBatchLimit];
-            int batchIndex = 0;
-
-            while (!monkey.HasWinners)
-            {
-                batch[batchIndex++] = monkey.GenerateNextCharacter();
-
-                if (batchIndex >= terminalBatchLimit - 1)
-                {
-                    batchIndex = 0;
-                    numberOfBatches++;
-                    continue;
-                }
-            }
+            await service.RunSession(session, CancellationToken.None);
             watch.Stop();
 
-            return new SessionMetricsResult(watch.Elapsed, numberOfBatches);
+            return new SessionMetricsResult(watch.Elapsed, factory.NumberOfBatches);
         }
 
-        private ConcurrentBag<Bet> CreateBetList(List<string> presetChoices, int numberOfBets, int wordLength, string charset, bool allowDuplicateCharacters)
+        protected void ValidateSessionRuns(IDictionary<int, SessionMetricsResult> sessionResults)
         {
-            var result = new ConcurrentBag<Bet>();
-
-            if (!presetChoices.IsNullOrEmpty())
+            Console.WriteLine("Session results:");
+            foreach (var result in sessionResults)
             {
-                string seed = Faker.Random.String2(40, "abcdefghijklmnopqrstuvwxyz0123456789 ");
-
-                foreach (var choice in presetChoices)
-                {
-                    result.Add(new(BetStatus.Made, 10, choice, seed));
-                }
-            }
-            else
-            {
-                for (int i = 1; i <= numberOfBets; i++)
-                {
-                    string choice = GenerateRandomString(wordLength, charset, allowDuplicateCharacters);
-                    string seed = Faker.Random.String2(40, "abcdefghijklmnopqrstuvwxyz0123456789 ");
-                    result.Add(new(BetStatus.Made, 10, choice, seed));
-                }
+                Console.WriteLine($"Session {result.Key}: {result.Value}");
             }
 
-            return result;
-        }
-
-        static string GenerateRandomString(int length, string charset, bool allowDuplicates)
-        {
-            if (string.IsNullOrEmpty(charset))
-                throw new ArgumentException("Charset cannot be null or empty.");
-
-            if (!allowDuplicates && length > charset.Length)
-                throw new ArgumentException("Length cannot be greater than the charset size when duplicates are not allowed.");
-
-            Random random = new Random();
-            char[] result = new char[length];
-
-            if (allowDuplicates)
-            {
-                for (int i = 0; i < length; i++)
-                {
-                    result[i] = charset[random.Next(charset.Length)];
-                }
-            }
-            else
-            {
-                var shuffledCharset = charset.OrderBy(c => random.Next()).ToList();
-                for (int i = 0; i < length; i++)
-                {
-                    result[i] = shuffledCharset[i];
-                }
-            }
-
-            return new string(result);
+            sessionResults.Any(x => x.Value.Duration.TotalSeconds > MAX_DURATION_FOR_SESSION).ShouldBeFalse();
         }
     }
 }

@@ -1,15 +1,9 @@
-﻿using Bogus.DataSets;
-using MediatR;
+﻿using System.Security.Cryptography;
+using System.Text;
 using Monkify.Common.Extensions;
 using Monkify.Common.Resources;
 using Monkify.Domain.Sessions.Entities;
 using Monkify.Domain.Sessions.ValueObjects;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Monkify.Domain.Sessions.Services
 {
@@ -31,35 +25,35 @@ namespace Monkify.Domain.Sessions.Services
         public int NumberOfWinners { get; private set; }
         public int SessionSeed { get; private set; }
         public string FirstChoiceTyped { get; private set; }
-        public long NumberOfCharactersTyped { get; private set; }
-
+        
+        public int TypingSpeed { get; private set; }
         public Dictionary<string, int> Bets { get; private set; }
         public int QueueLength { get; private set; }
         public char[] CharactersOnTyper { get; private set; }
 
         private Random _random { get; set; }
-        private Queue<char> TypedCharacters { get; set; }
+        private Queue<char> _typedCharacters { get; set; }
 
+        #region Session management methods
 
         public char GenerateNextCharacter()
         {
             var characterIndex = _random.Next(CharactersOnTyper.Length);
             var character = CharactersOnTyper[characterIndex];
 
-            if (TypedCharacters.Count == QueueLength)
-                TypedCharacters.Dequeue();
+            if (_typedCharacters.Count == QueueLength)
+                _typedCharacters.Dequeue();
 
-            TypedCharacters.Enqueue(character);
+            _typedCharacters.Enqueue(character);
 
             CheckForWinners();
 
-            NumberOfCharactersTyped++;
             return character;
         }
 
         private void CheckForWinners()
         {
-            string choice = string.Concat(TypedCharacters);
+            string choice = string.Concat(_typedCharacters);
 
             if (Bets.TryGetValue(choice, out int amountOfPlayers))
             {
@@ -68,6 +62,10 @@ namespace Monkify.Domain.Sessions.Services
                 FirstChoiceTyped = choice;
             }
         }
+
+        #endregion
+
+        #region Setup methods
 
         private void GenerateSessionSeed(Session session)
         {
@@ -109,18 +107,27 @@ namespace Monkify.Domain.Sessions.Services
                     Bets.Add(bet.Choice, 1);
             }
 
-            TypedCharacters = new Queue<char>(QueueLength);
+            _typedCharacters = new Queue<char>(QueueLength);
         }
 
         private void SetCharactersOnTyper(Session session)
-        {
+        { 
             bool shouldSetByBets = !session.Parameters.PresetChoices.IsNullOrEmpty() ||
-                                   (session.Parameters.AllowedCharacters == SessionCharacterType.Letters && session.Parameters.ChoiceRequiredLength > 5 && session.Bets.Count <= 5) ||
+                                   (session.Parameters.AllowedCharacters == SessionCharacterType.Letters && session.Parameters.ChoiceRequiredLength == 5 && session.Bets.Count <= 6) ||
+                                   (session.Parameters.AllowedCharacters == SessionCharacterType.Letters && session.Parameters.ChoiceRequiredLength == 6 && session.Bets.Count <= 12) ||
                                    (session.Parameters.AllowedCharacters == SessionCharacterType.NumbersAndLetters && session.Parameters.ChoiceRequiredLength >= 5 && session.Bets.Count <= 5);
 
             if (shouldSetByBets)
             {
-                CharactersOnTyper = SetCharactersOnTyperByBets(session);
+                var result = new HashSet<char>();
+
+                foreach (var bet in session.Bets)
+                {
+                    foreach (var character in bet.Choice)
+                        result.Add(character);
+                }
+
+                CharactersOnTyper = [.. result.Order()];
             }
             else
             {
@@ -128,17 +135,6 @@ namespace Monkify.Domain.Sessions.Services
             }
         }
 
-        private char[] SetCharactersOnTyperByBets(Session session)
-        {
-            var result = new HashSet<char>();
-
-            foreach (var bet in session.Bets)
-            {
-                foreach (var character in bet.Choice)
-                    result.Add(character);
-            }
-
-            return [.. result.Order()];
-        }
+        #endregion
     }
 }
