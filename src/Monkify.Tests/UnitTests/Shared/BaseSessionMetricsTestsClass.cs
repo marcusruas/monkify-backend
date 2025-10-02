@@ -28,7 +28,8 @@ namespace Monkify.Tests.UnitTests.Shared
         }
 
 
-        protected const int MAX_DURATION_FOR_SESSION = 20;
+        protected const int MIN_AVERAGE_DURATION_FOR_SESSION = 10;
+        protected const int MAX_AVERAGE_DURATION_FOR_SESSION = 20;
         
         protected readonly ITestOutputHelper Console;
         protected readonly Faker Faker;
@@ -75,8 +76,11 @@ namespace Monkify.Tests.UnitTests.Shared
             {
                 Console.WriteLine($"Session {result.Key}: {result.Value}");
             }
+
             var averageDuration = Math.Round(sessionResults.Average(x => x.Value.Duration.TotalSeconds), 2);
-            averageDuration.ShouldBeLessThanOrEqualTo(MAX_DURATION_FOR_SESSION);
+            
+            averageDuration.ShouldBeGreaterThanOrEqualTo(MIN_AVERAGE_DURATION_FOR_SESSION);
+            averageDuration.ShouldBeLessThanOrEqualTo(MAX_AVERAGE_DURATION_FOR_SESSION);
         }
     }
 }

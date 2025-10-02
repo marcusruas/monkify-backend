@@ -10,8 +10,6 @@ namespace Monkify.Domain.Sessions.Services
 {
     public class MonkifyTyper
     {
-        private const int INITIAL_TYPING_SPEED_MS = 1; // Start at 1ms per character
-
         public MonkifyTyper(Session session)
         {
             if (session.Bets.IsNullOrEmpty())
@@ -23,7 +21,7 @@ namespace Monkify.Domain.Sessions.Services
             SetBets(session);
             SetCharactersOnTyper(session);
 
-            InitializeTiming();
+            _betInterval = BET_INTERVAL_COEFFICIENT * (CharactersOnTyper.Length * QueueLength / Bets.Count);
         }
 
         public Guid SessionId { get; }
@@ -32,21 +30,23 @@ namespace Monkify.Domain.Sessions.Services
         public int SessionSeed { get; private set; }
         public string FirstChoiceTyped { get; private set; }
 
-        public int TypingSpeed { get; private set; }
         public Dictionary<string, int> Bets { get; private set; }
         public int QueueLength { get; private set; }
         public char[] CharactersOnTyper { get; private set; }
-        public int CharactersTypedCount { get; private set; }
+        public int CharactersTypedCount { get; private set; } = 0;
 
         private Random _random { get; set; }
         private Queue<char> _typedCharacters { get; set; }
+        private int _betInterval { get; set; }
+
+        private const int BET_INTERVAL_COEFFICIENT = 5;
 
         #region Session management methods
 
         public async Task<char> GenerateNextCharacter(CancellationToken cancellationToken)
         {
-            if (CharactersTypedCount % 10 == 0)
-                await Task.Delay(TypingSpeed, cancellationToken);
+            if (_betInterval > 0 && CharactersTypedCount % _betInterval == 0)
+                await Task.Delay(1, cancellationToken); //delay of 1ms after each x characters
 
             var characterIndex = _random.Next(CharactersOnTyper.Length);
             var character = CharactersOnTyper[characterIndex];
@@ -58,6 +58,11 @@ namespace Monkify.Domain.Sessions.Services
             CharactersTypedCount++;
 
             CheckForWinners();
+
+            if (CharactersTypedCount > 600_000)
+            {
+                _betInterval = 0;
+            }
 
             return character;
         }
@@ -72,12 +77,6 @@ namespace Monkify.Domain.Sessions.Services
                 NumberOfWinners += amountOfPlayers;
                 FirstChoiceTyped = choice;
             }
-        }
-
-        private void InitializeTiming()
-        {
-            TypingSpeed = INITIAL_TYPING_SPEED_MS;
-            CharactersTypedCount = 0;
         }
 
         #endregion

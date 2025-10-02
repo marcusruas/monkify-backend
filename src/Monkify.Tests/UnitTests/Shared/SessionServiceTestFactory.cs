@@ -43,7 +43,7 @@ namespace Monkify.Tests.UnitTests.Shared
 
         protected readonly Faker FakerPTBR;
 
-        public const int TERMINAL_BATCH_LIMIT_FOR_TESTS = 1000;
+        public const int TERMINAL_BATCH_LIMIT_FOR_TESTS = 100;
          
         private readonly Mock<IHubContext<ActiveSessionsHub>> _hub;
         
