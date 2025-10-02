@@ -78,7 +78,9 @@ namespace Monkify.Tests.UnitTests.Shared
             }
 
             var averageDuration = Math.Round(sessionResults.Average(x => x.Value.Duration.TotalSeconds), 2);
-            
+           
+            Console.WriteLine($"Average duration: {averageDuration} seconds");
+
             averageDuration.ShouldBeGreaterThanOrEqualTo(MIN_AVERAGE_DURATION_FOR_SESSION);
             averageDuration.ShouldBeLessThanOrEqualTo(MAX_AVERAGE_DURATION_FOR_SESSION);
         }
