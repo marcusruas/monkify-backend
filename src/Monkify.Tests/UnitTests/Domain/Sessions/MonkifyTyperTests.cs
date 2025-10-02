@@ -144,7 +144,7 @@ namespace Monkify.Tests.UnitTests.Domain.Sessions
             watch.Start();
             while ((!firstCharacterTyped || !lastCharacterTyped) && watch.Elapsed.TotalSeconds < 3) //arbitrary number of seconds
             {
-                var character = typer.GenerateNextCharacter();
+                var character = typer.GenerateNextCharacter(CancellationToken.None).Result;
 
                 if (!firstCharacterTyped)
                     firstCharacterTyped = character == typer.CharactersOnTyper.First();

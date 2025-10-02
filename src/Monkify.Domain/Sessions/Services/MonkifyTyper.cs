@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using Monkify.Common.Extensions;
 using Monkify.Common.Resources;
 using Monkify.Domain.Sessions.Entities;
@@ -9,7 +10,6 @@ namespace Monkify.Domain.Sessions.Services
 {
     public class MonkifyTyper
     {
-        private const int TYPING_SPEED_REFRESH_INTERVAL = 1000;
         private const int INITIAL_TYPING_SPEED_MS = 1; // Start at 1ms per character
 
         public MonkifyTyper(Session session)
@@ -43,8 +43,11 @@ namespace Monkify.Domain.Sessions.Services
 
         #region Session management methods
 
-        public char GenerateNextCharacter()
+        public async Task<char> GenerateNextCharacter(CancellationToken cancellationToken)
         {
+            if (CharactersTypedCount % 10 == 0)
+                await Task.Delay(TypingSpeed, cancellationToken);
+
             var characterIndex = _random.Next(CharactersOnTyper.Length);
             var character = CharactersOnTyper[characterIndex];
 
@@ -55,11 +58,6 @@ namespace Monkify.Domain.Sessions.Services
             CharactersTypedCount++;
 
             CheckForWinners();
-
-            if (CharactersTypedCount % TYPING_SPEED_REFRESH_INTERVAL == 0 && TypingSpeed > 0)
-            {
-                TypingSpeed = (int)(TypingSpeed * 0.50);
-            }
 
             return character;
         }

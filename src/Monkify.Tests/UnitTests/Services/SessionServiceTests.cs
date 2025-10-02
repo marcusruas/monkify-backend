@@ -112,7 +112,7 @@ namespace Monkify.Tests.UnitTests.Services
             var typer = new MonkifyTyper(session);
 
             while (!typer.HasWinners)
-                typer.GenerateNextCharacter();
+                await typer.GenerateNextCharacter(CancellationToken.None);
 
             using (var context = new MonkifyDbContext(ContextOptions))
             {
