@@ -8,11 +8,11 @@ namespace Monkify.Tests.UnitTests.Shared
 {
     public record SessionMetricsResult(TimeSpan Duration, int NumberOfBatches)
     {
-        public double BatchesPerSecond = Math.Round(NumberOfBatches / Duration.TotalMicroseconds * 1_000_000, 2);
+        public double CharactersPerSecond = Math.Round((NumberOfBatches * SessionServiceTestFactory.TERMINAL_BATCH_LIMIT_FOR_TESTS) / Duration.TotalSeconds);
 
         public override string ToString()
         {
-            return $"Duration: {Duration}, Number of Batches: {NumberOfBatches} at {BatchesPerSecond} batches/s";
+            return $"Duration: {Duration}, Number of Characters Typed: {NumberOfBatches} at an average of {CharactersPerSecond} char/s";
         }
     }
 }

@@ -48,6 +48,9 @@ namespace Monkify.Infrastructure.Services.Sessions
 
             while (!monkey.HasWinners && !cancellationToken.IsCancellationRequested)
             {
+                if (monkey.TypingSpeed > 0)
+                    await Task.Delay(monkey.TypingSpeed, cancellationToken);
+
                 batch[batchIndex++] = monkey.GenerateNextCharacter();
                 if (batchIndex >= _settings.Sessions.TerminalBatchLimit)
                 {

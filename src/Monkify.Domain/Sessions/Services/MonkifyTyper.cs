@@ -9,15 +9,21 @@ namespace Monkify.Domain.Sessions.Services
 {
     public class MonkifyTyper
     {
+        private const int TYPING_SPEED_REFRESH_INTERVAL = 1000;
+        private const int INITIAL_TYPING_SPEED_MS = 1; // Start at 1ms per character
+
         public MonkifyTyper(Session session)
         {
             if (session.Bets.IsNullOrEmpty())
                 throw new ArgumentException(ErrorMessages.TyperStartedWithoutBets);
 
             SessionId = session.Id;
+
             GenerateSessionSeed(session);
             SetBets(session);
             SetCharactersOnTyper(session);
+
+            InitializeTiming();
         }
 
         public Guid SessionId { get; }
@@ -25,11 +31,12 @@ namespace Monkify.Domain.Sessions.Services
         public int NumberOfWinners { get; private set; }
         public int SessionSeed { get; private set; }
         public string FirstChoiceTyped { get; private set; }
-        
+
         public int TypingSpeed { get; private set; }
         public Dictionary<string, int> Bets { get; private set; }
         public int QueueLength { get; private set; }
         public char[] CharactersOnTyper { get; private set; }
+        public int CharactersTypedCount { get; private set; }
 
         private Random _random { get; set; }
         private Queue<char> _typedCharacters { get; set; }
@@ -45,8 +52,14 @@ namespace Monkify.Domain.Sessions.Services
                 _typedCharacters.Dequeue();
 
             _typedCharacters.Enqueue(character);
+            CharactersTypedCount++;
 
             CheckForWinners();
+
+            if (CharactersTypedCount % TYPING_SPEED_REFRESH_INTERVAL == 0 && TypingSpeed > 0)
+            {
+                TypingSpeed = (int)(TypingSpeed * 0.50);
+            }
 
             return character;
         }
@@ -63,6 +76,12 @@ namespace Monkify.Domain.Sessions.Services
             }
         }
 
+        private void InitializeTiming()
+        {
+            TypingSpeed = INITIAL_TYPING_SPEED_MS;
+            CharactersTypedCount = 0;
+        }
+
         #endregion
 
         #region Setup methods
@@ -73,7 +92,7 @@ namespace Monkify.Domain.Sessions.Services
             RandomNumberGenerator.Fill(bytes);
             var concatenatedSeed = new StringBuilder(Convert.ToBase64String(bytes));
 
-            foreach(var bet in session.Bets)
+            foreach (var bet in session.Bets)
                 concatenatedSeed.Append(bet.Seed);
 
             var seedInBytes = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(concatenatedSeed.ToString()));
@@ -111,7 +130,7 @@ namespace Monkify.Domain.Sessions.Services
         }
 
         private void SetCharactersOnTyper(Session session)
-        { 
+        {
             bool shouldSetByBets = !session.Parameters.PresetChoices.IsNullOrEmpty() ||
                                    (session.Parameters.AllowedCharacters == SessionCharacterType.Letters && session.Parameters.ChoiceRequiredLength == 5 && session.Bets.Count <= 6) ||
                                    (session.Parameters.AllowedCharacters == SessionCharacterType.Letters && session.Parameters.ChoiceRequiredLength == 6 && session.Bets.Count <= 12) ||

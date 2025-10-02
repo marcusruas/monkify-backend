@@ -43,6 +43,7 @@ namespace Monkify.Tests.UnitTests.Shared
 
         protected readonly Faker FakerPTBR;
 
+        public const int TERMINAL_BATCH_LIMIT_FOR_TESTS = 1000;
          
         private readonly Mock<IHubContext<ActiveSessionsHub>> _hub;
         
@@ -63,7 +64,7 @@ namespace Monkify.Tests.UnitTests.Shared
             Sessions = new()
             {
                 DelayBetweenSessions = 1,
-                TerminalBatchLimit = 1000,
+                TerminalBatchLimit = TERMINAL_BATCH_LIMIT_FOR_TESTS,
                 SessionTerminalEndpoint = "terminal/{0}"
             }
         };
