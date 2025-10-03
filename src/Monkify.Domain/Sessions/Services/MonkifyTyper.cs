@@ -37,7 +37,7 @@ namespace Monkify.Domain.Sessions.Services
         private Random _random { get; set; }
         private Queue<char> _typedCharacters { get; set; }
         private int _betDelayInterval { get; set; }
-        private int _rampUpThreshold { get; set; }
+        private int _expectedCharsToWin { get; set; }
 
         private const int BET_INTERVAL_COEFFICIENT = 3;
 
@@ -59,13 +59,13 @@ namespace Monkify.Domain.Sessions.Services
 
             CheckForWinners();
 
-            if (CharactersTypedCount > _rampUpThreshold)
+            if (CharactersTypedCount == _expectedCharsToWin)
             {
-                _betDelayInterval = (int)(_betDelayInterval * 1.3);
+                _betDelayInterval = (int)(_betDelayInterval * 2.5);
             }
-            else if (CharactersTypedCount > _rampUpThreshold * 2)
+            else if (CharactersTypedCount == _expectedCharsToWin * 2)
             {
-                _betDelayInterval = (int)(_betDelayInterval * 1.5);
+                _betDelayInterval = (int)(_betDelayInterval * 2);
             }
 
             return character;
@@ -157,10 +157,13 @@ namespace Monkify.Domain.Sessions.Services
 
         private void CalculateDelayIntervals()
         {
-            //_betDelayInterval = BET_INTERVAL_COEFFICIENT * (CharactersOnTyper.Length * QueueLength / Math.Max(1, Bets.Count));
-            //var teste = int.Parse(Math.Ceiling(((decimal)_rampUpThreshold / 2024422) * 1000).ToString()); //semi working
-            _rampUpThreshold = Convert.ToInt32(Math.Pow(CharactersOnTyper.Length, QueueLength) / Bets.Count);
-            _betDelayInterval = int.Parse(Math.Ceiling(((decimal)_rampUpThreshold / 2024422) * 1000).ToString());
+            _expectedCharsToWin = Convert.ToInt32(Math.Pow(CharactersOnTyper.Length, QueueLength) / Bets.Count);
+
+            var charsPerMs = 2024422 / 1000;
+            decimal paceCorrection = QueueLength > 4 ? 0.03m * decimal.Parse(Math.Pow(2, QueueLength - 5).ToString()) : 0;
+            decimal baseTime = (_expectedCharsToWin / charsPerMs) * (1.5m - paceCorrection);
+
+            _betDelayInterval = int.Parse(Math.Ceiling(baseTime).ToString());
         }
 
         #endregion
