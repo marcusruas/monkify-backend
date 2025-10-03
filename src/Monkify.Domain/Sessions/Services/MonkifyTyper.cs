@@ -20,8 +20,7 @@ namespace Monkify.Domain.Sessions.Services
             GenerateSessionSeed(session);
             SetBets(session);
             SetCharactersOnTyper(session);
-
-            _betInterval = BET_INTERVAL_COEFFICIENT * (CharactersOnTyper.Length * QueueLength / Bets.Count);
+            CalculateDelayIntervals();
         }
 
         public Guid SessionId { get; }
@@ -37,15 +36,16 @@ namespace Monkify.Domain.Sessions.Services
 
         private Random _random { get; set; }
         private Queue<char> _typedCharacters { get; set; }
-        private int _betInterval { get; set; }
+        private int _betDelayInterval { get; set; }
+        private int _rampUpThreshold { get; set; }
 
-        private const int BET_INTERVAL_COEFFICIENT = 5;
+        private const int BET_INTERVAL_COEFFICIENT = 3;
 
         #region Session management methods
 
         public async Task<char> GenerateNextCharacter(CancellationToken cancellationToken)
         {
-            if (_betInterval > 0 && CharactersTypedCount % _betInterval == 0)
+            if (_betDelayInterval > 0 && CharactersTypedCount % _betDelayInterval == 0)
                 await Task.Delay(1, cancellationToken); //delay of 1ms after each x characters
 
             var characterIndex = _random.Next(CharactersOnTyper.Length);
@@ -59,9 +59,13 @@ namespace Monkify.Domain.Sessions.Services
 
             CheckForWinners();
 
-            if (CharactersTypedCount > 600_000)
+            if (CharactersTypedCount > _rampUpThreshold)
             {
-                _betInterval = 0;
+                _betDelayInterval = (int)(_betDelayInterval * 1.3);
+            }
+            else if (CharactersTypedCount > _rampUpThreshold * 2)
+            {
+                _betDelayInterval = (int)(_betDelayInterval * 1.5);
             }
 
             return character;
@@ -149,6 +153,14 @@ namespace Monkify.Domain.Sessions.Services
             {
                 CharactersOnTyper = [.. session.Parameters.AllowedCharacters.StringValueOf()];
             }
+        }
+
+        private void CalculateDelayIntervals()
+        {
+            //_betDelayInterval = BET_INTERVAL_COEFFICIENT * (CharactersOnTyper.Length * QueueLength / Math.Max(1, Bets.Count));
+            //var teste = int.Parse(Math.Ceiling(((decimal)_rampUpThreshold / 2024422) * 1000).ToString()); //semi working
+            _rampUpThreshold = Convert.ToInt32(Math.Pow(CharactersOnTyper.Length, QueueLength) / Bets.Count);
+            _betDelayInterval = int.Parse(Math.Ceiling(((decimal)_rampUpThreshold / 2024422) * 1000).ToString());
         }
 
         #endregion

@@ -16,24 +16,25 @@ namespace Monkify.Tests.UnitTests.Domain
         }
 
         [Theory]
-        [InlineData(2)]
-        [InlineData(4)]
-        [InlineData(6)]
-        [InlineData(8)]
-        [InlineData(10)]
-        [InlineData(12)]
-        [InlineData(24)]
-        [InlineData(36)]
-        [InlineData(48)]
-        [InlineData(60)]
-        [InlineData(72)]
-        [InlineData(84)]
-        [InlineData(96)]
-        public async Task Session_FourLetterSession_ShouldEventuallySelectWinner(int betsPerSession)
+        [InlineData("02")]
+        [InlineData("04")]
+        [InlineData("06")]
+        [InlineData("08")]
+        [InlineData("10")]
+        [InlineData("20")]
+        [InlineData("30")]
+        [InlineData("40")]
+        [InlineData("50")]
+        [InlineData("60")]
+        [InlineData("70")]
+        [InlineData("80")]
+        [InlineData("90")]
+        [InlineData("99")]
+        public async Task Session_FourLetterSession_ShouldEventuallySelectWinner(string betsPerSession)
         {
             var parameters = new SessionMetricsTestParameters()
             {
-                BetsPerGame = betsPerSession,
+                BetsPerGame = int.Parse(betsPerSession),
                 CharacterType = SessionCharacterType.Letters,
                 WordLength = 4,
             };
@@ -44,24 +45,25 @@ namespace Monkify.Tests.UnitTests.Domain
         }
 
         [Theory]
-        [InlineData(2)]
-        [InlineData(4)]
-        [InlineData(6)]
-        [InlineData(8)]
-        [InlineData(10)]
-        [InlineData(12)]
-        [InlineData(24)]
-        [InlineData(36)]
-        [InlineData(48)]
-        [InlineData(60)]
-        [InlineData(72)]
-        [InlineData(84)]
-        [InlineData(96)]
-        public async Task Session_FiveLetterSession_ShouldEventuallySelectWinner(int betsPerSession)
+        [InlineData("02")]
+        [InlineData("04")]
+        [InlineData("06")]
+        [InlineData("08")]
+        [InlineData("10")]
+        [InlineData("20")]
+        [InlineData("30")]
+        [InlineData("40")]
+        [InlineData("50")]
+        [InlineData("60")]
+        [InlineData("70")]
+        [InlineData("80")]
+        [InlineData("90")]
+        [InlineData("99")]
+        public async Task Session_FiveLetterSession_ShouldEventuallySelectWinner(string betsPerSession)
         {
             var parameters = new SessionMetricsTestParameters()
             {
-                BetsPerGame = betsPerSession,
+                BetsPerGame = int.Parse(betsPerSession),
                 CharacterType = SessionCharacterType.Letters,
                 WordLength = 5,
             };
@@ -72,24 +74,25 @@ namespace Monkify.Tests.UnitTests.Domain
         }
 
         [Theory]
-        [InlineData(2)]
-        [InlineData(4)]
-        [InlineData(6)]
-        [InlineData(8)]
-        [InlineData(10)]
-        [InlineData(12)]
-        [InlineData(24)]
-        [InlineData(36)]
-        [InlineData(48)]
-        [InlineData(60)]
-        [InlineData(72)]
-        [InlineData(84)]
-        [InlineData(96)]
-        public async Task Session_SixLetterSession_ShouldEventuallySelectWinner(int betsPerSession)
+        [InlineData("02")]
+        [InlineData("04")]
+        [InlineData("06")]
+        [InlineData("08")]
+        [InlineData("10")]
+        [InlineData("20")]
+        [InlineData("30")]
+        [InlineData("40")]
+        [InlineData("50")]
+        [InlineData("60")]
+        [InlineData("70")]
+        [InlineData("80")]
+        [InlineData("90")]
+        [InlineData("99")]
+        public async Task Session_SixLetterSession_ShouldEventuallySelectWinner(string betsPerSession)
         {
             var parameters = new SessionMetricsTestParameters()
             {
-                BetsPerGame = betsPerSession,
+                BetsPerGame = int.Parse(betsPerSession),
                 CharacterType = SessionCharacterType.Letters,
                 WordLength = 6,
             };
