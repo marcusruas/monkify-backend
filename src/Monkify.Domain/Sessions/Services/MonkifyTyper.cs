@@ -63,7 +63,8 @@ namespace Monkify.Domain.Sessions.Services
             {
                 _betDelayInterval = (int)(_betDelayInterval * 2.5);
             }
-            else if (CharactersTypedCount == _expectedCharsToWin * 2)
+            
+            if (CharactersTypedCount == _expectedCharsToWin * 2)
             {
                 _betDelayInterval = (int)(_betDelayInterval * 2);
             }
@@ -158,9 +159,23 @@ namespace Monkify.Domain.Sessions.Services
         private void CalculateDelayIntervals()
         {
             _expectedCharsToWin = Convert.ToInt32(Math.Pow(CharactersOnTyper.Length, QueueLength) / Bets.Count);
+            decimal paceCorrection = QueueLength > 4 ? 0.03m * decimal.Parse(Math.Pow(2, QueueLength - 5).ToString()) : 0;
 
             var charsPerMs = 2024422 / 1000;
-            decimal paceCorrection = QueueLength > 4 ? 0.03m * decimal.Parse(Math.Pow(2, QueueLength - 5).ToString()) : 0;
+
+            switch (QueueLength)
+            {
+                case 4:
+                    paceCorrection = 0.02m;
+                    break;
+                case 5:
+                    paceCorrection = 0.06m;
+                    break;
+                case 6:
+                    paceCorrection = 0.20m;
+                    break;
+            }
+
             decimal baseTime = (_expectedCharsToWin / charsPerMs) * (1.5m - paceCorrection);
 
             _betDelayInterval = int.Parse(Math.Ceiling(baseTime).ToString());
